@@ -1,0 +1,201 @@
+.fastMoneyPane {
+  background: #0f1420;
+  color: #eef3ff;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  font-family: 'Segoe UI', sans-serif;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #a7c1ff;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+
+    .fmNav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      button {
+        background: #183362;
+        color: #eaf0ff;
+        border: 1px solid #254a8f;
+        border-radius: 6px;
+        padding: 0.35rem 0.6rem;
+        cursor: pointer;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        &:hover:not(:disabled) {
+          background: #1d3c74;
+        }
+      }
+
+      span {
+        font-weight: 700;
+        color: #97b6ff;
+      }
+    }
+
+    .playerToggle {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        background: #183362;
+        border: 1px solid #254a8f;
+        color: #eaf0ff;
+        border-radius: 6px;
+        padding: 0.35rem 0.7rem;
+        cursor: pointer;
+
+        &.active {
+          background: #2e5cff;
+          color: #fff;
+          box-shadow: 0 0 0 2px rgba(46, 92, 255, 0.25);
+        }
+
+        &:hover {
+          background: #1d3c74;
+        }
+      }
+    }
+  }
+
+  .questionCard {
+    background: #0d1a33;
+    border: 1px solid #1b2c54;
+    border-radius: 8px;
+    padding: 0.7rem;
+
+    .qTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      button {
+        background: #2e5cff;
+        border: none;
+        color: #fff;
+        border-radius: 6px;
+        padding: 0.35rem 0.6rem;
+        cursor: pointer;
+
+        &:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .qText {
+      margin-top: 0.5rem;
+      text-align: center;
+      font-weight: 700;
+    }
+  }
+
+  .answerRow {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    gap: 0.5rem;
+    align-items: center;
+
+    .answerInput {
+      background: #0b1630;
+      border: 1px solid #15264a;
+      color: #eaf0ff;
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 0.6rem;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 700;
+
+      &.enterBtn {
+        background: #0ea5e9; /* cyan-ish enter */
+      }
+      &.revealBtn {
+        background: #2e5cff; /* blue */
+      }
+      &.pointsBtn {
+        background: #22c55e; /* green */
+      }
+      &.zeroBtn {
+        background: #ef4444; /* red */
+      }
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+
+  /* Append to your existing FastMoneyPane.module.scss */
+
+.resetGroup {
+  margin-left: auto;
+}
+
+.resetBtn {
+  background: #b00020;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.resetBtn:hover {
+  filter: brightness(1.05);
+}
+
+
+  .bank {
+    background: #0d1a33;
+    border: 1px solid #1b2c54;
+    border-radius: 8px;
+    padding: 0.6rem;
+    max-height: 220px;
+    overflow: auto;
+
+    .bankTitle {
+      font-weight: 800;
+      color: #a7c1ff;
+      margin-bottom: 0.4rem;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed #1b2c54;
+        padding: 0.3rem 0;
+
+        .bankText { color: #eaf0ff; }
+        .bankPts  { color: #ffda6a; font-weight: 800; }
+      }
+    }
+  }
+}

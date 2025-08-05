@@ -1,0 +1,74 @@
+/* src/app/control/ControlPanel.module.scss */
+
+.controlPanel {
+  display: grid;
+  grid-template-columns: 340px 1fr 340px;
+  gap: 16px;
+  padding: 16px;
+  background: radial-gradient(120% 140% at 50% -20%, #1a1a1a 0%, #0f0f0f 100%);
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  /* Make each pane scroll independently */
+  > * {
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    scrollbar-width: thin;
+  }
+  > *::-webkit-scrollbar {
+    width: 8px;
+  }
+  > *::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 6px;
+  }
+
+  // /* Optional: subtle separators */
+  // :global(.leftPane),
+  // :global(.middlePane),
+  // :global(.rightPane) {
+  //   background: #1b1b1b;
+  //   border: 1px solid #2a2a2a;
+  //   border-radius: 10px;
+  //   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  // }
+
+  // /* Sticky headers */
+  // :global(.leftPane h2),
+  // :global(.middlePane h2),
+  // :global(.rightPane h2) {
+  //   position: sticky;
+  //   top: 0;
+  //   z-index: 1;
+  //   background: linear-gradient(180deg, rgba(27, 27, 27, 1) 60%, rgba(27, 27, 27, 0) 100%);
+  //   margin: 0;
+  //   padding: 12px 16px;
+  //   border-bottom: 1px solid #2a2a2a;
+  // }
+}
+
+.fastMoneyBlock {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  background: #151515;
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 1280px) {
+  .controlPanel {
+    grid-template-columns: 300px 1fr 300px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .controlPanel {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .fastMoneyBlock {
+    margin-top: 0;
+  }
+}

@@ -1,0 +1,18 @@
+/* TeamControlIndicator.module.scss */
+.controlBar {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.controlBar span {
+  font-size: 1.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.active {
+  background-color: var(--accent-color);
+  color: #000;
+}
