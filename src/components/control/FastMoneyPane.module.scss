@@ -1,185 +1,199 @@
+
+
 .fastMoneyPane {
-  background: #0f1420;
-  color: #eef3ff;
-  padding: 1rem;
+  background: #1e1e1e;
+  color: #fff;
+  padding: 1.25rem;
   border-radius: 10px;
+  width: 100%;
+  max-width: 1100px;
+  box-shadow: 0 0 10px rgba(0,0,0,.4);
+  font-family: 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  font-family: 'Segoe UI', sans-serif;
+  gap: 1rem;
 
   h2 {
-    margin: 0;
     font-size: 1.2rem;
-    font-weight: 800;
-    color: #a7c1ff;
+    color: #f7c948;
+    margin: 0;
+  }
+
+  .timerPanel {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: end;
+    background: #242424;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: .75rem;
+
+    .timerLeft {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+
+      label {
+        font-weight: 600;
+        opacity: .9;
+      }
+
+      input[type="number"] {
+        width: 6rem;
+        padding: .4rem .5rem;
+        border-radius: 6px;
+        border: 1px solid #555;
+        background: #2e2e2e;
+        color: #fff;
+      }
+
+      .defaultInfo {
+        font-size: .9rem;
+        opacity: .7;
+      }
+    }
+
+    .timerButtons {
+      display: flex;
+      gap: .5rem;
+
+      button {
+        padding: .45rem .75rem;
+        border: none;
+        border-radius: 6px;
+        background: #333;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s;
+      }
+      button:hover { background: #444; }
+
+      button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+      }
+    }
   }
 
   .toolbar {
     display: flex;
     justify-content: space-between;
-    gap: 0.6rem;
+    gap: 1rem;
 
     .fmNav {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-
-      button {
-        background: #183362;
-        color: #eaf0ff;
-        border: 1px solid #254a8f;
-        border-radius: 6px;
-        padding: 0.35rem 0.6rem;
-        cursor: pointer;
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        &:hover:not(:disabled) {
-          background: #1d3c74;
-        }
-      }
+      gap: .6rem;
 
       span {
         font-weight: 700;
-        color: #97b6ff;
+      }
+
+      button {
+        padding: .4rem .7rem;
+        border: none;
+        border-radius: 6px;
+        background: #333;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
       }
     }
 
     .playerToggle {
       display: flex;
-      gap: 0.5rem;
+      gap: .5rem;
 
       button {
-        background: #183362;
-        border: 1px solid #254a8f;
-        color: #eaf0ff;
+        padding: .4rem .7rem;
+        border: none;
         border-radius: 6px;
-        padding: 0.35rem 0.7rem;
+        background: #333;
+        color: #fff;
+        font-weight: 600;
         cursor: pointer;
-
-        &.active {
-          background: #2e5cff;
-          color: #fff;
-          box-shadow: 0 0 0 2px rgba(46, 92, 255, 0.25);
-        }
-
-        &:hover {
-          background: #1d3c74;
-        }
+      }
+      .active {
+        background: #2e5cff;
       }
     }
   }
 
   .questionCard {
-    background: #0d1a33;
-    border: 1px solid #1b2c54;
+    background: #242424;
+    border: 1px solid #333;
     border-radius: 8px;
-    padding: 0.7rem;
+    padding: .75rem;
 
     .qTop {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: .5rem;
 
       button {
-        background: #2e5cff;
+        padding: .35rem .6rem;
         border: none;
-        color: #fff;
         border-radius: 6px;
-        padding: 0.35rem 0.6rem;
+        background: #2e5cff;
+        color: #fff;
+        font-weight: 700;
         cursor: pointer;
+      }
 
-        &:disabled {
-          opacity: 0.55;
-          cursor: not-allowed;
-        }
+      button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
       }
     }
 
     .qText {
-      margin-top: 0.5rem;
-      text-align: center;
-      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: .2px;
+      min-height: 2.2rem;
     }
   }
 
   .answerRow {
     display: grid;
-    grid-template-columns: 1fr auto auto auto auto;
-    gap: 0.5rem;
+    grid-template-columns: 1fr auto auto auto;
+    gap: .5rem;
     align-items: center;
 
     .answerInput {
-      background: #0b1630;
-      border: 1px solid #15264a;
-      color: #eaf0ff;
-      border-radius: 8px;
-      padding: 0.45rem 0.6rem;
+      width: 100%;
+      padding: .55rem .65rem;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #2e2e2e;
+      color: #fff;
     }
 
-    button {
+    .revealBtn, .pointsBtn, .zeroBtn {
+      padding: .5rem .7rem;
       border: none;
       border-radius: 6px;
-      padding: 0.45rem 0.6rem;
       cursor: pointer;
-      color: #fff;
       font-weight: 700;
-
-      &.enterBtn {
-        background: #0ea5e9; /* cyan-ish enter */
-      }
-      &.revealBtn {
-        background: #2e5cff; /* blue */
-      }
-      &.pointsBtn {
-        background: #22c55e; /* green */
-      }
-      &.zeroBtn {
-        background: #ef4444; /* red */
-      }
-
-      &:hover {
-        opacity: 0.9;
-      }
+      color: #fff;
     }
+    .revealBtn { background: #2979ff; }
+    .pointsBtn { background: #16a34a; }
+    .zeroBtn   { background: #d9534f; }
   }
 
-  /* Append to your existing FastMoneyPane.module.scss */
-
-.resetGroup {
-  margin-left: auto;
-}
-
-.resetBtn {
-  background: #b00020;
-  border: none;
-  color: #fff;
-  font-weight: 600;
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-.resetBtn:hover {
-  filter: brightness(1.05);
-}
-
-
   .bank {
-    background: #0d1a33;
-    border: 1px solid #1b2c54;
+    background: #242424;
+    border: 1px solid #333;
     border-radius: 8px;
-    padding: 0.6rem;
-    max-height: 220px;
-    overflow: auto;
+    padding: .75rem;
 
     .bankTitle {
-      font-weight: 800;
+      font-weight: 700;
       color: #a7c1ff;
-      margin-bottom: 0.4rem;
+      margin-bottom: .4rem;
     }
 
     ul {
@@ -190,11 +204,91 @@
       li {
         display: flex;
         justify-content: space-between;
-        border-bottom: 1px dashed #1b2c54;
-        padding: 0.3rem 0;
+        padding: .35rem 0;
+        border-bottom: 1px dashed #3a3a3a;
+      }
 
-        .bankText { color: #eaf0ff; }
-        .bankPts  { color: #ffda6a; font-weight: 800; }
+      .bankText { opacity: .95; }
+      .bankPts { font-weight: 800; color: #ffda6a; }
+    }
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+
+    .fmNav {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        background: #1a2a4a;
+        border: 1px solid #2d3e66;
+        color: #eef3ff;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+          background: #243b6c;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .playerToggle {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        background: #1a2a4a;
+        border: 1px solid #2d3e66;
+        color: #eef3ff;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+
+        &.active {
+          background: #2979ff;
+          border-color: #2979ff;
+          color: #fff;
+          box-shadow: 0 0 6px rgba(41, 121, 255, 0.6);
+        }
+
+        &:hover {
+          background: #243b6c;
+        }
+      }
+    }
+
+    // 🆕 Hide toggle button
+    .hideGroup {
+      .hideToggle {
+        background: #5a1a1a;
+        border: 1px solid #7a2c2c;
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+
+        &:hover {
+          background: #7a2c2c;
+          transform: scale(1.05);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
       }
     }
   }

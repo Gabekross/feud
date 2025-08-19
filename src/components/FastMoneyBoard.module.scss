@@ -251,3 +251,12 @@
     padding: 0.8rem 1.2rem;
   }
 }
+
+.answerRow .answerText {
+  font-size: 1.2rem;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase; /* 👈 force uppercase */
+}

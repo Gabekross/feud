@@ -20,23 +20,20 @@ type FMRow = Resp | null;
 export default function FastMoneyBoard() {
   const sessionId = useActiveSession();
   const [fmIndex, setFmIndex] = useState<number>(1);
-  const [qText, setQText] = useState<string>(''); // current question text
+  const [qText, setQText] = useState<string>('');     // current FM question text
   const [showQuestion, setShowQuestion] = useState(false);
 
-  // ✅ right
-type FMRow = Resp | null;
+  // hide P1 column content (triggered by operator’s toggle on FastMoneyPane)
+  const [hideP1, setHideP1] = useState<boolean>(false);
 
-const [p1Rows, setP1Rows] = useState<FMRow[]>(Array(6).fill(null)); // indices 0..5 (ignore 0)
-const [p2Rows, setP2Rows] = useState<FMRow[]>(Array(6).fill(null));
+  // keep 1..5 (index 0 unused)
+  const [p1Rows, setP1Rows] = useState<FMRow[]>([null, null, null, null, null, null]);
+  const [p2Rows, setP2Rows] = useState<FMRow[]>([null, null, null, null, null, null]);
 
-
-
-
-  // Load current FM info + all 5 responses
   const loadAll = async () => {
     if (!sessionId) return;
 
-    // current FM row for header/question text
+    // which FM row is current?
     const { data: cur } = await supabase
       .from('session_questions')
       .select('question_id, fm_index, fm_reveal_question')
@@ -60,23 +57,31 @@ const [p2Rows, setP2Rows] = useState<FMRow[]>(Array(6).fill(null));
       setQText('');
     }
 
-    // all responses for both players
+    // initial hide flag + (optional) other fm fields
+    const { data: sess } = await supabase
+      .from('game_sessions')
+      .select('fm_hide_p1')
+      .eq('id', sessionId)
+      .single();
+    setHideP1(!!sess?.fm_hide_p1);
+
+    // all FM responses for both players in this session
     const { data: all } = await supabase
       .from('fast_money_responses')
       .select('*')
       .eq('session_id', sessionId);
 
-    // build 1..5 arrays
     const p1: FMRow[] = [null, null, null, null, null, null];
     const p2: FMRow[] = [null, null, null, null, null, null];
+
     (all ?? []).forEach((r) => {
-      const qi = (r as Resp).question_index;
-      const pn = (r as Resp).player_number;
-      if (qi >= 1 && qi <= 5) {
-        if (pn === 1) p1[qi] = r as Resp;
-        else if (pn === 2) p2[qi] = r as Resp;
+      const row = r as Resp;
+      if (row.question_index >= 1 && row.question_index <= 5) {
+        if (row.player_number === 1) p1[row.question_index] = row;
+        if (row.player_number === 2) p2[row.question_index] = row;
       }
     });
+
     setP1Rows(p1);
     setP2Rows(p2);
   };
@@ -86,79 +91,73 @@ const [p2Rows, setP2Rows] = useState<FMRow[]>(Array(6).fill(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // Realtime subscriptions
-useEffect(() => {
-  if (!sessionId) return;
+  // realtime: fm row switches + response updates + hideP1 flag
+  useEffect(() => {
+    if (!sessionId) return;
 
-  const ch = supabase
-    .channel(`fm_board_${sessionId}`)
+    const ch = supabase
+      .channel(`fm_board_${sessionId}`)
+      // When current FM row flips or reveal_question toggles
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
+        async (payload: any) => {
+          if (payload.new?.round_number === 6 && payload.new?.is_current) {
+            const idx = payload.new.fm_index ?? 1;
+            setFmIndex(idx);
+            setShowQuestion(!!payload.new.fm_reveal_question);
 
-    // When current FM row flips or reveal_question toggles
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'session_questions',
-        filter: `session_id=eq.${sessionId}`,
-      },
-      async (payload) => {
-        if (payload.new.round_number === 6 && payload.new.is_current) {
-          const idx = payload.new.fm_index ?? 1;
-          setFmIndex(idx);
-          setShowQuestion(!!payload.new.fm_reveal_question);
-
-          if (payload.new.question_id) {
-            const { data: q } = await supabase
-              .from('questions')
-              .select('question_text')
-              .eq('id', payload.new.question_id)
-              .single();
-            setQText(q?.question_text ?? '');
-          } else {
-            setQText('');
+            if (payload.new.question_id) {
+              const { data: q } = await supabase
+                .from('questions')
+                .select('question_text')
+                .eq('id', payload.new.question_id)
+                .single();
+              setQText(q?.question_text ?? '');
+            } else {
+              setQText('');
+            }
           }
         }
-      }
-    )
+      )
+      // Any INSERT/UPDATE for FM responses in this session
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'fast_money_responses', filter: `session_id=eq.${sessionId}` },
+        (payload: any) => {
+          if (payload.eventType === 'DELETE') return;
+          const row = payload.new as Resp | undefined;
+          if (!row || row.question_index < 1 || row.question_index > 5) return;
 
-    // Any INSERT/UPDATE for FM responses in this session
-    .on(
-      'postgres_changes',
-      {
-        event: '*', // INSERT/UPDATE/DELETE
-        schema: 'public',
-        table: 'fast_money_responses',
-        filter: `session_id=eq.${sessionId}`,
-      },
-      (payload) => {
-        if (payload.eventType === 'DELETE') return; // ignore deletes
-
-        const row = payload.new as Resp | undefined;
-        if (!row || row.question_index < 1 || row.question_index > 5) return;
-
-        if (row.player_number === 1) {
-          setP1Rows((prev) => {
-            const next = [...prev];
-            next[row.question_index] = row;
-            return next;
-          });
-        } else if (row.player_number === 2) {
-          setP2Rows((prev) => {
-            const next = [...prev];
-            next[row.question_index] = row;
-            return next;
-          });
+          if (row.player_number === 1) {
+            setP1Rows((prev) => {
+              const next = [...prev];
+              next[row.question_index] = row;
+              return next;
+            });
+          } else if (row.player_number === 2) {
+            setP2Rows((prev) => {
+              const next = [...prev];
+              next[row.question_index] = row;
+              return next;
+            });
+          }
         }
-      }
-    )
-    .subscribe();
+      )
+      // Hide P1 toggle
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
+        (payload: any) => {
+          if ('fm_hide_p1' in payload.new) setHideP1(!!payload.new.fm_hide_p1);
+        }
+      )
+      .subscribe();
 
-  return () => {
-    void supabase.removeChannel(ch);
-  };
-}, [sessionId]);
-
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [sessionId]);
 
   const total = useMemo(() => {
     const sum = (arr: FMRow[]) =>
@@ -170,26 +169,22 @@ useEffect(() => {
     <div className={styles.fmBoard}>
       <div className={styles.header}>
         <div className={styles.badge}>FAST MONEY</div>
-        <div className={styles.question}>
-          {showQuestion ? qText : '••••••••••••••••••'}
-        </div>
+        <div className={styles.question}>{showQuestion ? qText : '••••••••••••••••••'}</div>
         <div className={styles.qIndex}>Q{fmIndex}/5</div>
       </div>
 
       <div className={styles.grid}>
         <div className={styles.col}>
           <div className={styles.colTitle}>Player 1</div>
-          {[1,2,3,4,5].map((i) => (
-            <div
-              key={`p1-${i}`}
-              className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}
-            >
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={`p1-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
               <div className={styles.slot}>#{i}</div>
               <div className={styles.answerText}>
-                {p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
+                {/* Hide Player 1 content if fm_hide_p1 is true */}
+                {hideP1 ? '' : (p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : '')}
               </div>
               <div className={styles.points}>
-                {p1Rows[i]?.reveal_points ? (p1Rows[i]?.points_awarded ?? 0) : ''}
+                {hideP1 ? '' : (p1Rows[i]?.reveal_points ? (p1Rows[i]?.points_awarded ?? 0) : '')}
               </div>
             </div>
           ))}
@@ -197,11 +192,8 @@ useEffect(() => {
 
         <div className={styles.col}>
           <div className={styles.colTitle}>Player 2</div>
-          {[1,2,3,4,5].map((i) => (
-            <div
-              key={`p2-${i}`}
-              className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}
-            >
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={`p2-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
               <div className={styles.slot}>#{i}</div>
               <div className={styles.answerText}>
                 {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}

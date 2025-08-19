@@ -141,3 +141,59 @@
 .fmTimer :global(.timerCard) {
   transform: translateZ(0);  /* crisp text on some projectors */
 }
+
+
+.fmTimerTopRight {
+  position: fixed;
+  top: env(safe-area-inset-top, 12px);
+  right: env(safe-area-inset-right, 16px);
+  z-index: 9999;
+  font-weight: 800;
+  font-size: clamp(24px, 3.5vw, 56px);
+  line-height: 1;
+  color: #ffda6a;
+  text-shadow: 0 2px 8px rgba(0,0,0,.45);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Optional: if CountdownTimer renders a card you want to shrink nicely */
+.fmTimerTopRight :global(.timerCard) {
+  transform: translateZ(0);  /* crisp text on some projectors */
+}
+
+.fmTimerTopRight {
+  position: fixed;
+  top: clamp(8px, 1.5vh, 18px);
+  right: clamp(8px, 1.5vw, 18px);
+  z-index: 1500;
+}
+
+.timerSvg {
+  width: clamp(70px, 10vw, 120px);
+  height: auto;
+}
+
+.bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.15);
+  stroke-width: 8;
+}
+
+.progress {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s linear, stroke 0.3s ease;
+}
+
+/* 👇 Stays white regardless of ring color */
+.time {
+  fill: #fff;                  /* keep digits white */
+  font-weight: 800;
+  font-size: 28px;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,0.25);    /* subtle edge for readability */
+  stroke-width: 2px;
+}
