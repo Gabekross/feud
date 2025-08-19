@@ -1,45 +1,143 @@
+// .mainScreen {
+//   background-color: var(--bg-dark);
+//   color: var(--text-light);
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   padding: 2rem;
+// //  min-height: 100vh;
+//   height: 100vh; /* full viewport height */
+//   overflow: hidden; /* no scroll */
+//   cursor: none;
+// }
+// .strikeModal {
+//   position: fixed;
+//   top: 50%;
+//   left: 50%;
+//   transform: translate(-50%, -50%);
+//   font-size: 15vw;
+//   color: red;
+//   background: rgba(0, 0, 0, 0.8);
+//   padding: 2rem 4rem;
+//   border-radius: 20px;
+//   z-index: 1000;
+//   text-align: center;
+//   animation: fadeInOut 1.5s ease-in-out;
+// }
+
+// @keyframes fadeInOut {
+//   0% {
+//     opacity: 0;
+//     transform: translate(-50%, -50%) scale(0.6);
+//   }
+//   25% {
+//     opacity: 1;
+//     transform: translate(-50%, -50%) scale(1.1);
+//   }
+//   75% {
+//     opacity: 1;
+//     transform: translate(-50%, -50%) scale(1);
+//   }
+//   100% {
+//     opacity: 0;
+//     transform: translate(-50%, -50%) scale(0.5);
+//   }
+// }
+
+
+/* 1) Lock the page to the viewport so nothing scrolls */
 .mainScreen {
+  position: fixed;      /* <-- key change */
+  inset: 0;             /* top:0 right:0 bottom:0 left:0 */
   background-color: var(--bg-dark);
   color: var(--text-light);
+
+  /* Use dynamic viewport units for mobile/browser chrome, with fallbacks */
+  height: 100dvh;
+  height: 100svh;
+  height: 100vh;
+
+  width: 100vw;
+  overflow: clip;       /* stricter than hidden; blocks scroll creation */
+
+  display: grid;
+  place-items: center;
+
+  /* Optional: hide cursor in kiosk mode */
+  cursor: none;
+
+  /* Overscan-safe padding for TVs/projectors */
+  padding: max(1.5vh, 1.5vw);
+  padding-top: max(1.5vh, env(safe-area-inset-top));
+  padding-right: max(1.5vw, env(safe-area-inset-right));
+  padding-bottom: max(1.5vh, env(safe-area-inset-bottom));
+  padding-left: max(1.5vw, env(safe-area-inset-left));
+}
+
+/* 2) Scaled 16:9 stage that never overflows the viewport */
+.stage {
+  aspect-ratio: 16 / 9;
+  /* Fit inside the padded viewport */
+  max-width: 100%;
+  max-height: 100%;
+  width: min(100%, calc(100vh * (16 / 9)));
+  height: auto; /* aspect-ratio manages height */
+
+  /* If height becomes the limiting factor, ensure it also fits */
+  @supports (height: 1svh) {
+    width: min(100%, calc(100svh * (16 / 9)));
+  }
+
+  /* Internal layout */
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
-//  min-height: 100vh;
-  height: 100vh; /* full viewport height */
-  overflow: hidden; /* no scroll */
-  cursor: none;
-}
-.strikeModal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 15vw;
-  color: red;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 2rem 4rem;
-  border-radius: 20px;
-  z-index: 1000;
-  text-align: center;
-  animation: fadeInOut 1.5s ease-in-out;
+  padding: clamp(8px, 2vmin, 24px);
+  border-radius: clamp(6px, 1vmin, 12px);
 }
 
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.6);
+/* Typographic helpers (optional) */
+.huge { font-size: clamp(24px, 4.5vmin, 72px); line-height: 1.1; }
+.big  { font-size: clamp(18px, 3.2vmin, 48px); line-height: 1.2; }
+.mid  { font-size: clamp(14px, 2.2vmin, 32px); }
+
+/* Strike modal stays fixed and won’t cause scroll */
+.strikeModal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+
+  &::before {
+    content: "❌";
+    font-size: clamp(64px, 14vmin, 220px);
+    color: #ff3b3b;
+    text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    transform: scale(0.8);
+    animation: strikePop 1.2s ease-in-out forwards;
   }
-  25% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-  75% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
+}
+
+@keyframes strikePop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  25%  { opacity: 1; transform: scale(1.1); }
+  75%  { opacity: 1; transform: scale(1.0); }
+  100% { opacity: 0; transform: scale(0.7); }
+}
+
+/* Top-right timer for Fast Money */
+.fmTimer {
+  position: fixed;
+  top: clamp(8px, 2vmin, 18px);
+  right: clamp(8px, 2vmin, 18px);
+  z-index: 50;               /* above board, below strike modal */
+  pointer-events: none;      /* timer display shouldn’t capture clicks */
+  width: min(24vw, 280px);   /* responsive cap */
+}
+
+/* Optional: if CountdownTimer renders a card you want to shrink nicely */
+.fmTimer :global(.timerCard) {
+  transform: translateZ(0);  /* crisp text on some projectors */
 }

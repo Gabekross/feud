@@ -16,3 +16,22 @@
   background-color: var(--accent-color);
   color: #000;
 }
+
+/* TeamControlIndicator.module.scss */
+.controlBar {
+  display: flex;
+  gap: 2rem;
+  font-size: clamp(16px, 2.2vmin, 28px);
+  font-weight: 600;
+}
+
+.controlBar span {
+  opacity: 0.6;
+  transition: opacity .2s, transform .2s, text-shadow .2s;
+}
+
+.active {
+  opacity: 1;
+  transform: scale(1.05);
+  text-shadow: 0 0 14px rgba(255, 215, 0, 0.6);
+}
