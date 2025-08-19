@@ -104,80 +104,70 @@ export default function RightPane() {
   };
 
   // Award revealed answer points to active team (non-FM only), and auto-advance round
-  const finalizeRound = async () => {
-    if (!sessionId) return;
+// ── Finalize round: sum revealed answers for the CURRENT question, award to active team.
+// Does NOT switch rounds, does NOT change is_current, does NOT reset anything else.
+const finalizeRound = async () => {
+  if (!sessionId || !activeTeam) return;
 
-    if (round === 'fast_money') {
-      alert('⚠️ Finalize Round is disabled in Fast Money.');
-      return;
-    }
+  // 1) find current question
+  const { data: current, error: e1 } = await supabase
+    .from('session_questions')
+    .select('question_id')
+    .eq('session_id', sessionId)
+    .eq('is_current', true)
+    .single();
 
-    const { data: current, error: e1 } = await supabase
-      .from('session_questions')
-      .select('id, question_id, round_number')
-      .eq('session_id', sessionId)
-      .eq('is_current', true)
-      .single();
+  if (e1 || !current?.question_id) {
+    alert('No current question to finalize.');
+    return;
+  }
 
-    if (e1 || !current?.question_id) {
-      alert('No current question to finalize.');
-      return;
-    }
+  // 2) sum revealed answers' points
+  const { data: revealed, error: e2 } = await supabase
+    .from('answers')
+    .select('points')
+    .eq('question_id', current.question_id)
+    .eq('revealed', true);
 
-    // sum revealed
-    const { data: revealed, error: e2 } = await supabase
-      .from('answers')
-      .select('points')
-      .eq('question_id', current.question_id)
-      .eq('revealed', true);
+  if (e2) {
+    console.error('Could not fetch revealed answers:', e2.message);
+    alert('Could not calculate round points.');
+    return;
+  }
 
-    if (e2) {
-      console.error('Fetch revealed answers failed:', e2.message);
-      alert('Could not calculate round points.');
-      return;
-    }
-    const roundPoints = (revealed ?? []).reduce((s, r) => s + (r.points ?? 0), 0);
+  const roundPoints = (revealed ?? []).reduce((sum, r) => sum + (r?.points ?? 0), 0);
 
-    // add to active team
-    const scoreCol = activeTeam === 1 ? 'team1_score' : 'team2_score';
-    const { data: sRow } = await supabase
-      .from('game_sessions')
-      .select(scoreCol)
-      .eq('id', sessionId)
-      .single();
+  // 3) read freshest team score, then add
+  const column = activeTeam === 1 ? 'team1_score' : 'team2_score';
+  const { data: sRow, error: e3 } = await supabase
+    .from('game_sessions')
+    .select(column)
+    .eq('id', sessionId)
+    .single();
 
-    const newScore = (sRow as any)?.[scoreCol] + roundPoints;
+  if (e3) {
+    console.error('Could not read current score:', e3.message);
+    return;
+  }
 
-    const { error: e3 } = await supabase
-      .from('game_sessions')
-      .update({ [scoreCol]: newScore })
-      .eq('id', sessionId);
-    if (e3) { console.error(e3.message); return; }
+  const currentScore = (sRow as any)?.[column] ?? 0;
+  const newScore = currentScore + roundPoints;
 
-    alert(`🏁 ${activeTeam === 1 ? team1Name : team2Name} awarded ${roundPoints} pts.`);
+  const { error: e4 } = await supabase
+    .from('game_sessions')
+    .update({ [column]: newScore }) // ← score only
+    .eq('id', sessionId);
 
-    // (Optional) auto-advance to the next round
-    const nextRound = current.round_number + 1;
-    const { data: nextRow } = await supabase
-      .from('session_questions')
-      .select('id')
-      .eq('session_id', sessionId)
-      .eq('round_number', nextRound)
-      .single();
+  if (e4) {
+    console.error('Score update failed:', e4.message);
+    alert('Failed to finalize round.');
+    return;
+  }
 
-    if (nextRow?.id) {
-      await supabase.from('session_questions').update({ is_current: false }).eq('id', current.id);
-      await supabase.from('session_questions').update({ is_current: true }).eq('id', nextRow.id);
+  // ⚠️ No round switching here.
+  alert(`🏁 ${activeTeam === 1 ? team1Name : team2Name} awarded ${roundPoints} pts.`);
+};
 
-      // update session.round label for UI
-      const roundLabel: Record<number, string> = {
-        1: 'round1', 2: 'round2', 3: 'round3', 4: 'round4', 5: 'sudden_death', 6: 'fast_money',
-      };
-      await supabase.from('game_sessions')
-        .update({ round: roundLabel[nextRound] ?? 'round1', strikes: 0 })
-        .eq('id', sessionId);
-    }
-  };
 
   return (
     <div className={styles.rightPane}>
