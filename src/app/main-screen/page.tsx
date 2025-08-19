@@ -175,19 +175,21 @@ export default function MainScreenPage() {
 
       <TeamControlIndicator activeTeam={activeTeam ?? 1} />
 
-      {isFastMoney ? (
-        <>
-          {/* keep your FM UI exactly as-is */}
-          <FastMoneyBoard />
-          <CountdownTimer seconds={20} />
-        </>
-      ) : (
-        <>
-          <QuestionDisplay question={question} />
-          <AnswerBoxes answers={answers} />
-          <StrikeDisplay count={strikes} />
-        </>
-      )}
+{isFastMoney ? (
+  <>
+    <div className={styles.fmTimer}>
+      <CountdownTimer seconds={20} />
+    </div>
+    <FastMoneyBoard />
+  </>
+) : (
+  <>
+    <QuestionDisplay question={question} />
+    <AnswerBoxes answers={answers} />
+    <StrikeDisplay count={strikes} />
+  </>
+)}
+
 
       {showStrikeModal && <div className={styles.strikeModal}>❌</div>}
     </div>
