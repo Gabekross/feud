@@ -1,0 +1,32 @@
+.fullscreen {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 2000;
+  color: greenyellow;
+  background: transparent;
+  border: 2px solid greenyellow;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 1rem;
+  color: #a7c1ff;      /* light blue text */
+  border: 1px solid #2e5cff; 
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.5s ease;
+  transition: opacity 0.5s ease, background 0.3s ease, color 0.3s ease;
+
+    &:hover {
+    background: #2e5cff;
+    color: #fff;
+  }
+
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
