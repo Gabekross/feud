@@ -168,6 +168,44 @@ export default function LeftPane() {
     alert(`✅ Switched to ${round.replace('_',' ')}${targetRound===6 ? ` (Q${fmIndex})` : ''}`);
   };
 
+  // Reset entire session
+const resetGameSession = async () => {
+  if (!sessionId) return;
+  const sure = window.confirm('⚠️ Reset entire game session? This will clear scores, answers, and rounds.');
+  if (!sure) return;
+
+  // 1. Reset game_sessions fields
+  await supabase.from('game_sessions').update({
+    team1_score: 0,
+    team2_score: 0,
+    strikes: 0,
+    active_team: 1,
+    round: 'round1',
+    fm_timer_running: false,
+    fm_timer_started_at: null,
+    fm_timer_duration: 20
+  }).eq('id', sessionId);
+
+  // 2. Reset all answers reveal flags
+  await supabase.from('answers').update({ revealed: false });
+
+  // 3. Reset all fast money responses
+  await supabase.from('fast_money_responses').update({
+    answer_text: '',
+    matched_answer_id: null,
+    points_awarded: 0,
+    reveal_answer: false,
+    reveal_points: false
+  }).eq('session_id', sessionId);
+
+  // 4. Reset session_questions (set FM hidden, first round current)
+  await supabase.from('session_questions').update({ is_current: false, fm_reveal_question: false }).eq('session_id', sessionId);
+  await supabase.from('session_questions').update({ is_current: true }).eq('session_id', sessionId).eq('round_number', 1);
+
+  alert('✅ Game session reset!');
+};
+
+
   return (
     <div className={styles.leftPane}>
       <h2>🎛️ Game Controls</h2>
@@ -231,6 +269,10 @@ export default function LeftPane() {
 
       <hr />
       <button className={styles.reset} onClick={handleResetRound}>🔁 Reset Round</button>
+      <button className={styles.resetGameBtn} onClick={resetGameSession}>
+  🔄 Reset Game Session
+</button>
+
     </div>
   );
 }
