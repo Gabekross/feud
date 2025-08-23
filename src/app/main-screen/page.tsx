@@ -10,6 +10,7 @@ import TeamScore from '@/components/TeamScore';
 import TeamControlIndicator from '@/components/TeamControlIndicator';
 import StrikeDisplay from '@/components/StrikeDisplay';
 import FastMoneyBoard from '@/components/FastMoneyBoard';
+import FullscreenToggle from '@/components/FullscreenToggle';
 import styles from './MainScreen.module.scss';
 
 export default function MainScreenPage() {
@@ -227,9 +228,29 @@ export default function MainScreenPage() {
       void supabase.removeChannel(channel);
     };
   }, [sessionId]);
+  useEffect(() => {
+  const tryFs = async () => {
+    if (!document.fullscreenElement) {
+      try { await document.documentElement.requestFullscreen(); } catch {}
+    }
+    window.removeEventListener('click', tryFs);
+    window.removeEventListener('keydown', tryFs);
+    window.removeEventListener('touchstart', tryFs);
+  };
+  window.addEventListener('click', tryFs, { once: true });
+  window.addEventListener('keydown', tryFs, { once: true });
+  window.addEventListener('touchstart', tryFs, { once: true });
+  return () => {
+    window.removeEventListener('click', tryFs);
+    window.removeEventListener('keydown', tryFs);
+    window.removeEventListener('touchstart', tryFs);
+  };
+}, []);
+
 
   return (
     <div className={styles.mainScreen}>
+      <FullscreenToggle/>
       <TeamScore
         team1Name={team1Name}
         team2Name={team2Name}
