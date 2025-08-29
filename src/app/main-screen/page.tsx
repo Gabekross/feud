@@ -28,6 +28,9 @@ export default function MainScreenPage() {
   const [showStrikeModal, setShowStrikeModal] = useState(false);
   const [isFastMoney, setIsFastMoney] = useState(false);
 
+  // 🆕 normal-round question reveal flag (controls masking on main screen)
+  const [revealQ, setRevealQ] = useState<boolean>(false);
+
   // Fast Money timer (synced to DB)
   const [fmRunning, setFmRunning] = useState(false);
   const [fmStartedAt, setFmStartedAt] = useState<string | null>(null);
@@ -38,12 +41,11 @@ export default function MainScreenPage() {
   const prevStrikesRef = useRef(0);
 
   const getTimerColor = () => {
-  const ratio = fmRemain / fmDuration;
-  if (ratio > 0.5) return "#4caf50"; // green
-  if (ratio > 0.2) return "#ffeb3b"; // yellow
-  return "#f44336"; // red
-};
-
+    const ratio = fmRemain / Math.max(1, fmDuration);
+    if (ratio > 0.5) return '#4caf50'; // green
+    if (ratio > 0.2) return '#ffeb3b'; // yellow
+    return '#f44336'; // red
+  };
 
   const computeRemain = () => {
     if (fmRunning && fmStartedAt) {
@@ -68,7 +70,9 @@ export default function MainScreenPage() {
       .eq('question_id', qid)
       .order('order', { ascending: true });
 
-    setAnswers((a ?? []).map((x) => ({ text: x.answer_text, points: x.points, revealed: x.revealed })));
+    setAnswers(
+      (a ?? []).map((x) => ({ text: x.answer_text, points: x.points, revealed: x.revealed }))
+    );
   };
 
   const loadInitial = async () => {
@@ -110,11 +114,12 @@ export default function MainScreenPage() {
     if (!session?.round || session.round !== 'fast_money') {
       const { data: sessionQ } = await supabase
         .from('session_questions')
-        .select('question_id')
+        .select('question_id, reveal_question') // 🆕 also pull reveal flag
         .eq('session_id', sessionId)
         .eq('is_current', true)
         .single();
 
+      setRevealQ(!!sessionQ?.reveal_question); // 🆕 set mask state
       if (sessionQ?.question_id) await loadQAByQuestionId(sessionQ.question_id);
     }
   };
@@ -202,12 +207,11 @@ export default function MainScreenPage() {
       .subscribe();
 
     return () => {
-      // don't return the Promise
       void supabase.removeChannel(sub);
     };
   }, [sessionId]);
 
-  // normal-round: react to is_current flipping
+  // normal-round: react to is_current flipping — also track reveal_question
   useEffect(() => {
     if (!sessionId) return;
 
@@ -218,6 +222,7 @@ export default function MainScreenPage() {
         { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
         async (payload: any) => {
           if (payload.new?.is_current) {
+            setRevealQ(!!payload.new.reveal_question); // 🆕 update mask flag
             await loadQAByQuestionId(payload.new.question_id as string);
           }
         }
@@ -228,29 +233,31 @@ export default function MainScreenPage() {
       void supabase.removeChannel(channel);
     };
   }, [sessionId]);
-  useEffect(() => {
-  const tryFs = async () => {
-    if (!document.fullscreenElement) {
-      try { await document.documentElement.requestFullscreen(); } catch {}
-    }
-    window.removeEventListener('click', tryFs);
-    window.removeEventListener('keydown', tryFs);
-    window.removeEventListener('touchstart', tryFs);
-  };
-  window.addEventListener('click', tryFs, { once: true });
-  window.addEventListener('keydown', tryFs, { once: true });
-  window.addEventListener('touchstart', tryFs, { once: true });
-  return () => {
-    window.removeEventListener('click', tryFs);
-    window.removeEventListener('keydown', tryFs);
-    window.removeEventListener('touchstart', tryFs);
-  };
-}, []);
 
+  // Try fullscreen once on user gesture
+  useEffect(() => {
+    const tryFs = async () => {
+      if (!document.fullscreenElement) {
+        try { await document.documentElement.requestFullscreen(); } catch {}
+      }
+      window.removeEventListener('click', tryFs);
+      window.removeEventListener('keydown', tryFs);
+      window.removeEventListener('touchstart', tryFs);
+    };
+    window.addEventListener('click', tryFs, { once: true });
+    window.addEventListener('keydown', tryFs, { once: true });
+    window.addEventListener('touchstart', tryFs, { once: true });
+    return () => {
+      window.removeEventListener('click', tryFs);
+      window.removeEventListener('keydown', tryFs);
+      window.removeEventListener('touchstart', tryFs);
+    };
+  }, []);
 
   return (
     <div className={styles.mainScreen}>
-      <FullscreenToggle/>
+      <FullscreenToggle />
+
       <TeamScore
         team1Name={team1Name}
         team2Name={team2Name}
@@ -263,33 +270,32 @@ export default function MainScreenPage() {
       {isFastMoney ? (
         <>
           {/* Top-right synced timer (styled via .fmTimerTopRight) */}
-<div className={styles.fmTimerTopRight}>
-  <svg viewBox="0 0 100 100" className={styles.timerSvg}>
-    <circle className={styles.bg} cx="50" cy="50" r="45" />
-    <circle
-      className={styles.progress}
-      cx="50"
-      cy="50"
-      r="45"
-      style={{
-        strokeDasharray: 2 * Math.PI * 45,
-        strokeDashoffset: ((fmRemain / fmDuration) * 2 * Math.PI * 45),
-        stroke: getTimerColor(), // dynamic ring color
-      }}
-    />
-    <text x="50" y="54" textAnchor="middle" className={styles.time}>
-      {fmRemain}
-    </text>
-  </svg>
-</div>
-
-
+          <div className={styles.fmTimerTopRight}>
+            <svg viewBox="0 0 100 100" className={styles.timerSvg}>
+              <circle className={styles.bg} cx="50" cy="50" r="45" />
+              <circle
+                className={styles.progress}
+                cx="50"
+                cy="50"
+                r="45"
+                style={{
+                  strokeDasharray: 2 * Math.PI * 45,
+                  strokeDashoffset: ((fmRemain / Math.max(1, fmDuration)) * 2 * Math.PI * 45),
+                  stroke: getTimerColor(),
+                }}
+              />
+              <text x="50" y="54" textAnchor="middle" className={styles.time}>
+                {fmRemain}
+              </text>
+            </svg>
+          </div>
 
           <FastMoneyBoard />
         </>
       ) : (
         <>
-          <QuestionDisplay question={question} />
+          {/* 🆕 mask question text until revealQ becomes true */}
+          <QuestionDisplay question={revealQ ? question : '•••••••••••••••••'} />
           <AnswerBoxes answers={answers} />
           <StrikeDisplay count={strikes} />
         </>

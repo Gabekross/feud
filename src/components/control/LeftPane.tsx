@@ -19,6 +19,9 @@ export default function LeftPane() {
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
 
+  // 🆕 reveal flag for normal rounds (controls main-screen masking)
+  const [revealQ, setRevealQ] = useState<boolean>(false);
+
   const roundNumberMap: Record<typeof round, number> = {
     round1: 1, round2: 2, round3: 3, round4: 4, sudden_death: 5, fast_money: 6,
   };
@@ -26,6 +29,7 @@ export default function LeftPane() {
     1: 'round1', 2: 'round2', 3: 'round3', 4: 'round4', 5: 'sudden_death', 6: 'fast_money',
   };
 
+  // Load active session
   useEffect(() => {
     const loadSession = async () => {
       const { data, error } = await supabase
@@ -45,13 +49,13 @@ export default function LeftPane() {
     loadSession();
   }, []);
 
-  // read current round
+  // Read current round + reveal flag
   useEffect(() => {
     if (!sessionId) return;
     const getCurrent = async () => {
       const { data, error } = await supabase
         .from('session_questions')
-        .select('round_number, fm_index')
+        .select('round_number, fm_index, reveal_question')
         .eq('session_id', sessionId)
         .eq('is_current', true)
         .single();
@@ -60,6 +64,8 @@ export default function LeftPane() {
         const r = numberToRound[data.round_number];
         setRound(r);
         if (r === 'fast_money' && data.fm_index) setFmIndex(data.fm_index);
+        // Only track reveal flag for normal rounds
+        setRevealQ(!!data.reveal_question && r !== 'fast_money');
       }
     };
     getCurrent();
@@ -101,7 +107,24 @@ export default function LeftPane() {
     alert('🔁 Round has been reset.');
   };
 
-  // ✅ SWITCH ROUND (handles Fast Money fmIndex)
+  // 🆕 Toggle reveal for current normal-round question
+  const setRevealForCurrentNormal = async (show: boolean) => {
+    if (!sessionId) return;
+    // Only affect rounds 1–5
+    const { error } = await supabase
+      .from('session_questions')
+      .update({ reveal_question: show })
+      .eq('session_id', sessionId)
+      .eq('is_current', true)
+      .neq('round_number', 6);
+    if (error) {
+      console.error('Reveal toggle failed:', error.message);
+      return;
+    }
+    setRevealQ(show);
+  };
+
+  // ✅ SWITCH ROUND (handles normal reveal & Fast Money fm_reveal_question default)
   const handleSwitchRound = async () => {
     if (!sessionId) return;
 
@@ -124,7 +147,7 @@ export default function LeftPane() {
       const idx = fmIndex || 1;
       const { data: fmRow, error: eFind } = await supabase
         .from('session_questions')
-        .select('id, question_id')
+        .select('id')
         .eq('session_id', sessionId)
         .eq('round_number', 6)
         .eq('fm_index', idx)
@@ -136,10 +159,10 @@ export default function LeftPane() {
       // Normal round: one row per round_number
       const { data: row, error: eFind } = await supabase
         .from('session_questions')
-        .select('id, question_id')
+        .select('id')
         .eq('session_id', sessionId)
         .eq('round_number', targetRound)
-        .maybeSingle(); // use maybeSingle in case of data quirks
+        .maybeSingle();
       if (eFind) { console.error('Find round row failed:', eFind.message); alert('❌ Failed to switch round (find).'); return; }
       if (!row?.id) { alert('❌ No session question for that round.'); return; }
       targetRowId = row.id;
@@ -154,7 +177,16 @@ export default function LeftPane() {
       .single();
     if (eSet) { console.error('Set new current round failed:', eSet.message); alert('❌ Failed to switch round (set).'); return; }
 
-    // 4) update session.round label (useful for UI) + optionally reset
+    // 4) For normal rounds: hide question by default; For FM: show/hide depending on fmIndex
+    if (targetRound !== 6) {
+      await supabase.from('session_questions').update({ reveal_question: false }).eq('id', targetRowId);
+      setRevealQ(false);
+    } else {
+      const fmShouldReveal = fmIndex !== 1; // only FM #1 hidden by default
+      await supabase.from('session_questions').update({ fm_reveal_question: fmShouldReveal }).eq('id', targetRowId);
+    }
+
+    // 5) update session.round label + optionally reset reveals/strikes for the new question
     const roundLabel: Record<number, string> = { 1:'round1',2:'round2',3:'round3',4:'round4',5:'sudden_death',6:'fast_money' };
     await supabase.from('game_sessions').update({ round: roundLabel[targetRound] }).eq('id', sessionId);
 
@@ -169,42 +201,55 @@ export default function LeftPane() {
   };
 
   // Reset entire session
-const resetGameSession = async () => {
-  if (!sessionId) return;
-  const sure = window.confirm('⚠️ Reset entire game session? This will clear scores, answers, and rounds.');
-  if (!sure) return;
+  const resetGameSession = async () => {
+    if (!sessionId) return;
+    const sure = window.confirm('⚠️ Reset entire game session? This will clear scores, answers, and rounds.');
+    if (!sure) return;
 
-  // 1. Reset game_sessions fields
-  await supabase.from('game_sessions').update({
-    team1_score: 0,
-    team2_score: 0,
-    strikes: 0,
-    active_team: 1,
-    round: 'round1',
-    fm_timer_running: false,
-    fm_timer_started_at: null,
-    fm_timer_duration: 20
-  }).eq('id', sessionId);
+    // 1. Reset game_sessions fields
+    await supabase.from('game_sessions').update({
+      team1_score: 0,
+      team2_score: 0,
+      strikes: 0,
+      active_team: 1,
+      round: 'round1',
+      fm_timer_running: false,
+      fm_timer_started_at: null,
+      fm_timer_duration: 20
+    }).eq('id', sessionId);
 
-  // 2. Reset all answers reveal flags
-  await supabase.from('answers').update({ revealed: false });
+    // 2. Reset all answers reveal flags
+    await supabase.from('answers').update({ revealed: false });
 
-  // 3. Reset all fast money responses
-  await supabase.from('fast_money_responses').update({
-    answer_text: '',
-    matched_answer_id: null,
-    points_awarded: 0,
-    reveal_answer: false,
-    reveal_points: false
-  }).eq('session_id', sessionId);
+    // 3. Reset all fast money responses
+    await supabase.from('fast_money_responses').update({
+      answer_text: '',
+      matched_answer_id: null,
+      points_awarded: 0,
+      reveal_answer: false,
+      reveal_points: false
+    }).eq('session_id', sessionId);
 
-  // 4. Reset session_questions (set FM hidden, first round current)
-  await supabase.from('session_questions').update({ is_current: false, fm_reveal_question: false }).eq('session_id', sessionId);
-  await supabase.from('session_questions').update({ is_current: true }).eq('session_id', sessionId).eq('round_number', 1);
+    // 4. Reset session_questions:
+    //    - all not current
+    //    - FM questions hidden
+    await supabase
+      .from('session_questions')
+      .update({ is_current: false, fm_reveal_question: false, reveal_question: false })
+      .eq('session_id', sessionId);
 
-  alert('✅ Game session reset!');
-};
+    //    - Round 1 current & hidden by default
+    await supabase
+      .from('session_questions')
+      .update({ is_current: true, reveal_question: false })
+      .eq('session_id', sessionId)
+      .eq('round_number', 1);
 
+    setRound('round1');
+    setFmIndex(1);
+    setRevealQ(false);
+    alert('✅ Game session reset!');
+  };
 
   return (
     <div className={styles.leftPane}>
@@ -220,12 +265,20 @@ const resetGameSession = async () => {
         <option value="fast_money">Fast Money</option>
       </select>
 
-      {round === 'fast_money' && (
+      {round === 'fast_money' ? (
         <>
           <label>Fast Money Question #</label>
           <select value={fmIndex} onChange={(e) => setFmIndex(Number(e.target.value))}>
             {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
+        </>
+      ) : (
+        <>
+          {/* 🆕 normal-round reveal controls */}
+          <div className={styles.revealControls}>
+            <button onClick={() => setRevealForCurrentNormal(true)} disabled={revealQ}>👁️ Reveal Question</button>
+            <button onClick={() => setRevealForCurrentNormal(false)} disabled={!revealQ}>🙈 Hide Question</button>
+          </div>
         </>
       )}
 
@@ -269,10 +322,7 @@ const resetGameSession = async () => {
 
       <hr />
       <button className={styles.reset} onClick={handleResetRound}>🔁 Reset Round</button>
-      <button className={styles.resetGameBtn} onClick={resetGameSession}>
-  🔄 Reset Game Session
-</button>
-
+      <button className={styles.resetGameBtn} onClick={resetGameSession}>🔄 Reset Game Session</button>
     </div>
   );
 }
