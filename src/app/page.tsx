@@ -3,7 +3,8 @@ import styles from './Landing.module.scss';
 
 const MAIN_PATH = '/main-screen';
 const CONTROL_PATH = '/control';
-const SETUP_PATH = '/admin/setup'; // change if your setup route differs
+const SETUP_PATH = '/admin/setup'; 
+const VIEW_PATH = '/cards/slideshow'; 
 
 export default function LandingPage() {
   return (
@@ -41,6 +42,14 @@ export default function LandingPage() {
             Reveal answers, track strikes, switch rounds, manage teams, and run Fast Money live.
           </p>
           <span className={styles.cta}>Launch</span>
+        </Link>
+         <Link href={VIEW_PATH} className={styles.card}>
+          <div className={styles.emoji}>❓❓</div>
+          <h2>Current Game Session Questions</h2>
+          <p>
+            Reveal Questions and answers for current game session.
+          </p>
+          <span className={styles.cta}>View</span>
         </Link>
       </section>
 
