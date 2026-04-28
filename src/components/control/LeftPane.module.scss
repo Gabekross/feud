@@ -1,106 +1,158 @@
 .leftPane {
   background: #1e1e1e;
   color: #fff;
-  padding: 1.5rem;
-  border-radius: 10px;
+  padding: 1.25rem;
+  border-radius: var(--radius-md, 10px);
   width: 100%;
-  max-width: 350px;
+  /* removed max-width: 350px — let the grid column constrain it */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--font-ui, system-ui, sans-serif);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.6rem;
+  box-sizing: border-box;
 
   h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: #f7c948;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   h4 {
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     color: #f1f1f1;
-    font-size: 1.1rem;
+    font-size: 1rem;
     border-bottom: 1px solid #555;
-    padding-bottom: 0.3rem;
+    padding-bottom: 0.25rem;
   }
 
   label {
     font-weight: 500;
-    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 
   select,
   input[type="number"] {
-    margin-top: 0.3rem;
-    padding: 0.5rem;
+    margin-top: 0.2rem;
+    padding: 0.5rem 0.6rem;
     width: 100%;
-    border-radius: 6px;
+    border-radius: var(--radius-sm, 6px);
     border: 1px solid #555;
     background: #2e2e2e;
     color: white;
+    font-size: 0.95rem;
+
+    &:focus {
+      outline: 2px solid var(--accent-color, #4285f4);
+      border-color: transparent;
+    }
   }
 
   input[type="checkbox"] {
-    margin-right: 0.5rem;
-    transform: scale(1.2);
+    margin-right: 0.4rem;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    cursor: pointer;
   }
 
+  /* Generic button baseline — minimum 44px tap target */
   button {
-    margin-top: 0.4rem;
-    padding: 0.5rem 0.8rem;
+    margin-top: 0.3rem;
+    padding: 0.55rem 0.8rem;
+    min-height: 44px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm, 6px);
     background: #333;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s ease;
+    width: 100%;
+    text-align: left;
 
-    &.reset {
-      background-color: #d9534f;
-      color: white;
-      font-weight: bold;
+    &:hover { background: #444; }
+    &:active { transform: translateY(1px); }
+    &:focus-visible { outline: 2px solid var(--accent-color, #4285f4); }
+  }
 
-      &:hover {
-        background-color: #c9302c;
-      }
+  /* Inline button pair (e.g. ➖ / ➕) */
+  .btnRow {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+
+    button {
+      flex: 1;
+      text-align: center;
+      min-height: 44px;
     }
+  }
 
-    &:hover {
-      background: #444;
-    }
+  .reset {
+    background-color: #8b2222;
+    color: white;
+    font-weight: 700;
+    border: 1px solid #cc3333;
+
+    &:hover { background-color: #cc3333; }
   }
 
   .resetGameBtn {
-  margin-top: 1rem;
-  background: #4b1d1d;
-  color: #fff;
-  font-weight: bold;
-  border: 1px solid #ff4d4d;
-  border-radius: 6px;
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-  transition: background 0.25s ease, transform 0.08s ease;
-
-  &:hover {
-    background: #ff4d4d;
+    margin-top: 0.5rem;
+    background: #4b1d1d;
     color: #fff;
-  }
-  &:active {
-    transform: translateY(1px);
-  }
-}
+    font-weight: 700;
+    border: 1px solid #ff4d4d;
+    border-radius: var(--radius-sm, 6px);
+    padding: 0.6rem 1rem;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.08s ease;
 
+    &:hover { background: #ff4d4d; }
+    &:active { transform: translateY(1px); }
+  }
 
   hr {
     border: none;
     border-top: 1px solid #444;
-    margin: 1rem 0;
+    margin: 0.5rem 0;
   }
 
   p {
-    margin: 0.3rem 0;
-    font-size: 1rem;
+    margin: 0.2rem 0;
+    font-size: 0.95rem;
+  }
+}
+
+/* Reveal question toggle buttons — used in LeftPane for normal rounds */
+.revealControls {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0.5rem;
+  flex-wrap: wrap;
+
+  button {
+    flex: 1;
+    padding: 0.5rem 0.6rem;
+    min-height: 44px;
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid #234;
+    background: #0d1a33;
+    color: #cfe1ff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: center;
+    width: auto;
+
+    &:hover:not(:disabled) { background: #12254a; }
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
   }
 }

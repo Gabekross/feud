@@ -1,17 +1,15 @@
-
-
 .fastMoneyPane {
   background: #1e1e1e;
   color: #fff;
   padding: 1.25rem;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 10px);
   width: 100%;
-  max-width: 1100px;
-  box-shadow: 0 0 10px rgba(0,0,0,.4);
-  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-ui, system-ui, sans-serif);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-sizing: border-box;
 
   h2 {
     font-size: 1.2rem;
@@ -19,6 +17,7 @@
     margin: 0;
   }
 
+  /* Timer row */
   .timerPanel {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -26,174 +25,244 @@
     align-items: end;
     background: #242424;
     border: 1px solid #333;
-    border-radius: 8px;
-    padding: .75rem;
+    border-radius: var(--radius-sm, 8px);
+    padding: 0.75rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
 
     .timerLeft {
       display: flex;
       align-items: center;
-      gap: .6rem;
+      gap: 0.6rem;
+      flex-wrap: wrap;
 
       label {
         font-weight: 600;
-        opacity: .9;
+        opacity: 0.9;
+        font-size: 0.9rem;
       }
 
       input[type="number"] {
         width: 6rem;
-        padding: .4rem .5rem;
-        border-radius: 6px;
+        padding: 0.4rem 0.5rem;
+        border-radius: var(--radius-sm, 6px);
         border: 1px solid #555;
         background: #2e2e2e;
         color: #fff;
+        &:focus { outline: 2px solid var(--accent-color, #4285f4); }
       }
 
       .defaultInfo {
-        font-size: .9rem;
-        opacity: .7;
+        font-size: 0.85rem;
+        opacity: 0.65;
       }
     }
 
     .timerButtons {
       display: flex;
-      gap: .5rem;
+      gap: 0.5rem;
 
       button {
-        padding: .45rem .75rem;
+        padding: 0.45rem 0.8rem;
+        min-height: 40px;
         border: none;
-        border-radius: 6px;
+        border-radius: var(--radius-sm, 6px);
         background: #333;
         color: #fff;
         font-weight: 600;
+        font-size: 0.9rem;
         cursor: pointer;
-        transition: background .2s;
-      }
-      button:hover { background: #444; }
-
-      button:disabled {
-        opacity: .5;
-        cursor: not-allowed;
+        transition: background 0.2s;
+        &:hover:not(:disabled) { background: #444; }
+        &:disabled { opacity: 0.45; cursor: not-allowed; }
       }
     }
   }
 
+  /* Nav + player toggle toolbar */
   .toolbar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0.25rem 0;
 
     .fmNav {
       display: flex;
+      gap: 0.5rem;
       align-items: center;
-      gap: .6rem;
-
-      span {
-        font-weight: 700;
-      }
 
       button {
-        padding: .4rem .7rem;
-        border: none;
-        border-radius: 6px;
-        background: #333;
-        color: #fff;
+        background: #1a2a4a;
+        border: 1px solid #2d3e66;
+        color: #eef3ff;
+        padding: 0.4rem 0.8rem;
+        min-height: 40px;
+        border-radius: var(--radius-sm, 6px);
         font-weight: 600;
+        font-size: 0.9rem;
         cursor: pointer;
+
+        &:hover { background: #243b6c; }
+        &:disabled { opacity: 0.45; cursor: not-allowed; }
+      }
+
+      /* Jump-to-Q1 button — amber so it stands out from Prev/Next */
+      .resetQ1Btn {
+        background: #7a4f00;
+        border-color: #b87800;
+        color: #ffd24d;
+
+        &:hover:not(:disabled) { background: #9a6500; }
       }
     }
 
     .playerToggle {
       display: flex;
-      gap: .5rem;
+      gap: 0.5rem;
 
       button {
-        padding: .4rem .7rem;
-        border: none;
-        border-radius: 6px;
-        background: #333;
-        color: #fff;
+        background: #1a2a4a;
+        border: 1px solid #2d3e66;
+        color: #eef3ff;
+        padding: 0.4rem 0.8rem;
+        min-height: 40px;
+        border-radius: var(--radius-sm, 6px);
         font-weight: 600;
+        font-size: 0.9rem;
         cursor: pointer;
+
+        &.active {
+          background: #2979ff;
+          border-color: #2979ff;
+          color: #fff;
+          box-shadow: 0 0 6px rgba(41, 121, 255, 0.6);
+        }
+
+        &:hover:not(.active) { background: #243b6c; }
       }
-      .active {
-        background: #2e5cff;
+    }
+
+    .hideGroup {
+      .hideToggle {
+        background: #5a1a1a;
+        border: 1px solid #7a2c2c;
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        min-height: 40px;
+        border-radius: var(--radius-sm, 6px);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+
+        &:hover { background: #7a2c2c; }
+        &:active { transform: scale(0.95); }
       }
     }
   }
 
+  /* Current question card */
   .questionCard {
     background: #242424;
     border: 1px solid #333;
-    border-radius: 8px;
-    padding: .75rem;
+    border-radius: var(--radius-sm, 8px);
+    padding: 0.75rem;
 
     .qTop {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: .5rem;
+      margin-bottom: 0.5rem;
+      gap: 0.5rem;
 
       button {
-        padding: .35rem .6rem;
+        padding: 0.35rem 0.6rem;
+        min-height: 36px;
         border: none;
-        border-radius: 6px;
+        border-radius: var(--radius-sm, 6px);
         background: #2e5cff;
         color: #fff;
         font-weight: 700;
+        font-size: 0.85rem;
         cursor: pointer;
-      }
+        white-space: nowrap;
 
-      button:disabled {
-        opacity: .5;
-        cursor: not-allowed;
+        &:disabled { opacity: 0.45; cursor: not-allowed; }
       }
     }
 
     .qText {
-      font-size: 1.05rem;
-      letter-spacing: .2px;
-      min-height: 2.2rem;
+      font-size: 1rem;
+      letter-spacing: 0.2px;
+      min-height: 2rem;
+      word-break: break-word;
     }
   }
 
+  /* Per-answer row: input | reveal | points | zero */
   .answerRow {
     display: grid;
     grid-template-columns: 1fr auto auto auto;
-    gap: .5rem;
+    gap: 0.5rem;
     align-items: center;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+
+      .answerInput { grid-column: 1 / -1; }
+    }
 
     .answerInput {
       width: 100%;
-      padding: .55rem .65rem;
-      border-radius: 6px;
+      padding: 0.55rem 0.65rem;
+      border-radius: var(--radius-sm, 6px);
       border: 1px solid #555;
       background: #2e2e2e;
       color: #fff;
+      font-size: 0.95rem;
+      &:focus { outline: 2px solid var(--accent-color, #4285f4); }
     }
 
     .revealBtn, .pointsBtn, .zeroBtn {
-      padding: .5rem .7rem;
+      padding: 0.5rem 0.7rem;
+      min-height: 40px;
       border: none;
-      border-radius: 6px;
+      border-radius: var(--radius-sm, 6px);
       cursor: pointer;
       font-weight: 700;
+      font-size: 0.85rem;
       color: #fff;
+      white-space: nowrap;
     }
     .revealBtn { background: #2979ff; }
     .pointsBtn { background: #16a34a; }
     .zeroBtn   { background: #d9534f; }
   }
 
+  /* Answer bank reference list */
   .bank {
     background: #242424;
     border: 1px solid #333;
-    border-radius: 8px;
-    padding: .75rem;
+    border-radius: var(--radius-sm, 8px);
+    padding: 0.75rem;
 
     .bankTitle {
       font-weight: 700;
       color: #a7c1ff;
-      margin-bottom: .4rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    .bankHint {
+      font-weight: 400;
+      font-size: 0.78rem;
+      opacity: 0.55;
+      margin-left: 0.4rem;
     }
 
     ul {
@@ -204,92 +273,28 @@
       li {
         display: flex;
         justify-content: space-between;
-        padding: .35rem 0;
+        padding: 0.3rem 0;
         border-bottom: 1px dashed #3a3a3a;
+        font-size: 0.9rem;
       }
 
-      .bankText { opacity: .95; }
-      .bankPts { font-weight: 800; color: #ffda6a; }
-    }
-  }
-
-  .toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1rem 0;
-
-    .fmNav {
-      display: flex;
-      gap: 0.5rem;
-
-      button {
-        background: #1a2a4a;
-        border: 1px solid #2d3e66;
-        color: #eef3ff;
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-weight: 600;
+      /* Clickable bank rows */
+      .bankItem {
         cursor: pointer;
+        border-radius: 4px;
+        padding: 0.35rem 0.4rem;
+        transition: background 0.15s;
 
         &:hover {
-          background: #243b6c;
+          background: rgba(41, 121, 255, 0.18);
+          .bankText { color: #a8d0ff; }
         }
 
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+        &:active { background: rgba(41, 121, 255, 0.32); }
       }
-    }
 
-    .playerToggle {
-      display: flex;
-      gap: 0.5rem;
-
-      button {
-        background: #1a2a4a;
-        border: 1px solid #2d3e66;
-        color: #eef3ff;
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-
-        &.active {
-          background: #2979ff;
-          border-color: #2979ff;
-          color: #fff;
-          box-shadow: 0 0 6px rgba(41, 121, 255, 0.6);
-        }
-
-        &:hover {
-          background: #243b6c;
-        }
-      }
-    }
-
-    // 🆕 Hide toggle button
-    .hideGroup {
-      .hideToggle {
-        background: #5a1a1a;
-        border: 1px solid #7a2c2c;
-        color: #fff;
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.1s;
-
-        &:hover {
-          background: #7a2c2c;
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
-      }
+      .bankText { opacity: 0.95; }
+      .bankPts  { font-weight: 800; color: #ffda6a; flex-shrink: 0; }
     }
   }
 }

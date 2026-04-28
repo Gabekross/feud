@@ -70,7 +70,7 @@ export default function CountdownTimer() {
         (payload: any) => {
           setRunning(!!payload.new.fm_timer_running);
           setStartedAt(payload.new.fm_timer_started_at ?? null);
-          setDuration(payload.new.fm_timer_duration ?? payload.new.fast_money_seconds ?? 20);
+          setDuration(payload.new.fm_timer_duration ?? payload.new.fast_money_seconds ?? 19);
         }
       )
       .subscribe();

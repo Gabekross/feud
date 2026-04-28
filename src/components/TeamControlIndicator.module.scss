@@ -1,37 +1,24 @@
 /* TeamControlIndicator.module.scss */
+
 .controlBar {
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  margin-bottom: 1rem;
-}
-
-.controlBar span {
-  font-size: 1.25rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-}
-
-.active {
-  background-color: var(--accent-color);
-  color: #000;
-}
-
-/* TeamControlIndicator.module.scss */
-.controlBar {
-  display: flex;
-  gap: 2rem;
-  font-size: clamp(16px, 2.2vmin, 28px);
+  gap: clamp(1rem, 3vmin, 3rem);
+  margin-bottom: clamp(0.5rem, 1vmin, 1rem);
+  font-size: clamp(0.9rem, 2.2vmin, 1.6rem);
   font-weight: 600;
 }
 
 .controlBar span {
-  opacity: 0.6;
-  transition: opacity .2s, transform .2s, text-shadow .2s;
+  padding: clamp(4px, 0.8vmin, 10px) clamp(8px, 1.5vmin, 20px);
+  border-radius: var(--radius-sm, 6px);
+  opacity: 0.55;
+  transition: opacity 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease;
 }
 
 .active {
   opacity: 1;
-  transform: scale(1.05);
-  text-shadow: 0 0 14px rgba(255, 215, 0, 0.6);
+  transform: scale(1.06);
+  color: var(--primary-color, #fbbc05);
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.55);
 }

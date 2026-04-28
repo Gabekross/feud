@@ -170,7 +170,6 @@ export default function FastMoneyBoard() {
       <div className={styles.header}>
         <div className={styles.badge}>FAST MONEY</div>
         <div className={styles.question}>{showQuestion ? qText : '••••••••••••••••••'}</div>
-        <div className={styles.qIndex}>Q{fmIndex}/5</div>
       </div>
 
       <div className={styles.grid}>
@@ -178,7 +177,6 @@ export default function FastMoneyBoard() {
           <div className={styles.colTitle}>Player 1</div>
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={`p1-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
-              <div className={styles.slot}>#{i}</div>
               <div className={styles.answerText}>
                 {/* Hide Player 1 content if fm_hide_p1 is true */}
                 {hideP1 ? '' : (p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : '')}
@@ -194,7 +192,6 @@ export default function FastMoneyBoard() {
           <div className={styles.colTitle}>Player 2</div>
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={`p2-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
-              <div className={styles.slot}>#{i}</div>
               <div className={styles.answerText}>
                 {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}
               </div>

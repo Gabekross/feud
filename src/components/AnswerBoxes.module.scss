@@ -1,136 +1,166 @@
+/* AnswerBoxes.module.scss */
+
 .boardWrap {
-  display: grid;
-  place-items: center;
+  flex: 1;
+  min-height: 0;          /* critical: lets flex item shrink below content size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
 }
 
 .board {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* two columns like the show */
-  gap: 14px 24px;
-  width: min(100%, 960px);
-  padding: 14px 18px;
-  background: radial-gradient(80% 120% at 50% 0%, #2b2b2b 0%, #141414 100%);
-  border-radius: 18px;
-  box-shadow:
-    inset 0 0 0 3px #ffb100,
-    inset 0 0 0 7px #352100,
-    0 12px 30px rgba(0,0,0,0.4);
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(6px, 0.9vmin, 14px) clamp(10px, 1.5vmin, 22px);
+
+  /* Fill the boardWrap height so 1fr rows actually expand */
+  height: 100%;
+  width: min(97%, 1440px);  /* matches question width; removes old 960px cap */
+
+  padding: clamp(10px, 1.5vmin, 20px) clamp(12px, 2vmin, 24px);
+  background: linear-gradient(160deg, #0d1b3e 0%, #071225 100%);
+  border: 2px solid #1e3a6e;
+  border-radius: clamp(8px, 1.2vmin, 16px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
 }
 
+/* Each grid cell — must have a height so the absolutely-positioned plate fills it */
 .cell {
   display: grid;
-  perspective: 1000px; /* enable 3D for flip */
+  perspective: 1200px;
+  /* The 1fr rows provide height; this ensures a floor on very small screens */
+  min-height: clamp(48px, 6vmin, 80px);
 }
 
-/* Flip-card container (the blue plate) */
+/* ── Flip card ──────────────────────────────────────────────────────── */
 .plate {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 10px;
+  border-radius: clamp(6px, 0.8vmin, 12px);
   transform-style: preserve-3d;
-  transition: transform 320ms ease, box-shadow 220ms ease;
+  transition: transform 340ms ease, box-shadow 220ms ease;
   will-change: transform;
 
-  background: linear-gradient(180deg, #1a75bb 0%, #0d4f89 100%);
-  border: 3px solid #0b2a4a;
+  background: linear-gradient(180deg, #1e7ecf 0%, #0d559a 100%);
+  border: 2px solid #0b3a70;
   box-shadow:
-    inset 0 4px 8px rgba(255,255,255,0.15),
-    inset 0 -6px 10px rgba(0,0,0,0.35),
-    0 4px 10px rgba(0,0,0,0.4);
+    inset 0 3px 8px rgba(255, 255, 255, 0.18),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.3),
+    0 4px 14px rgba(0, 0, 0, 0.4);
 
-  /* subtle glass line */
+  /* Glass sheen */
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.07) 50%, transparent 100%);
     pointer-events: none;
     border-radius: inherit;
   }
 }
 
-/* Rotate to reveal the back face */
 .isRevealed {
   transform: rotateY(180deg);
 }
 
-/* “pop” on first reveal */
 .justFlipped {
   box-shadow:
-    inset 0 6px 12px rgba(255,255,255,0.18),
-    inset 0 -8px 14px rgba(0,0,0,0.4),
-    0 10px 20px rgba(0,0,0,0.5);
+    inset 0 6px 14px rgba(255, 255, 255, 0.22),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.4),
+    0 12px 28px rgba(0, 0, 0, 0.55),
+    0 0 0 2px #ffd24d;  /* gold pulse on reveal */
 }
 
-/* Two faces */
+/* Both faces share these base styles */
 .face {
   position: absolute;
   inset: 0;
-  display: grid;
+  display: flex;
   align-items: center;
-  padding: 0 16px;
+  /* More horizontal breathing room for the larger text */
+  padding: 0 clamp(12px, 2.2vmin, 36px);
   backface-visibility: hidden;
-  border-radius: 10px;
+  border-radius: clamp(6px, 0.8vmin, 12px);
 }
 
 .front {
-  /* front shows the number badge */
+  justify-content: center;
 }
 
 .back {
   transform: rotateY(180deg);
 }
 
+/* ── Front face: number badge ──────────────────────────────────────── */
 .badge {
-  justify-self: center;
-  width: 44px;
-  height: 44px;
+  width: clamp(38px, 5.5vmin, 72px);
+  height: clamp(38px, 5.5vmin, 72px);
   border-radius: 999px;
   display: grid;
   place-items: center;
-  font-weight: 800;
-  font-size: 1.1rem;
+  font-weight: 900;
+  /* +11% min, +11% preferred, +13% max vs old clamp(0.85rem, 1.8vmin, 1.5rem) */
+  font-size: clamp(0.95rem, 2vmin, 1.7rem);
   color: #fff;
-  background: radial-gradient(circle at 30% 30%, #2ca4ff 0%, #0b5aa2 70%);
+  background: radial-gradient(circle at 35% 30%, #3ab5ff 0%, #0b5aa2 70%);
   border: 3px solid #073e72;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
+/* ── Back face: answer text + points ──────────────────────────────── */
 .answerRow {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  width: 100%;
+  gap: clamp(8px, 1.2vmin, 20px);
+  overflow: hidden;
 }
 
 .answerText {
-  color: #e7f3ff;
+  flex: 1;
+  min-width: 0;
+  color: #e8f4ff;
   font-weight: 800;
-  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  /*
+   * Was: clamp(0.9rem, 2.4vmin, 2rem)   → ~26 px at 1080p
+   * Now: clamp(1.1rem, 3.2vmin, 2.6rem)  → ~35 px at 1080p  (+34%)
+   *      clamp min raised so mobile still readable
+   */
+  font-size: clamp(1.1rem, 3.2vmin, 2.6rem);
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.35);
-  overflow: hidden;
+  letter-spacing: clamp(0.5px, 0.2vmin, 2.5px);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Gold points pill — wide rounded rectangle, easy to read from distance */
 .points {
-  min-width: 48px;
-  justify-self: end;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #ffd24d 0%, #ffae00 100%);
+  flex-shrink: 0;
+  /*
+   * min-width raised to accommodate larger font without squeezing 3-digit numbers.
+   * Was: clamp(44px, 6vmin, 80px)
+   * Now: clamp(52px, 7.5vmin, 100px)
+   */
+  min-width: clamp(52px, 7.5vmin, 100px);
+  padding: clamp(4px, 0.7vmin, 12px) clamp(10px, 1.8vmin, 26px);
+  border-radius: clamp(4px, 0.6vmin, 8px);
+  background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
   color: #2d1f00;
   font-weight: 900;
-  font-size: clamp(1rem, 2.2vw, 1.2rem);
-  box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.25);
-}
-
-/* Responsive */
-@media (max-width: 720px) {
-  .board { gap: 10px 16px; }
-  .badge { width: 38px; height: 38px; font-size: 1rem; }
+  /*
+   * Was: clamp(0.9rem, 2.4vmin, 2rem)   → ~26 px at 1080p
+   * Now: clamp(1.2rem, 3.4vmin, 2.8rem)  → ~37 px at 1080p  (+42%)
+   */
+  font-size: clamp(1.2rem, 3.4vmin, 2.8rem);
+  text-align: center;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.65), 0 3px 8px rgba(0, 0, 0, 0.3);
+  line-height: 1;
 }

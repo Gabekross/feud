@@ -65,7 +65,9 @@ export default function AnswerBoxes({ answers }: Props) {
       <div
         className={styles.board}
         style={{
-          gridTemplateRows: `repeat(${Math.ceil(totalSlots / 2)}, 80px)`,
+          // 1fr: rows fill the board height dynamically.
+          // minmax floor keeps cards readable on small screens.
+          gridTemplateRows: `repeat(${Math.ceil(totalSlots / 2)}, minmax(clamp(48px, 6vmin, 80px), 1fr))`,
         }}
       >
         {orderedAnswers.map((a, idx) => {
@@ -76,9 +78,7 @@ export default function AnswerBoxes({ answers }: Props) {
           return (
             <div key={idx} className={styles.cell}>
               <div className={`${styles.plate} ${flipClass} ${justClass}`}>
-                <div className={`${styles.face} ${styles.front}`}>
-                  <div className={styles.badge}>{slotNumber}</div>
-                </div>
+                <div className={`${styles.face} ${styles.front}`} />
                 <div className={`${styles.face} ${styles.back}`}>
                   <div className={styles.answerRow}>
                     <span className={styles.answerText}>{a.text || '—'}</span>

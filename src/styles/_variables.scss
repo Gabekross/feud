@@ -1,6 +1,65 @@
+// ─── Color System ───────────────────────────────────────────────────────────
 :root {
-  --primary-color: #fbbc05;
-  --bg-dark: #111;
-  --text-light: #fff;
-  --accent-color: #4285f4;
+  // Brand
+  --primary-color:   #fbbc05;   // gold / Family Feud yellow
+  --primary-dark:    #ffae00;
+  --accent-color:    #4285f4;   // blue accent
+
+  // Backgrounds
+  --bg-dark:         #0f0f0f;
+  --bg-surface:      #1b1b1b;
+  --bg-surface-2:    #232323;
+  --bg-surface-3:    #2a2a2a;
+
+  // Text
+  --text-light:      #ffffff;
+  --text-muted:      #b0b8c8;
+  --text-dim:        #7a8698;
+
+  // Borders
+  --border-subtle:   #2a2a2a;
+  --border-strong:   #3a3a3a;
+
+  // State colors
+  --color-success:   #2f8f4e;
+  --color-danger:    #b32e2e;
+  --color-warning:   #ffd24d;
+  --color-info:      #2979ff;
+
+  // ─── Spacing scale ──────────────────────────────────────────────────────
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  // ─── Typography scale ────────────────────────────────────────────────────
+  --font-xs:   clamp(0.75rem, 1.2vmin, 0.875rem);
+  --font-sm:   clamp(0.875rem, 1.6vmin, 1rem);
+  --font-base: clamp(1rem, 2vmin, 1.25rem);
+  --font-lg:   clamp(1.125rem, 2.5vmin, 1.5rem);
+  --font-xl:   clamp(1.25rem, 3vmin, 2rem);
+  --font-2xl:  clamp(1.5rem, 3.5vmin, 2.5rem);
+  --font-3xl:  clamp(1.75rem, 4.5vmin, 3.5rem);
+  --font-4xl:  clamp(2rem, 6vmin, 5rem);
+
+  // ─── Breakpoints (use in JS if needed) ──────────────────────────────────
+  // 375px  — mobile
+  // 768px  — tablet
+  // 1080px — laptop
+  // 1280px — desktop
+  // 1920px — TV / projector
+
+  // ─── Border radius ───────────────────────────────────────────────────────
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+  --radius-pill: 999px;
+
+  // ─── Shared font stack ───────────────────────────────────────────────────
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
