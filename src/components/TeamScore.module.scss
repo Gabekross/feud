@@ -26,10 +26,18 @@ $board-pct: 97%;
   transition: background 0.3s ease;
 }
 
-/* Active team: golden tint + very subtle glow */
+/* Active team: bold gold fill + thick border — readable from any distance */
 .activeTeam {
-  background: rgba(200, 146, 10, 0.10);
-  box-shadow: inset 0 0 0 2px rgba(200, 146, 10, 0.35);
+  background: rgba(255, 185, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 3px #ffd24d,
+    inset 0 0 32px rgba(255, 200, 0, 0.18);
+
+  /* Gold score when active — further differentiates from inactive side */
+  .teamScore {
+    color: #ffd24d;
+    text-shadow: 0 0 20px rgba(255, 210, 77, 0.6), 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Team name row */
