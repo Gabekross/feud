@@ -402,6 +402,12 @@ export default function FastMoneyPane() {
           <button onClick={() => goToFM(fmIndex - 1)} disabled={fmIndex <= 1}>⬅ Prev</button>
           <span>FM Q{fmIndex}/5</span>
           <button onClick={() => goToFM(fmIndex + 1)} disabled={fmIndex >= 5}>Next ➡</button>
+          <button
+            className={styles.resetQ1Btn}
+            onClick={() => goToFM(1)}
+            disabled={fmIndex === 1}
+            title="Jump back to Question 1 (for Player 2's turn)"
+          >↩ Q1</button>
         </div>
 
         <div className={styles.playerToggle}>
@@ -444,10 +450,15 @@ export default function FastMoneyPane() {
 
       {/* Answer bank */}
       <div className={styles.bank}>
-        <div className={styles.bankTitle}>Answer Bank</div>
+        <div className={styles.bankTitle}>Answer Bank <span className={styles.bankHint}>(click to fill answer)</span></div>
         <ul>
           {question?.answers.map(a => (
-            <li key={a.id}>
+            <li
+              key={a.id}
+              className={styles.bankItem}
+              onClick={() => handleTyping(a.answer_text)}
+              title={`Fill: ${a.answer_text}`}
+            >
               <span className={styles.bankText}>{a.answer_text}</span>
               <span className={styles.bankPts}>{a.points} pts</span>
             </li>

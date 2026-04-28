@@ -93,6 +93,7 @@
     .fmNav {
       display: flex;
       gap: 0.5rem;
+      align-items: center;
 
       button {
         background: #1a2a4a;
@@ -107,6 +108,15 @@
 
         &:hover { background: #243b6c; }
         &:disabled { opacity: 0.45; cursor: not-allowed; }
+      }
+
+      /* Jump-to-Q1 button — amber so it stands out from Prev/Next */
+      .resetQ1Btn {
+        background: #7a4f00;
+        border-color: #b87800;
+        color: #ffd24d;
+
+        &:hover:not(:disabled) { background: #9a6500; }
       }
     }
 
@@ -248,6 +258,13 @@
       font-size: 0.9rem;
     }
 
+    .bankHint {
+      font-weight: 400;
+      font-size: 0.78rem;
+      opacity: 0.55;
+      margin-left: 0.4rem;
+    }
+
     ul {
       list-style: none;
       margin: 0;
@@ -261,8 +278,23 @@
         font-size: 0.9rem;
       }
 
+      /* Clickable bank rows */
+      .bankItem {
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 0.35rem 0.4rem;
+        transition: background 0.15s;
+
+        &:hover {
+          background: rgba(41, 121, 255, 0.18);
+          .bankText { color: #a8d0ff; }
+        }
+
+        &:active { background: rgba(41, 121, 255, 0.32); }
+      }
+
       .bankText { opacity: 0.95; }
-      .bankPts  { font-weight: 800; color: #ffda6a; }
+      .bankPts  { font-weight: 800; color: #ffda6a; flex-shrink: 0; }
     }
   }
 }
