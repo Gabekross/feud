@@ -148,9 +148,19 @@ export default function FastMoneyPane() {
   };
 
   // switch player & auto-hide P1 when on Player 2
+  // Also hide the question reveal so the incoming player can't see Q text or answers yet
   const switchPlayer = async (p: 1 | 2) => {
     setPlayer(p);
     await setHideP1(p === 2);
+    if (!sessionId) return;
+    // Reset question reveal for all FM questions — answers are per-player
+    // so fast_money_responses rows for the new player already have reveal_answer: false
+    await supabase
+      .from('session_questions')
+      .update({ fm_reveal_question: false })
+      .eq('session_id', sessionId)
+      .eq('round_number', 6);
+    setRevealQuestion(false);
   };
 
   const toggleHideP1 = async () => {
