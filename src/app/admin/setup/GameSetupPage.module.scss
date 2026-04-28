@@ -1,48 +1,132 @@
 .gameSetup {
-  padding: 2rem;
-  max-width: 800px;
-  margin: auto;
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  max-width: 860px;
+  margin: 0 auto;
+  box-sizing: border-box;
+
+  /* Dark theme — consistent with the rest of the app */
+  background: var(--bg-dark, #0f0f0f);
+  color: var(--text-light, #fff);
+  font-family: var(--font-ui, system-ui, sans-serif);
 
   h1 {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
     margin-bottom: 1.5rem;
+    color: var(--primary-color, #fbbc05);
   }
 
-  .teams {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-
-    input {
-      padding: 0.5rem;
-      font-size: 1rem;
-    }
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #a7c1ff;
+    margin-bottom: 0.5rem;
   }
 
-  .roundSection {
-    margin-bottom: 1.5rem;
-
-    h3 {
-      margin-bottom: 0.5rem;
-    }
-
-    select {
-      width: 100%;
-      padding: 0.5rem;
-    }
+  label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c8d4e8;
+    margin-bottom: 0.25rem;
   }
 
-  .createBtn {
-    background-color: #28a745;
-    color: white;
-    padding: 0.75rem 1.5rem;
+  input[type="text"],
+  input:not([type]) {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
     font-size: 1rem;
-    border: none;
-    cursor: pointer;
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid #3a3a3a;
+    background: #1e1e1e;
+    color: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
 
-    &:hover {
-      background-color: #218838;
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color, #4285f4);
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
     }
   }
+
+  select {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid #3a3a3a;
+    background: #1e1e1e;
+    color: #fff;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color, #4285f4);
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
+    }
+  }
+}
+
+/* Team name inputs */
+.teams {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  max-width: 420px;
+}
+
+/* Each round section */
+.roundSection {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: var(--radius-md, 10px);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Fast Money question rows */
+.fmRow {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+
+  label {
+    margin: 0;
+    font-weight: 700;
+    color: #97b6ff;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+/* Create game button */
+.createBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(180deg, #28a745 0%, #1e8735 100%);
+  color: white;
+  padding: 0.8rem 1.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md, 10px);
+  cursor: pointer;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  transition: filter 0.15s ease, transform 0.08s ease;
+
+  &:hover { filter: brightness(1.08); }
+  &:active { transform: translateY(1px); }
 }

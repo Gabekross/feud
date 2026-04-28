@@ -1,7 +1,28 @@
 /* QuestionDisplay.module.scss */
+
 .question {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+  width: min(97%, 1440px);  /* matches board width */
+  flex-shrink: 0;
+
+  /* Dark navy box — visually connects to the answer board */
+  background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
+  border: 2px solid #1e3a6e;
+  border-radius: clamp(6px, 1vmin, 12px);
+  padding: clamp(10px, 1.5vmin, 22px) clamp(16px, 3vmin, 40px);
+
+  /* Text */
   text-align: center;
+  color: #ffffff;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  /* Reset h2 browser defaults and apply our sizing */
+  h2 {
+    margin: 0;
+    font-weight: 800;
+    font-size: clamp(1.1rem, 3vmin, 2.8rem);
+    line-height: 1.25;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    letter-spacing: 0.2px;
+  }
 }

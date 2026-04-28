@@ -7,7 +7,6 @@ import useActiveSession from '@/hooks/useActiveSession';
 import QuestionDisplay from '@/components/QuestionDisplay';
 import AnswerBoxes from '@/components/AnswerBoxes';
 import TeamScore from '@/components/TeamScore';
-import TeamControlIndicator from '@/components/TeamControlIndicator';
 import StrikeDisplay from '@/components/StrikeDisplay';
 import FastMoneyBoard from '@/components/FastMoneyBoard';
 import FullscreenToggle from '@/components/FullscreenToggle';
@@ -16,7 +15,6 @@ import styles from './MainScreen.module.scss';
 export default function MainScreenPage() {
   const sessionId = useActiveSession();
 
-  // live names
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
 
@@ -27,8 +25,6 @@ export default function MainScreenPage() {
   const [strikes, setStrikes] = useState(0);
   const [showStrikeModal, setShowStrikeModal] = useState(false);
   const [isFastMoney, setIsFastMoney] = useState(false);
-
-  // 🆕 normal-round question reveal flag (controls masking on main screen)
   const [revealQ, setRevealQ] = useState<boolean>(false);
 
   // Fast Money timer (synced to DB)
@@ -42,9 +38,9 @@ export default function MainScreenPage() {
 
   const getTimerColor = () => {
     const ratio = fmRemain / Math.max(1, fmDuration);
-    if (ratio > 0.5) return '#4caf50'; // green
-    if (ratio > 0.2) return '#ffeb3b'; // yellow
-    return '#f44336'; // red
+    if (ratio > 0.5) return '#4caf50';
+    if (ratio > 0.2) return '#ffeb3b';
+    return '#f44336';
   };
 
   const computeRemain = () => {
@@ -85,18 +81,14 @@ export default function MainScreenPage() {
       .single();
 
     if (session) {
-      // names
       setTeam1Name(session.team1_name ?? 'Team 1');
       setTeam2Name(session.team2_name ?? 'Team 2');
-
       setTeamScores({ team1: session.team1_score ?? 0, team2: session.team2_score ?? 0 });
       setActiveTeam(session.active_team ?? 1);
       setStrikes(session.strikes ?? 0);
       prevStrikesRef.current = session.strikes ?? 0;
-
       setIsFastMoney(session.round === 'fast_money');
 
-      // FM timer snapshot
       setFmRunning(!!session.fm_timer_running);
       setFmStartedAt(session.fm_timer_started_at ?? null);
       setFmDuration(session.fm_timer_duration ?? (session.fast_money_seconds ?? 20));
@@ -110,16 +102,15 @@ export default function MainScreenPage() {
       });
     }
 
-    // only fetch normal round Q/A if not FM
     if (!session?.round || session.round !== 'fast_money') {
       const { data: sessionQ } = await supabase
         .from('session_questions')
-        .select('question_id, reveal_question') // 🆕 also pull reveal flag
+        .select('question_id, reveal_question')
         .eq('session_id', sessionId)
         .eq('is_current', true)
         .single();
 
-      setRevealQ(!!sessionQ?.reveal_question); // 🆕 set mask state
+      setRevealQ(!!sessionQ?.reveal_question);
       if (sessionQ?.question_id) await loadQAByQuestionId(sessionQ.question_id);
     }
   };
@@ -128,30 +119,23 @@ export default function MainScreenPage() {
     loadInitial();
   }, [sessionId]);
 
-  // ticking for FM timer (requestAnimationFrame for smoothness)
+  // RAF loop for FM timer smoothness
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-
     const loop = () => {
       setFmRemain(computeRemain());
-      if (fmRunning) {
-        rafRef.current = requestAnimationFrame(loop);
-      }
+      if (fmRunning) rafRef.current = requestAnimationFrame(loop);
     };
-
     if (fmRunning) {
       rafRef.current = requestAnimationFrame(loop);
     } else {
       setFmRemain(computeRemain());
     }
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fmRunning, fmStartedAt, fmDuration]);
 
-  // realtime: team names, scores, strikes, FM timer fields, answer reveals
+  // Realtime: session-level fields (names, scores, strikes, FM timer)
   useEffect(() => {
     if (!sessionId) return;
 
@@ -178,7 +162,6 @@ export default function MainScreenPage() {
           setActiveTeam(s.active_team);
           setIsFastMoney(s.round === 'fast_money');
 
-          // FM timer live
           setFmRunning(!!s.fm_timer_running);
           setFmStartedAt(s.fm_timer_started_at ?? null);
           setFmDuration(s.fm_timer_duration ?? (s.fast_money_seconds ?? 20));
@@ -206,12 +189,10 @@ export default function MainScreenPage() {
       )
       .subscribe();
 
-    return () => {
-      void supabase.removeChannel(sub);
-    };
+    return () => { void supabase.removeChannel(sub); };
   }, [sessionId]);
 
-  // normal-round: react to is_current flipping — also track reveal_question
+  // Realtime: session_questions (round switches + reveal flag)
   useEffect(() => {
     if (!sessionId) return;
 
@@ -222,19 +203,17 @@ export default function MainScreenPage() {
         { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
         async (payload: any) => {
           if (payload.new?.is_current) {
-            setRevealQ(!!payload.new.reveal_question); // 🆕 update mask flag
+            setRevealQ(!!payload.new.reveal_question);
             await loadQAByQuestionId(payload.new.question_id as string);
           }
         }
       )
       .subscribe();
 
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    return () => { void supabase.removeChannel(channel); };
   }, [sessionId]);
 
-  // Try fullscreen once on user gesture
+  // Auto-fullscreen on first interaction
   useEffect(() => {
     const tryFs = async () => {
       if (!document.fullscreenElement) {
@@ -258,50 +237,49 @@ export default function MainScreenPage() {
     <div className={styles.mainScreen}>
       <FullscreenToggle />
 
-      <TeamScore
-        team1Name={team1Name}
-        team2Name={team2Name}
-        team1={teamScores.team1}
-        team2={teamScores.team2}
-      />
+      <div className={styles.stage}>
+        {/* ── Header: compact integrated scoreboard ── */}
+        <TeamScore
+          team1Name={team1Name}
+          team2Name={team2Name}
+          team1={teamScores.team1}
+          team2={teamScores.team2}
+          activeTeam={activeTeam ?? 1}
+        />
 
-      <TeamControlIndicator activeTeam={activeTeam ?? 1} />
+        {isFastMoney ? (
+          <>
+            {/* FM timer — top-right fixed overlay */}
+            <div className={styles.fmTimerTopRight}>
+              <svg viewBox="0 0 100 100" className={styles.timerSvg}>
+                <circle className={styles.bg} cx="50" cy="50" r="45" />
+                <circle
+                  className={styles.progress}
+                  cx="50" cy="50" r="45"
+                  style={{
+                    strokeDasharray: 2 * Math.PI * 45,
+                    strokeDashoffset: (fmRemain / Math.max(1, fmDuration)) * 2 * Math.PI * 45,
+                    stroke: getTimerColor(),
+                  }}
+                />
+                <text x="50" y="54" textAnchor="middle" className={styles.time}>
+                  {fmRemain}
+                </text>
+              </svg>
+            </div>
 
-      {isFastMoney ? (
-        <>
-          {/* Top-right synced timer (styled via .fmTimerTopRight) */}
-          <div className={styles.fmTimerTopRight}>
-            <svg viewBox="0 0 100 100" className={styles.timerSvg}>
-              <circle className={styles.bg} cx="50" cy="50" r="45" />
-              <circle
-                className={styles.progress}
-                cx="50"
-                cy="50"
-                r="45"
-                style={{
-                  strokeDasharray: 2 * Math.PI * 45,
-                  strokeDashoffset: ((fmRemain / Math.max(1, fmDuration)) * 2 * Math.PI * 45),
-                  stroke: getTimerColor(),
-                }}
-              />
-              <text x="50" y="54" textAnchor="middle" className={styles.time}>
-                {fmRemain}
-              </text>
-            </svg>
-          </div>
+            <FastMoneyBoard />
+          </>
+        ) : (
+          <>
+            <QuestionDisplay question={revealQ ? question : '•••••••••••••••••'} />
+            <AnswerBoxes answers={answers} />
+            <StrikeDisplay count={strikes} />
+          </>
+        )}
+      </div>
 
-          <FastMoneyBoard />
-        </>
-      ) : (
-        <>
-          {/* 🆕 mask question text until revealQ becomes true */}
-          <QuestionDisplay question={revealQ ? question : '•••••••••••••••••'} />
-          <AnswerBoxes answers={answers} />
-          <StrikeDisplay count={strikes} />
-        </>
-      )}
-
-      {showStrikeModal && <div className={styles.strikeModal}>❌</div>}
+      {showStrikeModal && <div className={styles.strikeModal} />}
     </div>
   );
 }

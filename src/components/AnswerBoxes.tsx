@@ -65,7 +65,9 @@ export default function AnswerBoxes({ answers }: Props) {
       <div
         className={styles.board}
         style={{
-          gridTemplateRows: `repeat(${Math.ceil(totalSlots / 2)}, 80px)`,
+          // 1fr: rows fill the board height dynamically.
+          // minmax floor keeps cards readable on small screens.
+          gridTemplateRows: `repeat(${Math.ceil(totalSlots / 2)}, minmax(clamp(48px, 6vmin, 80px), 1fr))`,
         }}
       >
         {orderedAnswers.map((a, idx) => {

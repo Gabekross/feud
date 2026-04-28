@@ -1,262 +1,159 @@
-// .fmBoard {
-//   background: #0f1420;
-//   color: #eef3ff;
-//   padding: 1.5rem;
-//   border-radius: 10px;
-//   display: flex;
-//   flex-direction: column;
-//   height: 100%;
-//   font-family: 'Segoe UI', sans-serif;
-
-//   .header {
-//     display: grid;
-//     grid-template-columns: 120px 1fr 90px;
-//     align-items: center;
-//     gap: 1rem;
-//     margin-bottom: 1rem;
-
-//     .badge {
-//       background: #2979ff;
-//       color: #fff;
-//       font-weight: 700;
-//       padding: 0.45rem 0.7rem;
-//       border-radius: 6px;
-//       text-align: center;
-//       box-shadow: 0 2px 10px rgba(41, 121, 255, 0.4);
-//     }
-
-//     .question {
-//       background: #111a2e;
-//       border: 1px solid #1e2a4a;
-//       border-radius: 8px;
-//       padding: 0.8rem 1rem;
-//       font-size: 1.2rem;
-//       text-align: center;
-//       min-height: 3rem;
-//       display: flex;
-//       align-items: center;
-//       justify-content: center;
-//     }
-
-//     .qIndex {
-//       justify-self: end;
-//       font-weight: 700;
-//       color: #97b6ff;
-//     }
-//   }
-
-//   .grid {
-//     display: grid;
-//     grid-template-columns: 1fr 1fr;
-//     gap: 1rem;
-
-//     .col {
-//       background: #0d1a33;
-//       border: 1px solid #1b2c54;
-//       border-radius: 8px;
-//       padding: 0.8rem;
-
-//       .colTitle {
-//         text-align: center;
-//         font-weight: 700;
-//         color: #a7c1ff;
-//         margin-bottom: 0.6rem;
-//       }
-
-//       .answerRow {
-//         display: grid;
-//         grid-template-columns: 48px 1fr 90px;
-//         align-items: center;
-//         gap: 0.5rem;
-//         background: #0b1630;
-//         border: 1px solid #15264a;
-//         border-radius: 8px;
-//         padding: 0.6rem 0.8rem;
-//         margin-bottom: 0.5rem;
-//         min-height: 54px;
-
-//         &.activeRow {
-//           border-color: #2e5cff;
-//           box-shadow: 0 0 0 2px rgba(46, 92, 255, 0.25);
-//         }
-
-//         .slot {
-//           background: #15306e;
-//           color: #dce8ff;
-//           font-weight: 700;
-//           width: 44px;
-//           height: 32px;
-//           border-radius: 6px;
-//           display: flex;
-//           align-items: center;
-//           justify-content: center;
-//         }
-
-//         .answerText {
-//           font-size: 1.05rem;
-//           letter-spacing: 0.2px;
-//           white-space: nowrap;
-//           overflow: hidden;
-//           text-overflow: ellipsis;
-//         }
-
-//         .points {
-//           text-align: right;
-//           font-weight: 800;
-//           color: #ffda6a;
-//           font-size: 1.2rem;
-//         }
-//       }
-//     }
-//   }
-
-//   .total {
-//     margin-top: 1rem;
-//     text-align: center;
-//     font-size: 1.3rem;
-//     font-weight: 800;
-//     color: #ffda6a;
-//     background: #0d1a33;
-//     border: 1px solid #1b2c54;
-//     border-radius: 8px;
-//     padding: 0.6rem 0.8rem;
-//   }
-// }
-
+/* FastMoneyBoard.module.scss — audience display for Fast Money round */
 
 .fmBoard {
-  background: #0f1420;
-  color: #eef3ff;
-  padding: 1.5rem;
-  border-radius: 10px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  font-family: 'Segoe UI', sans-serif;
+  width: min(97%, 1440px);
+  font-family: var(--font-ui, system-ui, sans-serif);
+  gap: clamp(6px, 0.9vmin, 14px);
+}
 
-  .header {
-    display: grid;
-    grid-template-columns: 120px 1fr 90px;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+/* ── Header: FAST MONEY badge + question text + index ───────────── */
+.header {
+  display: grid;
+  grid-template-columns: minmax(90px, 130px) 1fr minmax(56px, 80px);
+  align-items: center;
+  gap: clamp(6px, 1vmin, 14px);
+  background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
+  border: 2px solid #1e3a6e;
+  border-radius: clamp(6px, 0.9vmin, 12px);
+  padding: clamp(8px, 1.2vmin, 18px) clamp(10px, 1.5vmin, 22px);
+  flex-shrink: 0;
 
-    .badge {
-      background: #2979ff;
-      color: #fff;
-      font-weight: 700;
-      padding: 0.45rem 0.7rem;
-      border-radius: 6px;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(41, 121, 255, 0.4);
-    }
-
-    .question {
-      background: #111a2e;
-      border: 1px solid #1e2a4a;
-      border-radius: 8px;
-      padding: 1rem 1.2rem;   /* ⬆ a bit more padding */
-      font-size: 1.4rem;      /* ⬆ bigger question text */
-      text-align: center;
-      min-height: 3.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .qIndex {
-      justify-self: end;
-      font-weight: 700;
-      color: #97b6ff;
-    }
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* two wide columns */
-    gap: 2rem;                      /* ⬆ more spacing between player columns */
-  }
-
-  .col {
-    background: #0d1a33;
-    border: 1px solid #1b2c54;
-    border-radius: 8px;
-    padding: 1rem;
-
-    .colTitle {
-      text-align: center;
-      font-weight: 700;
-      color: #a7c1ff;
-      margin-bottom: 0.8rem;
-      font-size: 1.3rem;  /* ⬆ bigger player title */
-    }
-
-    .answerRow {
-      display: grid;
-      grid-template-columns: 64px 1fr 100px; /* ⬆ slot + answer area + points */
-      align-items: center;
-      gap: 0.8rem;
-      background: #0b1630;
-      border: 1px solid #15264a;
-      border-radius: 8px;
-      padding: 0.9rem 1.2rem; /* ⬆ more padding */
-      margin-bottom: 0.8rem;
-      min-height: 68px;      /* ⬆ taller rows for readability */
-
-      &.activeRow {
-        border-color: #2e5cff;
-        box-shadow: 0 0 0 3px rgba(46, 92, 255, 0.25);
-      }
-
-      .slot {
-        background: #15306e;
-        color: #dce8ff;
-        font-weight: 700;
-        width: 52px;
-        height: 40px;
-        font-size: 1.2rem;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .answerText {
-        font-size: 1.4rem;   /* ⬆ bump answer font */
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .points {
-        text-align: right;
-        font-weight: 800;
-        color: #ffda6a;
-        font-size: 1.6rem;  /* ⬆ larger points */
-      }
-    }
-  }
-
-  .total {
-    margin-top: 1.5rem;
-    text-align: center;
-    font-size: 1.6rem;     /* ⬆ larger total */
+  .badge {
+    background: linear-gradient(180deg, #2e69ff 0%, #1a49d8 100%);
+    color: #fff;
     font-weight: 800;
-    color: #ffda6a;
-    background: #0d1a33;
-    border: 1px solid #1b2c54;
-    border-radius: 8px;
-    padding: 0.8rem 1.2rem;
+    font-size: clamp(0.6rem, 1.2vmin, 0.95rem);
+    letter-spacing: 0.5px;
+    text-align: center;
+    padding: clamp(4px, 0.7vmin, 10px) clamp(6px, 1vmin, 14px);
+    border-radius: clamp(4px, 0.6vmin, 8px);
+    box-shadow: 0 2px 10px rgba(46, 105, 255, 0.45);
+    white-space: nowrap;
+  }
+
+  .question {
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(0.85rem, 2.2vmin, 1.8rem);
+    text-align: center;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .qIndex {
+    justify-self: end;
+    font-weight: 800;
+    color: #97b6ff;
+    font-size: clamp(0.75rem, 1.4vmin, 1.1rem);
+    white-space: nowrap;
   }
 }
 
-.answerRow .answerText {
-  font-size: 1.2rem;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-transform: uppercase; /* 👈 force uppercase */
+/* ── Two-column player grid ────────────────────────────────────── */
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(8px, 1.2vmin, 18px);
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #0d1b3e 0%, #071225 100%);
+  border: 2px solid #1e3a6e;
+  border-radius: clamp(6px, 0.9vmin, 12px);
+  padding: clamp(8px, 1.2vmin, 16px);
+  gap: clamp(4px, 0.7vmin, 10px);
+
+  .colTitle {
+    text-align: center;
+    font-weight: 800;
+    color: #a7c1ff;
+    font-size: clamp(0.75rem, 1.5vmin, 1.2rem);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    padding-bottom: clamp(4px, 0.6vmin, 8px);
+    border-bottom: 1px solid rgba(30, 58, 110, 0.8);
+  }
+}
+
+/* ── Individual answer row ─────────────────────────────────────── */
+.answerRow {
+  flex: 1;
+  display: grid;
+  grid-template-columns: clamp(36px, 4.5vmin, 60px) 1fr clamp(60px, 8vmin, 110px);
+  align-items: center;
+  gap: clamp(6px, 0.9vmin, 14px);
+  background: linear-gradient(180deg, #1e7ecf 0%, #0d559a 100%);
+  border: 2px solid #0b3a70;
+  border-radius: clamp(4px, 0.6vmin, 10px);
+  padding: clamp(6px, 0.9vmin, 14px) clamp(8px, 1.2vmin, 18px);
+  min-height: clamp(40px, 6vmin, 70px);
+  box-shadow:
+    inset 0 2px 6px rgba(255, 255, 255, 0.12),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.2);
+
+  &.activeRow {
+    border-color: #ffd24d;
+    box-shadow:
+      inset 0 2px 6px rgba(255, 255, 255, 0.15),
+      0 0 0 2px rgba(255, 210, 77, 0.45);
+  }
+
+  .slot {
+    background: rgba(0, 0, 0, 0.3);
+    color: #c8deff;
+    font-weight: 800;
+    font-size: clamp(0.75rem, 1.5vmin, 1.2rem);
+    border-radius: clamp(3px, 0.5vmin, 6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: clamp(28px, 3.5vmin, 48px);
+  }
+
+  .answerText {
+    font-size: clamp(0.8rem, 2vmin, 1.55rem);
+    font-weight: 700;
+    color: #e8f4ff;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .points {
+    text-align: center;
+    font-weight: 900;
+    color: #2d1f00;
+    font-size: clamp(0.85rem, 2.2vmin, 1.8rem);
+    background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
+    border-radius: clamp(3px, 0.5vmin, 6px);
+    padding: clamp(2px, 0.4vmin, 6px) clamp(4px, 0.8vmin, 12px);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), 0 2px 6px rgba(0, 0, 0, 0.25);
+    min-width: clamp(36px, 5vmin, 64px);
+  }
+}
+
+/* ── Running total ─────────────────────────────────────────────── */
+.total {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: clamp(1rem, 2.4vmin, 2rem);
+  font-weight: 900;
+  color: #ffd24d;
+  background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
+  border: 2px solid #1e3a6e;
+  border-radius: clamp(6px, 0.9vmin, 12px);
+  padding: clamp(6px, 1vmin, 16px) clamp(12px, 2vmin, 28px);
+  letter-spacing: 1px;
 }
