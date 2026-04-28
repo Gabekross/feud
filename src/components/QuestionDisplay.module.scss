@@ -20,9 +20,14 @@
   h2 {
     margin: 0;
     font-weight: 800;
-    font-size: clamp(1.1rem, 3vmin, 2.8rem);
-    line-height: 1.25;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
-    letter-spacing: 0.2px;
+    /*
+     * Was: clamp(1.1rem, 3vmin, 2.8rem)  → ~32 px at 1080p
+     * Now: clamp(1.4rem, 4vmin, 3.8rem)  → ~43 px at 1080p  (+33%, +2 visual steps)
+     * Raises min so mid-size laptops still see a commanding question.
+     */
+    font-size: clamp(1.4rem, 4vmin, 3.8rem);
+    line-height: 1.2;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+    letter-spacing: 0.3px;
   }
 }

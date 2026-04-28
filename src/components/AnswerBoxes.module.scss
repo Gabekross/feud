@@ -80,7 +80,8 @@
   inset: 0;
   display: flex;
   align-items: center;
-  padding: 0 clamp(10px, 1.8vmin, 28px);
+  /* More horizontal breathing room for the larger text */
+  padding: 0 clamp(12px, 2.2vmin, 36px);
   backface-visibility: hidden;
   border-radius: clamp(6px, 0.8vmin, 12px);
 }
@@ -95,13 +96,14 @@
 
 /* ── Front face: number badge ──────────────────────────────────────── */
 .badge {
-  width: clamp(36px, 5vmin, 64px);
-  height: clamp(36px, 5vmin, 64px);
+  width: clamp(38px, 5.5vmin, 72px);
+  height: clamp(38px, 5.5vmin, 72px);
   border-radius: 999px;
   display: grid;
   place-items: center;
   font-weight: 900;
-  font-size: clamp(0.85rem, 1.8vmin, 1.5rem);
+  /* +11% min, +11% preferred, +13% max vs old clamp(0.85rem, 1.8vmin, 1.5rem) */
+  font-size: clamp(0.95rem, 2vmin, 1.7rem);
   color: #fff;
   background: radial-gradient(circle at 35% 30%, #3ab5ff 0%, #0b5aa2 70%);
   border: 3px solid #073e72;
@@ -124,10 +126,16 @@
   min-width: 0;
   color: #e8f4ff;
   font-weight: 800;
-  font-size: clamp(0.9rem, 2.4vmin, 2rem);
+  /*
+   * Was: clamp(0.9rem, 2.4vmin, 2rem)   → ~26 px at 1080p
+   * Now: clamp(1.1rem, 3.2vmin, 2.6rem)  → ~35 px at 1080p  (+34%)
+   *      clamp min raised so mobile still readable
+   */
+  font-size: clamp(1.1rem, 3.2vmin, 2.6rem);
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: clamp(0.5px, 0.15vmin, 2px);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  letter-spacing: clamp(0.5px, 0.2vmin, 2.5px);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -136,13 +144,22 @@
 /* Gold points pill — wide rounded rectangle, easy to read from distance */
 .points {
   flex-shrink: 0;
-  min-width: clamp(44px, 6vmin, 80px);
-  padding: clamp(4px, 0.6vmin, 10px) clamp(10px, 1.5vmin, 22px);
+  /*
+   * min-width raised to accommodate larger font without squeezing 3-digit numbers.
+   * Was: clamp(44px, 6vmin, 80px)
+   * Now: clamp(52px, 7.5vmin, 100px)
+   */
+  min-width: clamp(52px, 7.5vmin, 100px);
+  padding: clamp(4px, 0.7vmin, 12px) clamp(10px, 1.8vmin, 26px);
   border-radius: clamp(4px, 0.6vmin, 8px);
   background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
   color: #2d1f00;
   font-weight: 900;
-  font-size: clamp(0.9rem, 2.4vmin, 2rem);
+  /*
+   * Was: clamp(0.9rem, 2.4vmin, 2rem)   → ~26 px at 1080p
+   * Now: clamp(1.2rem, 3.4vmin, 2.8rem)  → ~37 px at 1080p  (+42%)
+   */
+  font-size: clamp(1.2rem, 3.4vmin, 2.8rem);
   text-align: center;
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.65), 0 3px 8px rgba(0, 0, 0, 0.3);
   line-height: 1;
