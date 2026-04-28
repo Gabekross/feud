@@ -13,7 +13,7 @@
 /* ── Header: FAST MONEY badge + question text + index ───────────── */
 .header {
   display: grid;
-  grid-template-columns: minmax(90px, 130px) 1fr minmax(56px, 80px);
+  grid-template-columns: minmax(90px, 130px) 1fr;
   align-items: center;
   gap: clamp(6px, 1vmin, 14px);
   background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
@@ -44,13 +44,6 @@
     word-break: break-word;
   }
 
-  .qIndex {
-    justify-self: end;
-    font-weight: 800;
-    color: #97b6ff;
-    font-size: clamp(0.75rem, 1.4vmin, 1.1rem);
-    white-space: nowrap;
-  }
 }
 
 /* ── Two-column player grid ────────────────────────────────────── */
@@ -88,7 +81,7 @@
 .answerRow {
   flex: 1;
   display: grid;
-  grid-template-columns: clamp(36px, 4.5vmin, 60px) 1fr clamp(60px, 8vmin, 110px);
+  grid-template-columns: 1fr clamp(60px, 8vmin, 110px);
   align-items: center;
   gap: clamp(6px, 0.9vmin, 14px);
   background: linear-gradient(180deg, #1e7ecf 0%, #0d559a 100%);
@@ -105,19 +98,6 @@
     box-shadow:
       inset 0 2px 6px rgba(255, 255, 255, 0.15),
       0 0 0 2px rgba(255, 210, 77, 0.45);
-  }
-
-  .slot {
-    background: rgba(0, 0, 0, 0.3);
-    color: #c8deff;
-    font-weight: 800;
-    font-size: clamp(0.75rem, 1.5vmin, 1.2rem);
-    border-radius: clamp(3px, 0.5vmin, 6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-height: clamp(28px, 3.5vmin, 48px);
   }
 
   .answerText {
