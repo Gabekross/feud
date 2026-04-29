@@ -48,13 +48,23 @@
 
 }
 
-/* ── Two-column player grid ────────────────────────────────────── */
+/* ── Player grid — switches between 1-col (P1's turn) and 2-col (P2's turn) ── */
 .grid {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: clamp(8px, 1.2vmin, 18px);
+  transition: grid-template-columns 0.4s ease;
+}
+
+/* P1 is still playing — show only P1 column, full width */
+.gridP1Only {
+  grid-template-columns: 1fr;
+}
+
+/* P2 has started — show both columns side by side */
+.gridBoth {
+  grid-template-columns: 1fr 1fr;
 }
 
 .col {

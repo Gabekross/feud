@@ -1,0 +1,75 @@
+/* RoundBadge.module.scss — color-coded round indicator pill
+   Sits above the scoreboard, scales with viewport via vmin clamps. */
+
+.badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(4px, 0.6vmin, 10px) clamp(14px, 2.4vmin, 36px);
+  border-radius: 999px;
+
+  font-weight: 900;
+  /* Slightly bigger in venue mode if the cascading var exists,
+     otherwise scales by vmin like everything else. */
+  font-size: var(--fs-round-badge, clamp(0.8rem, 1.7vmin, 1.5rem));
+  letter-spacing: clamp(1px, 0.4vmin, 4px);
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
+}
+
+/* ── Regular rounds 1–4: cool blue ─────────────────────────────────── */
+.regular {
+  background: linear-gradient(180deg, #2e69ff 0%, #1a49d8 100%);
+  color: #fff;
+  border: 2px solid #4a85ff;
+  box-shadow:
+    0 4px 14px rgba(46, 105, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* ── Fast Money: gold + slow pulse for drama ──────────────────────── */
+.fastMoney {
+  background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
+  color: #2d1f00;
+  border: 2px solid #b8820a;
+  box-shadow:
+    0 4px 14px rgba(255, 174, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: fmPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes fmPulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px rgba(255, 174, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 6px 24px rgba(255, 174, 0, 0.85),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* ── Sudden Death: red, high tension ───────────────────────────────── */
+.suddenDeath {
+  background: linear-gradient(180deg, #ff4747 0%, #c0181e 100%);
+  color: #fff;
+  border: 2px solid #ff7878;
+  box-shadow:
+    0 4px 14px rgba(255, 71, 71, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ── Winner / Game Over: deep gold ─────────────────────────────────── */
+.winner {
+  background: linear-gradient(180deg, #ffd24d 0%, #b8820a 100%);
+  color: #1a1000;
+  border: 2px solid #ffd24d;
+  box-shadow:
+    0 4px 18px rgba(255, 210, 77, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}

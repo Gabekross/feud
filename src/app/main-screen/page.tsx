@@ -11,6 +11,7 @@ import StrikeDisplay from '@/components/StrikeDisplay';
 import FastMoneyBoard from '@/components/FastMoneyBoard';
 import FullscreenToggle from '@/components/FullscreenToggle';
 import PresentationModeToggle, { type PresentationMode } from '@/components/PresentationModeToggle';
+import RoundBadge, { type Round } from '@/components/RoundBadge';
 import styles from './MainScreen.module.scss';
 
 export default function MainScreenPage() {
@@ -28,6 +29,9 @@ export default function MainScreenPage() {
   const [isFastMoney, setIsFastMoney] = useState(false);
   const [revealQ, setRevealQ] = useState<boolean>(false);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('cozy');
+  const [currentRound, setCurrentRound] = useState<Round>(null);
+  const [showFmTitle, setShowFmTitle] = useState(false);
+  const wasFastMoneyRef = useRef(false);
 
   // Fast Money timer (synced to DB)
   const [fmRunning, setFmRunning] = useState(false);
@@ -90,6 +94,7 @@ export default function MainScreenPage() {
       setStrikes(session.strikes ?? 0);
       prevStrikesRef.current = session.strikes ?? 0;
       setIsFastMoney(session.round === 'fast_money');
+      setCurrentRound((session.round ?? null) as Round);
 
       setFmRunning(!!session.fm_timer_running);
       setFmStartedAt(session.fm_timer_started_at ?? null);
@@ -120,6 +125,19 @@ export default function MainScreenPage() {
   useEffect(() => {
     loadInitial();
   }, [sessionId]);
+
+  // ── FAST MONEY title card: fires once on transition into fast_money ──
+  useEffect(() => {
+    if (isFastMoney && !wasFastMoneyRef.current) {
+      setShowFmTitle(true);
+      const t = setTimeout(() => setShowFmTitle(false), 2200);
+      wasFastMoneyRef.current = true;
+      return () => clearTimeout(t);
+    }
+    if (!isFastMoney) {
+      wasFastMoneyRef.current = false;
+    }
+  }, [isFastMoney]);
 
   // RAF loop for FM timer smoothness
   useEffect(() => {
@@ -163,6 +181,7 @@ export default function MainScreenPage() {
           setTeamScores({ team1: s.team1_score, team2: s.team2_score });
           setActiveTeam(s.active_team);
           setIsFastMoney(s.round === 'fast_money');
+          setCurrentRound((s.round ?? null) as Round);
 
           setFmRunning(!!s.fm_timer_running);
           setFmStartedAt(s.fm_timer_started_at ?? null);
@@ -241,6 +260,9 @@ export default function MainScreenPage() {
       <PresentationModeToggle onChange={setPresentationMode} />
 
       <div className={styles.stage}>
+        {/* ── Round indicator pill ── */}
+        <RoundBadge round={currentRound} />
+
         {/* ── Header: compact integrated scoreboard ── */}
         <TeamScore
           team1Name={team1Name}
@@ -275,7 +297,7 @@ export default function MainScreenPage() {
           </>
         ) : (
           <>
-            <QuestionDisplay question={revealQ ? question : '•••••••••••••••••'} />
+            <QuestionDisplay question={question} revealed={revealQ} />
             <AnswerBoxes answers={answers} />
             <StrikeDisplay count={strikes} />
           </>
@@ -283,6 +305,16 @@ export default function MainScreenPage() {
       </div>
 
       {showStrikeModal && <div className={styles.strikeModal} />}
+
+      {/* ── FAST MONEY title card — flashes for ~2s on transition into FM ── */}
+      {showFmTitle && (
+        <div className={styles.fmTitleCard}>
+          <div className={styles.fmTitleInner}>
+            <div className={styles.fmTitleSubtitle}>⚡ FINAL ROUND ⚡</div>
+            <div className={styles.fmTitleMain}>FAST MONEY</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
