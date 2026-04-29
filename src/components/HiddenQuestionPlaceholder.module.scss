@@ -1,0 +1,37 @@
+/* HiddenQuestionPlaceholder.module.scss
+   Reusable pulsing-dots + "GET READY" placeholder.
+   Inherits font-size from its parent (h2 in QuestionDisplay,
+   .question div in FastMoneyBoard) — sizing follows context. */
+
+.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 0.8vmin, 12px);
+}
+
+.label {
+  color: #ffd24d;
+  font-weight: 900;
+  letter-spacing: clamp(2px, 0.7vmin, 10px);
+}
+
+.dot {
+  display: inline-block;
+  animation: dotPulse 1.4s ease-in-out infinite;
+  color: #6aa1ff;
+}
+
+/* Stagger each dot so the row breathes left-to-right.
+   nth-child(4) is the GET READY label, so we skip it. */
+.dot:nth-child(1) { animation-delay: 0s;    }
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.3s;  }
+.dot:nth-child(5) { animation-delay: 0.45s; }
+.dot:nth-child(6) { animation-delay: 0.6s;  }
+.dot:nth-child(7) { animation-delay: 0.75s; }
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50%      { opacity: 1;    transform: translateY(-2px); }
+}

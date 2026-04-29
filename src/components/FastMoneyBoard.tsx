@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
+import HiddenQuestionPlaceholder from './HiddenQuestionPlaceholder';
 import styles from './FastMoneyBoard.module.scss';
 
 type Resp = {
@@ -169,7 +170,9 @@ export default function FastMoneyBoard() {
     <div className={styles.fmBoard}>
       <div className={styles.header}>
         <div className={styles.badge}>FAST MONEY</div>
-        <div className={styles.question}>{showQuestion ? qText : '••••••••••••••••••'}</div>
+        <div className={styles.question}>
+          {showQuestion ? qText : <HiddenQuestionPlaceholder />}
+        </div>
       </div>
 
       {/* Layout switches between single-column (P1's turn) and two-column
