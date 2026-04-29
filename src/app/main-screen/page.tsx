@@ -12,6 +12,7 @@ import FastMoneyBoard from '@/components/FastMoneyBoard';
 import FullscreenToggle from '@/components/FullscreenToggle';
 import PresentationModeToggle, { type PresentationMode } from '@/components/PresentationModeToggle';
 import RoundBadge, { type Round } from '@/components/RoundBadge';
+import EdgeCalibrationPanel, { type EdgeMargins } from '@/components/EdgeCalibrationPanel';
 import styles from './MainScreen.module.scss';
 
 export default function MainScreenPage() {
@@ -32,6 +33,8 @@ export default function MainScreenPage() {
   const [currentRound, setCurrentRound] = useState<Round>(null);
   const [showFmTitle, setShowFmTitle] = useState(false);
   const wasFastMoneyRef = useRef(false);
+  const [edgeMargins, setEdgeMargins] = useState<EdgeMargins>({ top: 3, right: 3, bottom: 3, left: 3 });
+  const [calibrating, setCalibrating] = useState(false);
 
   // Fast Money timer (synced to DB)
   const [fmRunning, setFmRunning] = useState(false);
@@ -255,9 +258,20 @@ export default function MainScreenPage() {
   }, []);
 
   return (
-    <div className={`${styles.mainScreen} ${presentationMode === 'venue' ? styles.venueMode : ''}`}>
+    <div
+      className={`${styles.mainScreen} ${presentationMode === 'venue' ? styles.venueMode : ''} ${calibrating ? styles.calibrating : ''}`}
+      style={{
+        // CSS custom-property overrides — feeds the --pad-* tokens used
+        // by .mainScreen padding, FM timer, and the corner toggles.
+        ['--pad-top'   as string]: `${edgeMargins.top}vh`,
+        ['--pad-right' as string]: `${edgeMargins.right}vw`,
+        ['--pad-bottom' as string]: `${edgeMargins.bottom}vh`,
+        ['--pad-left' as string]: `${edgeMargins.left}vw`,
+      }}
+    >
       <FullscreenToggle />
       <PresentationModeToggle onChange={setPresentationMode} />
+      <EdgeCalibrationPanel onChange={setEdgeMargins} onCalibratingChange={setCalibrating} />
 
       <div className={styles.stage}>
         {/* ── Round indicator pill ── */}

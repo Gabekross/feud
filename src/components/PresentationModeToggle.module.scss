@@ -5,8 +5,10 @@
 
 .toggle {
   position: fixed;
-  bottom: 12px;
-  left: 12px;
+  /* Sit at the calibrated bottom-left safe area so the button stays
+   * visible regardless of how much overscan the display crops. */
+  bottom: max(var(--pad-bottom, 3vh), env(safe-area-inset-bottom, 24px));
+  left:   max(var(--pad-left,   3vw), env(safe-area-inset-left,   24px));
   z-index: 2000;
 
   display: inline-flex;
