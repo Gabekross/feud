@@ -160,11 +160,12 @@ export default function FastMoneyBoard() {
     };
   }, [sessionId]);
 
-  const total = useMemo(() => {
-    const sum = (arr: FMRow[]) =>
-      arr.reduce((acc, r) => acc + (r && r.reveal_points ? (r.points_awarded ?? 0) : 0), 0);
-    return sum(p1Rows) + sum(p2Rows);
-  }, [p1Rows, p2Rows]);
+  const sumPoints = (arr: FMRow[]) =>
+    arr.reduce((acc, r) => acc + (r && r.reveal_points ? (r.points_awarded ?? 0) : 0), 0);
+
+  const p1Total = useMemo(() => sumPoints(p1Rows), [p1Rows]);
+  const p2Total = useMemo(() => sumPoints(p2Rows), [p2Rows]);
+  const grandTotal = p1Total + p2Total;
 
   return (
     <div className={styles.fmBoard}>
@@ -177,23 +178,31 @@ export default function FastMoneyBoard() {
         </div>
       </div>
 
-      {/* Layout switches between single-column (P1's turn) and two-column
-          (P2's turn onward) based on fm_hide_p1 — when P1 is still playing,
-          we hide P2's empty column entirely so the audience only sees P1. */}
+      {/* Layout switches between single-column (P1's solo turn) and two-column
+          (P2's turn onward) based on fm_hide_p1.
+          During P2's turn we KEEP P1's revealed content visible so the audience
+          can track the running total — Player 2 doesn't look at the audience
+          screen during their turn (they're staged facing away / wearing
+          headphones), so showing P1's column doesn't reveal anything to them. */}
       <div className={`${styles.grid} ${hideP1 ? styles.gridBoth : styles.gridP1Only}`}>
         <div className={styles.col}>
           <div className={styles.colTitle}>Player 1</div>
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={`p1-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
               <div className={styles.answerText}>
-                {/* Hide Player 1 content if fm_hide_p1 is true */}
-                {hideP1 ? '' : (p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : '')}
+                {p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
               </div>
               <div className={styles.points}>
-                {hideP1 ? '' : (p1Rows[i]?.reveal_points ? (p1Rows[i]?.points_awarded ?? 0) : '')}
+                {p1Rows[i]?.reveal_points ? (p1Rows[i]?.points_awarded ?? 0) : ''}
               </div>
             </div>
           ))}
+          {/* Per-column subtotal — only during P2 phase to mirror Family Feud */}
+          {hideP1 && (
+            <div className={styles.subtotal}>
+              SUBTOTAL <strong>{p1Total}</strong>
+            </div>
+          )}
         </div>
 
         {hideP1 && (
@@ -209,12 +218,22 @@ export default function FastMoneyBoard() {
                 </div>
               </div>
             ))}
+            <div className={styles.subtotal}>
+              SUBTOTAL <strong>{p2Total}</strong>
+            </div>
           </div>
         )}
       </div>
 
+      {/* Context-aware bottom label:
+          • P1 phase   → "PLAYER 1: 95"     (running solo total)
+          • P2 phase   → "GRAND TOTAL: 285" (combined climax) */}
       <div className={styles.total}>
-        Total: <strong>{total}</strong>
+        {hideP1 ? (
+          <>GRAND&nbsp;TOTAL: <strong>{grandTotal}</strong></>
+        ) : (
+          <>PLAYER&nbsp;1: <strong>{p1Total}</strong></>
+        )}
       </div>
     </div>
   );
