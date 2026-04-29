@@ -1,0 +1,191 @@
+/* HelpSection.module.scss — collapsible help/about for the landing page.
+   Visual language matches the landing page cards (dark navy, soft blue accents). */
+
+.outer {
+  width: min(1100px, 100%);
+  margin: 1.5rem auto 0;
+  background: linear-gradient(180deg, #162032, #121926);
+  border: 1px solid #1e2a3e;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &[open] {
+    border-color: #2d4470;
+    box-shadow: 0 10px 26px rgba(9, 15, 26, 0.5);
+  }
+}
+
+/* Outer pull-down header */
+.outerSummary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.1rem 1.25rem;
+  user-select: none;
+
+  /* Hide default disclosure marker in WebKit and Firefox */
+  &::-webkit-details-marker { display: none; }
+  &::marker { content: ''; }
+
+  &:hover { background: rgba(45, 68, 112, 0.12); }
+}
+
+.outerIcon { font-size: 1.4rem; line-height: 1; }
+
+.outerTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #eef2f7;
+  letter-spacing: 0.2px;
+}
+
+.outerHint {
+  color: #98a7bb;
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  @media (max-width: 600px) { display: none; }
+}
+
+.outerChevron {
+  color: #8aa0bf;
+  font-size: 1.1rem;
+  transition: transform 200ms ease;
+
+  /* Rotate when the outer details is open */
+  .outer[open] & { transform: rotate(180deg); }
+}
+
+/* Body — appears when outer is open */
+.body {
+  padding: 0.5rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid #1e2a3e;
+}
+
+/* Each subsection — its own collapsible card */
+.section {
+  background: #0f172a;
+  border: 1px solid #1c2940;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 120ms ease;
+
+  &[open] { border-color: #2e4774; }
+}
+
+.sectionSummary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: #d8e3f3;
+  user-select: none;
+  position: relative;
+
+  &::-webkit-details-marker { display: none; }
+  &::marker { content: ''; }
+
+  &:hover { background: rgba(45, 68, 112, 0.18); }
+
+  /* Disclosure indicator on the right */
+  &::after {
+    content: '+';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: #8aa0bf;
+    transition: transform 200ms ease;
+  }
+
+  .section[open] > &::after {
+    content: '−';
+  }
+}
+
+.sectionBody {
+  padding: 0.25rem 1rem 1rem;
+  color: #c3cfdf;
+  font-size: 0.93rem;
+  line-height: 1.55;
+
+  h4 {
+    margin: 1rem 0 0.4rem;
+    font-size: 1rem;
+    color: #eef2f7;
+  }
+
+  p {
+    margin: 0.5rem 0;
+  }
+
+  ol, ul {
+    margin: 0.5rem 0 0.5rem 1.25rem;
+    padding: 0;
+
+    li {
+      margin: 0.3rem 0;
+    }
+
+    /* Nested lists slightly tighter */
+    ul, ol {
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  code {
+    background: #1c2940;
+    color: #cfe1ff;
+    padding: 0.08rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  kbd {
+    background: #1c2940;
+    color: #eef2f7;
+    border: 1px solid #2e4774;
+    border-bottom-width: 2px;
+    padding: 0.05rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.82em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  em { color: #b6c2d2; font-style: normal; font-weight: 600; }
+  strong { color: #eef2f7; }
+}
+
+/* Callout boxes */
+.tip,
+.warn {
+  margin: 0.75rem 0 !important;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border-left: 3px solid;
+  font-size: 0.9rem;
+}
+
+.tip {
+  background: rgba(10, 132, 255, 0.10);
+  border-left-color: #0a84ff;
+  color: #d8e7ff;
+}
+
+.warn {
+  background: rgba(255, 170, 50, 0.10);
+  border-left-color: #ffaa32;
+  color: #ffdfa8;
+}

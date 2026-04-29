@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import HelpSection from '@/components/HelpSection';
 import styles from './Landing.module.scss';
 
 const MAIN_PATH = '/main-screen';
@@ -52,6 +53,8 @@ export default function LandingPage() {
           <span className={styles.cta}>View</span>
         </Link>
       </section>
+
+      <HelpSection />
 
       <footer className={styles.footer}>
         <span>ⓘ Tip: Create a game session first, then open the Operator Panel and Main Screen.</span>
