@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx next *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(Remove-Item -Recurse -Force .next)",
+      "Bash(npm outdated *)",
+      "Bash(npm audit *)",
+      "Bash(npm install *)",
+      "Bash(git revert *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(git reset *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git merge *)",
+      "Bash(npx tsc *)",
+      "Bash(gh pr create --base main --head master --title 'Simplify control screen: remove redundancy, clarify button labels' --body ' *)"
+    ]
+  }
+}

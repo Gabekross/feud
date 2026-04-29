@@ -38,7 +38,9 @@
   .question {
     color: #fff;
     font-weight: 700;
-    font-size: clamp(1.1rem, 3.2vmin, 2.6rem);
+    /* FM question shares the answer-size bucket — header has limited width
+       alongside the FAST MONEY badge, so we don't push it to --fs-question */
+    font-size: var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem));
     text-align: center;
     line-height: 1.2;
     word-break: break-word;
@@ -101,7 +103,7 @@
   }
 
   .answerText {
-    font-size: clamp(1.1rem, 3.2vmin, 2.6rem);
+    font-size: var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem));
     font-weight: 700;
     color: #e8f4ff;
     letter-spacing: 0.3px;
@@ -115,7 +117,7 @@
     text-align: center;
     font-weight: 900;
     color: #2d1f00;
-    font-size: clamp(1.2rem, 3.4vmin, 2.8rem);
+    font-size: var(--fs-points, clamp(1.2rem, 3.4vmin, 2.8rem));
     background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
     border-radius: clamp(3px, 0.5vmin, 6px);
     padding: clamp(2px, 0.4vmin, 6px) clamp(4px, 0.8vmin, 12px);

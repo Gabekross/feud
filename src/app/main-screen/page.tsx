@@ -10,6 +10,7 @@ import TeamScore from '@/components/TeamScore';
 import StrikeDisplay from '@/components/StrikeDisplay';
 import FastMoneyBoard from '@/components/FastMoneyBoard';
 import FullscreenToggle from '@/components/FullscreenToggle';
+import PresentationModeToggle, { type PresentationMode } from '@/components/PresentationModeToggle';
 import styles from './MainScreen.module.scss';
 
 export default function MainScreenPage() {
@@ -26,6 +27,7 @@ export default function MainScreenPage() {
   const [showStrikeModal, setShowStrikeModal] = useState(false);
   const [isFastMoney, setIsFastMoney] = useState(false);
   const [revealQ, setRevealQ] = useState<boolean>(false);
+  const [presentationMode, setPresentationMode] = useState<PresentationMode>('cozy');
 
   // Fast Money timer (synced to DB)
   const [fmRunning, setFmRunning] = useState(false);
@@ -234,8 +236,9 @@ export default function MainScreenPage() {
   }, []);
 
   return (
-    <div className={styles.mainScreen}>
+    <div className={`${styles.mainScreen} ${presentationMode === 'venue' ? styles.venueMode : ''}`}>
       <FullscreenToggle />
+      <PresentationModeToggle onChange={setPresentationMode} />
 
       <div className={styles.stage}>
         {/* ── Header: compact integrated scoreboard ── */}

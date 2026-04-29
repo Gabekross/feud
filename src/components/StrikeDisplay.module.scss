@@ -7,7 +7,7 @@
   gap: clamp(4px, 1vmin, 12px);
 
   /* Red X marks, sized to be clearly visible without dominating */
-  font-size: clamp(1.2rem, 3.5vmin, 3rem);
+  font-size: var(--fs-strike, clamp(1.2rem, 3.5vmin, 3rem));
   font-weight: 900;
   color: #ff3b3b;
   text-shadow: 0 0 12px rgba(255, 59, 59, 0.55);

@@ -25,7 +25,7 @@
      * Now: clamp(1.4rem, 4vmin, 3.8rem)  → ~43 px at 1080p  (+33%, +2 visual steps)
      * Raises min so mid-size laptops still see a commanding question.
      */
-    font-size: clamp(1.4rem, 4vmin, 3.8rem);
+    font-size: var(--fs-question, clamp(1.4rem, 4vmin, 3.8rem));
     line-height: 1.2;
     text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
     letter-spacing: 0.3px;
