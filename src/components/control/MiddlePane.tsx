@@ -20,6 +20,9 @@ export default function MiddlePane() {
 
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState<AnswerRow[]>([]);
+  const [isFastMoney, setIsFastMoney] = useState(false);
+  const [revealQ, setRevealQ] = useState(false);
+  const [currentRowId, setCurrentRowId] = useState<string | null>(null);
 
   const strikeAudio = typeof Audio !== 'undefined' ? new Audio('/sounds/buzzer.mp3') : null;
   const revealDingRef = useRef<HTMLAudioElement | null>(null);
@@ -30,12 +33,15 @@ export default function MiddlePane() {
     // Current session_questions row (id, qid, round, reveal flag)
     const { data: sq } = await supabase
       .from('session_questions')
-      .select('question_id')
+      .select('id, question_id, round_number, reveal_question')
       .eq('session_id', sessionId)
       .eq('is_current', true)
       .maybeSingle();
 
     const qid = sq?.question_id as string | undefined;
+    setCurrentRowId(sq?.id ?? null);
+    setIsFastMoney((sq?.round_number ?? 0) === 6);
+    setRevealQ(!!sq?.reveal_question);
 
     if (!qid) return;
 
@@ -111,6 +117,36 @@ export default function MiddlePane() {
     return () => { void supabase.removeChannel(ch); };
   }, [sessionId]);
 
+  // 🔁 Keep revealQ in sync when it changes from elsewhere
+  useEffect(() => {
+    if (!sessionId) return;
+    const ch = supabase
+      .channel(`middle_pane_revealq_${sessionId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
+        (payload) => {
+          if (payload.new?.is_current && payload.new?.round_number !== 6) {
+            setRevealQ(!!payload.new.reveal_question);
+          }
+        }
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [sessionId]);
+
+  const revealQuestionNow = async () => {
+    if (!sessionId || !currentRowId || isFastMoney) return;
+    await supabase.from('session_questions').update({ reveal_question: true }).eq('id', currentRowId);
+    setRevealQ(true);
+  };
+
+  const hideQuestionNow = async () => {
+    if (!sessionId || !currentRowId || isFastMoney) return;
+    await supabase.from('session_questions').update({ reveal_question: false }).eq('id', currentRowId);
+    setRevealQ(false);
+  };
+
   // Toggle reveal for one answer (with ding on reveal)
   const toggleReveal = async (id: string, next: boolean) => {
     if (next) {
@@ -157,6 +193,20 @@ export default function MiddlePane() {
       <h2>❓ Question Control</h2>
 
       <p className={styles.question}>{question}</p>
+
+      {!isFastMoney && (
+        <div className={styles.qControls}>
+          <button className={styles.revealBtn} onClick={revealQuestionNow} disabled={revealQ}>
+            👁️ Reveal Question
+          </button>
+          <button className={styles.hideBtn} onClick={hideQuestionNow} disabled={!revealQ}>
+            🙈 Hide Question
+          </button>
+          <span className={styles.qState}>
+            {revealQ ? '✅ Visible on Main Screen' : '🔒 Hidden on Main Screen'}
+          </span>
+        </div>
+      )}
 
       {/* Operator always sees answers */}
       <div className={styles.answerList}>
