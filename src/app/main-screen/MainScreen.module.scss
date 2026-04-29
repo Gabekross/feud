@@ -2,6 +2,31 @@
 
 /* Lock page to viewport; nothing scrolls */
 .mainScreen {
+  /* ──────────────────────────────────────────────────────────────
+   * Typography tokens — Cozy mode (default).
+   * Tuned for TVs and small/medium projectors with audiences within
+   * roughly 5–15m. Component SCSS modules read these via
+   * var(--fs-*, fallback) so this is the single source of truth.
+   * ────────────────────────────────────────────────────────────── */
+  --fs-question:  clamp(1.4rem, 4vmin, 3.8rem);
+  --fs-answer:    clamp(1.1rem, 3.2vmin, 2.6rem);
+  --fs-points:    clamp(1.2rem, 3.4vmin, 2.8rem);
+  --fs-team-name: clamp(0.65rem, 1.3vmin, 1.1rem);
+  --fs-strike:    clamp(1.2rem, 3.5vmin, 3rem);
+
+  /* ──────────────────────────────────────────────────────────────
+   * Venue mode — Tier 1 sizing for projector / large-venue audiences
+   * (20m+ away). Activated by the bottom-left toggle, the
+   * `?mode=venue` URL param, or persisted localStorage.
+   * ────────────────────────────────────────────────────────────── */
+  &.venueMode {
+    --fs-question:  clamp(2rem,    5.5vmin, 5rem);
+    --fs-answer:    clamp(1.5rem,  4.4vmin, 3.6rem);
+    --fs-points:    clamp(1.6rem,  4.6vmin, 3.8rem);
+    --fs-team-name: clamp(0.95rem, 2.2vmin, 1.8rem);
+    --fs-strike:    clamp(1.8rem,  5.5vmin, 4.5rem);
+  }
+
   position: fixed;
   inset: 0;
   background-color: #06101f;  /* deep navy game-show backdrop */
