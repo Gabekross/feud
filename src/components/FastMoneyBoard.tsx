@@ -172,7 +172,10 @@ export default function FastMoneyBoard() {
         <div className={styles.question}>{showQuestion ? qText : '••••••••••••••••••'}</div>
       </div>
 
-      <div className={styles.grid}>
+      {/* Layout switches between single-column (P1's turn) and two-column
+          (P2's turn onward) based on fm_hide_p1 — when P1 is still playing,
+          we hide P2's empty column entirely so the audience only sees P1. */}
+      <div className={`${styles.grid} ${hideP1 ? styles.gridBoth : styles.gridP1Only}`}>
         <div className={styles.col}>
           <div className={styles.colTitle}>Player 1</div>
           {[1, 2, 3, 4, 5].map((i) => (
@@ -188,19 +191,21 @@ export default function FastMoneyBoard() {
           ))}
         </div>
 
-        <div className={styles.col}>
-          <div className={styles.colTitle}>Player 2</div>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={`p2-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
-              <div className={styles.answerText}>
-                {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}
+        {hideP1 && (
+          <div className={styles.col}>
+            <div className={styles.colTitle}>Player 2</div>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={`p2-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
+                <div className={styles.answerText}>
+                  {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}
+                </div>
+                <div className={styles.points}>
+                  {p2Rows[i]?.reveal_points ? (p2Rows[i]?.points_awarded ?? 0) : ''}
+                </div>
               </div>
-              <div className={styles.points}>
-                {p2Rows[i]?.reveal_points ? (p2Rows[i]?.points_awarded ?? 0) : ''}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className={styles.total}>

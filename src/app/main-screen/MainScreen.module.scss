@@ -135,3 +135,62 @@
   stroke: rgba(0, 0, 0, 0.3);
   stroke-width: 2px;
 }
+
+/* ── FAST MONEY title card ─────────────────────────────────────────
+   Full-screen dramatic intro the moment the operator switches into the
+   Fast Money round. Auto-dismissed after ~2.2s by the page state. */
+.fmTitleCard {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(11, 26, 58, 0.95) 0%,
+    rgba(6, 16, 31, 0.98) 60%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  pointer-events: none;
+  animation: fmTitleFade 2.2s ease-in-out forwards;
+}
+
+.fmTitleInner {
+  text-align: center;
+  animation: fmTitleZoom 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.fmTitleSubtitle {
+  color: #ffd24d;
+  font-weight: 800;
+  font-size: clamp(1rem, 3vmin, 2.2rem);
+  letter-spacing: clamp(2px, 0.8vmin, 12px);
+  margin-bottom: clamp(8px, 1.4vmin, 24px);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.fmTitleMain {
+  font-weight: 900;
+  font-size: clamp(3rem, 13vmin, 11rem);
+  letter-spacing: clamp(4px, 1.2vmin, 18px);
+  background: linear-gradient(180deg, #ffe657 0%, #ffae00 60%, #b8820a 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 18px rgba(255, 174, 0, 0.55));
+}
+
+@keyframes fmTitleFade {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fmTitleZoom {
+  0%   { transform: scale(0.6); }
+  20%  { transform: scale(1.05); }
+  35%  { transform: scale(1.0); }
+  90%  { transform: scale(1.02); }
+  100% { transform: scale(1.1); }
+}
