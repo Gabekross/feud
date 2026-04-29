@@ -148,18 +148,28 @@ export default function FastMoneyPane() {
   };
 
   // switch player & auto-hide P1 when on Player 2
-  // Also hide the question reveal so the incoming player can't see Q text or answers yet
+  // Reset question reveals so the incoming player gets a clean start:
+  //   - Q1 hidden (operator manually clicks "Reveal Question")
+  //   - Q2-Q5 pre-revealed (so the running 20s timer doesn't burn seconds
+  //     on manual reveals between questions)
+  // Answers are per-player in fast_money_responses, so the new player's
+  // reveal_answer/reveal_points rows are already false.
   const switchPlayer = async (p: 1 | 2) => {
     setPlayer(p);
     await setHideP1(p === 2);
     if (!sessionId) return;
-    // Reset question reveal for all FM questions — answers are per-player
-    // so fast_money_responses rows for the new player already have reveal_answer: false
     await supabase
       .from('session_questions')
       .update({ fm_reveal_question: false })
       .eq('session_id', sessionId)
-      .eq('round_number', 6);
+      .eq('round_number', 6)
+      .eq('fm_index', 1);
+    await supabase
+      .from('session_questions')
+      .update({ fm_reveal_question: true })
+      .eq('session_id', sessionId)
+      .eq('round_number', 6)
+      .neq('fm_index', 1);
     setRevealQuestion(false);
   };
 

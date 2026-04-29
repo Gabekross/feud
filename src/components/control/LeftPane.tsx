@@ -131,8 +131,23 @@ export default function LeftPane() {
     if (targetRound !== 6) {
       await supabase.from('session_questions').update({ reveal_question: false }).eq('id', targetRowId);
     } else {
-      const fmShouldReveal = fmIndex !== 1;
-      await supabase.from('session_questions').update({ fm_reveal_question: fmShouldReveal }).eq('id', targetRowId);
+      // Fast Money: Q1 stays hidden by default (operator manually clicks
+      // "Reveal Question" to start the round). Q2–Q5 are pre-revealed so
+      // the running 20-second timer doesn't lose seconds to manual clicks
+      // between each question. Apply this to ALL 5 FM rows so the state
+      // is consistent regardless of which one is becoming current.
+      await supabase
+        .from('session_questions')
+        .update({ fm_reveal_question: false })
+        .eq('session_id', sessionId)
+        .eq('round_number', 6)
+        .eq('fm_index', 1);
+      await supabase
+        .from('session_questions')
+        .update({ fm_reveal_question: true })
+        .eq('session_id', sessionId)
+        .eq('round_number', 6)
+        .neq('fm_index', 1);
     }
 
     const roundLabel: Record<number, string> = { 1:'round1',2:'round2',3:'round3',4:'round4',5:'sudden_death',6:'fast_money' };
