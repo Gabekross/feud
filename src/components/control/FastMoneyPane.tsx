@@ -173,16 +173,6 @@ export default function FastMoneyPane() {
     setRevealQuestion(false);
   };
 
-  const toggleHideP1 = async () => {
-    if (!sessionId) return;
-    const { data } = await supabase
-      .from('game_sessions')
-      .select('fm_hide_p1')
-      .eq('id', sessionId)
-      .single();
-    await setHideP1(!data?.fm_hide_p1);
-  };
-
   // ===== effects =====
   useEffect(() => {
     loadCurrentFM();
@@ -435,11 +425,6 @@ export default function FastMoneyPane() {
           <button className={player === 2 ? styles.active : ''} onClick={() => switchPlayer(2)}>Player 2</button>
         </div>
 
-        <div className={styles.hideGroup}>
-          <button className={styles.hideToggle} onClick={toggleHideP1}>
-            Toggle Hide P1 on Main
-          </button>
-        </div>
       </div>
 
       {/* Question card */}

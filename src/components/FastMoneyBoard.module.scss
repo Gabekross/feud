@@ -5,7 +5,13 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  width: min(97%, 1440px);
+  /* Narrowed from min(97%, 1440px) to give the answer rows a more
+     proportional ~4:1 aspect ratio (was ~5:1 banner-shaped). Centers
+     the FM content like a real game-show board instead of stretching
+     edge-to-edge. */
+  width: min(72%, 1200px);
+  margin-left: auto;
+  margin-right: auto;
   font-family: var(--font-ui, system-ui, sans-serif);
   gap: clamp(6px, 0.9vmin, 14px);
 }
@@ -73,12 +79,39 @@
     text-align: center;
     font-weight: 800;
     color: #a7c1ff;
-    font-size: clamp(0.75rem, 1.5vmin, 1.2rem);
-    letter-spacing: 0.5px;
+    /* Use the same scale-token as team names so column titles are
+       readable from across the room — bumps in venue mode automatically. */
+    font-size: var(--fs-team-name, clamp(0.75rem, 1.5vmin, 1.2rem));
+    letter-spacing: clamp(0.5px, 0.3vmin, 2px);
     text-transform: uppercase;
     flex-shrink: 0;
     padding-bottom: clamp(4px, 0.6vmin, 8px);
     border-bottom: 1px solid rgba(30, 58, 110, 0.8);
+  }
+
+  /* Per-column subtotal pill — appears at the bottom of each column
+     during Player 2's phase, matches Family Feud's per-player tally. */
+  .subtotal {
+    flex-shrink: 0;
+    margin-top: clamp(6px, 0.9vmin, 14px);
+    padding: clamp(4px, 0.6vmin, 10px) clamp(10px, 1.4vmin, 22px);
+    background: rgba(255, 210, 77, 0.12);
+    border: 2px solid rgba(255, 210, 77, 0.5);
+    border-radius: clamp(4px, 0.6vmin, 8px);
+    text-align: center;
+    color: #ffd24d;
+    font-weight: 800;
+    font-size: var(--fs-team-name, clamp(0.7rem, 1.4vmin, 1.15rem));
+    letter-spacing: clamp(1px, 0.4vmin, 3px);
+    text-transform: uppercase;
+    line-height: 1;
+
+    strong {
+      font-size: 1.4em;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      margin-left: 0.3em;
+    }
   }
 }
 
