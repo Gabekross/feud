@@ -1,7 +1,9 @@
 .fullscreen {
   position: fixed;
-  bottom: 12px;
-  right: 12px;
+  /* Sit at the calibrated bottom-right safe area so the button stays
+   * visible regardless of how much overscan the display crops. */
+  bottom: max(var(--pad-bottom, 3vh), env(safe-area-inset-bottom, 24px));
+  right:  max(var(--pad-right,  3vw), env(safe-area-inset-right,  24px));
   z-index: 2000;
   background: transparent;
   color: #a7c1ff;

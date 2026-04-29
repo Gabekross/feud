@@ -10,42 +10,29 @@
   gap: clamp(6px, 0.9vmin, 14px);
 }
 
-/* ── Header: FAST MONEY badge + question text + index ───────────── */
+/* ── Header: question text only ──────────────────────────────────────
+   The inner "FAST MONEY" pill was removed because the top-of-screen
+   Round Badge (RoundBadge component) already shows it more prominently. */
 .header {
-  display: grid;
-  grid-template-columns: minmax(90px, 130px) 1fr;
+  display: flex;
   align-items: center;
-  gap: clamp(6px, 1vmin, 14px);
+  justify-content: center;
   background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
   border: 2px solid #1e3a6e;
   border-radius: clamp(6px, 0.9vmin, 12px);
   padding: clamp(8px, 1.2vmin, 18px) clamp(10px, 1.5vmin, 22px);
   flex-shrink: 0;
 
-  .badge {
-    background: linear-gradient(180deg, #2e69ff 0%, #1a49d8 100%);
-    color: #fff;
-    font-weight: 800;
-    font-size: clamp(0.6rem, 1.2vmin, 0.95rem);
-    letter-spacing: 0.5px;
-    text-align: center;
-    padding: clamp(4px, 0.7vmin, 10px) clamp(6px, 1vmin, 14px);
-    border-radius: clamp(4px, 0.6vmin, 8px);
-    box-shadow: 0 2px 10px rgba(46, 105, 255, 0.45);
-    white-space: nowrap;
-  }
-
   .question {
     color: #fff;
     font-weight: 700;
-    /* FM question shares the answer-size bucket — header has limited width
-       alongside the FAST MONEY badge, so we don't push it to --fs-question */
-    font-size: var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem));
+    /* Without the badge eating header width, FM question can use the
+       full question-size bucket (matches regular-round QuestionDisplay). */
+    font-size: var(--fs-question, clamp(1.4rem, 4vmin, 3.8rem));
     text-align: center;
     line-height: 1.2;
     word-break: break-word;
   }
-
 }
 
 /* ── Player grid — switches between 1-col (P1's turn) and 2-col (P2's turn) ── */

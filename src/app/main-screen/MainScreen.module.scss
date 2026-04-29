@@ -27,6 +27,17 @@
     --fs-strike:    clamp(1.8rem,  5.5vmin, 4.5rem);
   }
 
+  /* ──────────────────────────────────────────────────────────────
+   * Per-edge safe-area padding tokens — defaults match a 3% margin
+   * which works for most modern displays. Overridden at runtime via
+   * inline style by EdgeCalibrationPanel so any TV / projector /
+   * LED wall can be dialed in without code changes.
+   * ────────────────────────────────────────────────────────────── */
+  --pad-top:    3vh;
+  --pad-right:  3vw;
+  --pad-bottom: 3vh;
+  --pad-left:   3vw;
+
   position: fixed;
   inset: 0;
   background-color: #06101f;  /* deep navy game-show backdrop */
@@ -41,15 +52,20 @@
   display: grid;
   place-items: center;
 
-  /* Overscan-safe padding for TVs/projectors.
-   * Bumped to 3vw/3vh (was 1.2vw/vh) so content is never clipped by the
-   * 3–5% overscan that most consumer TVs apply by default. At 1080p this
-   * gives ~57px breathing room per edge instead of ~23px.
-   */
-  padding-top:    max(3vh, env(safe-area-inset-top,    24px));
-  padding-right:  max(3vw, env(safe-area-inset-right,  24px));
-  padding-bottom: max(3vh, env(safe-area-inset-bottom, 24px));
-  padding-left:   max(3vw, env(safe-area-inset-left,   24px));
+  /* Padding consumes the calibrated tokens above. The env() floor still
+   * applies on devices with notches/safe-areas; TVs/projectors use the
+   * --pad-* values directly. */
+  padding-top:    max(var(--pad-top),    env(safe-area-inset-top,    24px));
+  padding-right:  max(var(--pad-right),  env(safe-area-inset-right,  24px));
+  padding-bottom: max(var(--pad-bottom), env(safe-area-inset-bottom, 24px));
+  padding-left:   max(var(--pad-left),   env(safe-area-inset-left,   24px));
+
+  /* When the calibration panel is open, draw a dashed outline around the
+   * stage so the operator sees the exact safe-area boundary they're tuning. */
+  &.calibrating .stage {
+    outline: 2px dashed rgba(255, 60, 60, 0.85);
+    outline-offset: -1px;
+  }
 }
 
 /* ── 16:9 stage — scales to fill the padded viewport ─────────────── */
@@ -103,14 +119,14 @@
 }
 
 /* ── Fast Money timer — fixed top-right overlay ─────────────────────
- * Positioned to the same safe area as the .mainScreen padding so the
- * timer sits at the corner of the visible stage on overscan-prone TVs
- * instead of floating into the bezel/clipping zone.
+ * Positioned to the same calibrated safe area as the .mainScreen padding
+ * so the timer always sits at the corner of the visible stage, regardless
+ * of how the operator has tuned the edges for their display.
  */
 .fmTimerTopRight {
   position: fixed;
-  top:   max(3vh, env(safe-area-inset-top,   24px));
-  right: max(3vw, env(safe-area-inset-right, 24px));
+  top:   max(var(--pad-top, 3vh), env(safe-area-inset-top, 24px));
+  right: max(var(--pad-right, 3vw), env(safe-area-inset-right, 24px));
   z-index: 1500;
   pointer-events: none;
   user-select: none;

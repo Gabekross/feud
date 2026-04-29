@@ -168,8 +168,10 @@ export default function FastMoneyBoard() {
 
   return (
     <div className={styles.fmBoard}>
+      {/* Header is just the question now — the redundant FAST MONEY pill
+          was removed since the top-of-screen Round Badge already conveys
+          which round is active. */}
       <div className={styles.header}>
-        <div className={styles.badge}>FAST MONEY</div>
         <div className={styles.question}>
           {showQuestion ? qText : <HiddenQuestionPlaceholder />}
         </div>
