@@ -5,24 +5,27 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  /* Narrowed from min(97%, 1440px) to give the answer rows a more
-     proportional ~4:1 aspect ratio (was ~5:1 banner-shaped). Centers
-     the FM content like a real game-show board instead of stretching
-     edge-to-edge. */
-  width: min(72%, 1200px);
-  margin-left: auto;
-  margin-right: auto;
+  /* Container fills available width; each child sets its own width to
+     create the intended visual hierarchy:
+       • header (question)  → wide, matches scoreboard
+       • grid (answer rows) → narrow, keeps rows proportional
+       • total              → hugs content, focal pill */
+  width: 100%;
+  align-items: center;
   font-family: var(--font-ui, system-ui, sans-serif);
   gap: clamp(6px, 0.9vmin, 14px);
 }
 
 /* ── Header: question text only ──────────────────────────────────────
    The inner "FAST MONEY" pill was removed because the top-of-screen
-   Round Badge (RoundBadge component) already shows it more prominently. */
+   Round Badge (RoundBadge component) already shows it more prominently.
+   Width matches the scoreboard (97%/1440px) so the question reads as a
+   wide "title strip" continuous with the scoreboard above. */
 .header {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: min(97%, 1440px);
   background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
   border: 2px solid #1e3a6e;
   border-radius: clamp(6px, 0.9vmin, 12px);
@@ -41,11 +44,14 @@
   }
 }
 
-/* ── Player grid — switches between 1-col (P1's turn) and 2-col (P2's turn) ── */
+/* ── Player grid — switches between 1-col (P1's turn) and 2-col (P2's turn) ──
+   Narrower than the question header (72% vs 97%) so each answer row keeps
+   a proportional ~4:1 aspect ratio instead of stretching to ~5:1 banner. */
 .grid {
   flex: 1;
   min-height: 0;
   display: grid;
+  width: min(72%, 1200px);
   gap: clamp(8px, 1.2vmin, 18px);
   transition: grid-template-columns 0.4s ease;
 }
