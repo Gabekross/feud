@@ -40,7 +40,7 @@ export default function AnswerBoxes({ answers }: Props) {
   // Load ding sound once
   const dingSoundRef = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
-    dingSoundRef.current = new Audio('/sounds/ding.mp3'); // place file in public/sounds/
+    dingSoundRef.current = new Audio('/sounds/correct.mp3');
     dingSoundRef.current.volume = 0.7;
   }, []);
 
@@ -71,7 +71,6 @@ export default function AnswerBoxes({ answers }: Props) {
         }}
       >
         {orderedAnswers.map((a, idx) => {
-          const slotNumber = slotNumbers[idx];
           const flipClass = a.revealed ? styles.isRevealed : '';
           const justClass = justRevealed[idx] ? styles.justFlipped : '';
 
