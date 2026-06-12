@@ -30,12 +30,8 @@
 .grid {
   width: min(1100px, 100%);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
-
-  @media (max-width: 920px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .card {
@@ -70,8 +66,18 @@
 }
 
 .emoji {
-  font-size: 1.8rem;
+  width: max-content;
+  min-width: 2.75rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(255, 210, 77, 0.12);
+  border: 1px solid rgba(255, 210, 77, 0.22);
+  color: #ffd24d;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   line-height: 1;
+  text-align: center;
 }
 
 .cta {
