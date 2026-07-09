@@ -25,6 +25,9 @@ export default function GameSetupPage() {
 
   const [team1, setTeam1] = useState('Team 1');
   const [team2, setTeam2] = useState('Team 2');
+  const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
+  const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
+  const [showEventFooter, setShowEventFooter] = useState(true);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -88,6 +91,10 @@ export default function GameSetupPage() {
         active_team: 1,
         strikes: 0,
         round: 'round1',
+        screen_state: 'standby',
+        event_title: eventTitle.trim() || 'GABEKROSS FAMILY FEUD',
+        event_footer_text: eventFooterText.trim() || 'Powered by Gabekross',
+        show_event_footer: showEventFooter,
       })
       .select()
       .single();
@@ -125,6 +132,18 @@ export default function GameSetupPage() {
       <h1>Game Setup</h1>
 
       <div className={styles.teams}>
+        <label>Event Title:</label>
+        <input value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} />
+        <label>Footer Text:</label>
+        <input value={eventFooterText} onChange={(e) => setEventFooterText(e.target.value)} />
+        <label>
+          <input
+            type="checkbox"
+            checked={showEventFooter}
+            onChange={(e) => setShowEventFooter(e.target.checked)}
+          />
+          Show footer on intro screens
+        </label>
         <label>Team 1 Name:</label>
         <input value={team1} onChange={(e) => setTeam1(e.target.value)} />
         <label>Team 2 Name:</label>

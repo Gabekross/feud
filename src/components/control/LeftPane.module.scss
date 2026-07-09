@@ -36,6 +36,7 @@
   }
 
   select,
+  input[type="text"],
   input[type="number"] {
     margin-top: 0.2rem;
     padding: 0.5rem 0.6rem;
@@ -132,6 +133,23 @@
 }
 
 /* Reveal question toggle buttons — used in LeftPane for normal rounds */
+.screenModes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+
+  button {
+    border: 1px solid #38465d;
+    background: #222a38;
+  }
+}
+
+.activeMode {
+  border-color: #ffd24d !important;
+  background: linear-gradient(180deg, #ffd24d 0%, #b8820a 100%) !important;
+  color: #1d1600 !important;
+}
+
 .revealControls {
   display: flex;
   gap: 0.5rem;

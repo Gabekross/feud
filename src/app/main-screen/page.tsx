@@ -1,4 +1,3 @@
-// src/app/main/MainScreenPage.tsx
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -15,12 +14,13 @@ import RoundBadge, { type Round } from '@/components/RoundBadge';
 import EdgeCalibrationPanel, { type EdgeMargins } from '@/components/EdgeCalibrationPanel';
 import styles from './MainScreen.module.scss';
 
+type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
+
 export default function MainScreenPage() {
   const sessionId = useActiveSession();
 
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
-
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState<{ text: string; revealed: boolean; points: number }[]>([]);
   const [teamScores, setTeamScores] = useState({ team1: 0, team2: 0 });
@@ -28,22 +28,25 @@ export default function MainScreenPage() {
   const [strikes, setStrikes] = useState(0);
   const [showStrikeModal, setShowStrikeModal] = useState(false);
   const [isFastMoney, setIsFastMoney] = useState(false);
-  const [revealQ, setRevealQ] = useState<boolean>(false);
+  const [screenState, setScreenState] = useState<ScreenState>('standby');
+  const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
+  const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
+  const [showEventFooter, setShowEventFooter] = useState(true);
+  const [revealQ, setRevealQ] = useState(false);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('cozy');
   const [currentRound, setCurrentRound] = useState<Round>(null);
   const [showFmTitle, setShowFmTitle] = useState(false);
-  const wasFastMoneyRef = useRef(false);
   const [edgeMargins, setEdgeMargins] = useState<EdgeMargins>({ top: 3, right: 3, bottom: 3, left: 3 });
   const [calibrating, setCalibrating] = useState(false);
 
-  // Fast Money timer (synced to DB)
   const [fmRunning, setFmRunning] = useState(false);
   const [fmStartedAt, setFmStartedAt] = useState<string | null>(null);
-  const [fmDuration, setFmDuration] = useState<number>(20);
-  const [fmRemain, setFmRemain] = useState<number>(20);
-  const rafRef = useRef<number | null>(null);
+  const [fmDuration, setFmDuration] = useState(20);
+  const [fmRemain, setFmRemain] = useState(20);
 
+  const rafRef = useRef<number | null>(null);
   const prevStrikesRef = useRef(0);
+  const wasFastMoneyRef = useRef(false);
 
   const getTimerColor = () => {
     const ratio = fmRemain / Math.max(1, fmDuration);
@@ -60,6 +63,15 @@ export default function MainScreenPage() {
     }
     return Math.max(0, fmDuration);
   };
+
+  const leadingTeamName =
+    teamScores.team1 === teamScores.team2
+      ? 'Great Game'
+      : teamScores.team1 > teamScores.team2
+        ? team1Name
+        : team2Name;
+
+  const leadingScore = Math.max(teamScores.team1, teamScores.team2);
 
   const loadQAByQuestionId = async (qid: string) => {
     const { data: q } = await supabase
@@ -80,6 +92,39 @@ export default function MainScreenPage() {
     );
   };
 
+  const applySession = (session: any) => {
+    setTeam1Name(session.team1_name ?? 'Team 1');
+    setTeam2Name(session.team2_name ?? 'Team 2');
+    setTeamScores({ team1: session.team1_score ?? 0, team2: session.team2_score ?? 0 });
+    setActiveTeam(session.active_team ?? 1);
+    setIsFastMoney(session.round === 'fast_money');
+    setCurrentRound((session.round ?? null) as Round);
+    setScreenState((session.screen_state ?? 'standby') as ScreenState);
+    setEventTitle(session.event_title ?? 'GABEKROSS FAMILY FEUD');
+    setEventFooterText(session.event_footer_text ?? 'Powered by Gabekross');
+    setShowEventFooter(session.show_event_footer ?? true);
+
+    const newStrikes = session.strikes ?? 0;
+    if (newStrikes > prevStrikesRef.current) {
+      setShowStrikeModal(true);
+      setTimeout(() => setShowStrikeModal(false), 1200);
+    }
+    prevStrikesRef.current = newStrikes;
+    setStrikes(newStrikes);
+
+    setFmRunning(!!session.fm_timer_running);
+    setFmStartedAt(session.fm_timer_started_at ?? null);
+    setFmDuration(session.fm_timer_duration ?? (session.fast_money_seconds ?? 20));
+    setFmRemain(() => {
+      if (session.fm_timer_running && session.fm_timer_started_at) {
+        const start = new Date(session.fm_timer_started_at).getTime();
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        return Math.max(0, (session.fm_timer_duration ?? 0) - elapsed);
+      }
+      return Math.max(0, session.fm_timer_duration ?? (session.fast_money_seconds ?? 20));
+    });
+  };
+
   const loadInitial = async () => {
     if (!sessionId) return;
 
@@ -90,26 +135,8 @@ export default function MainScreenPage() {
       .single();
 
     if (session) {
-      setTeam1Name(session.team1_name ?? 'Team 1');
-      setTeam2Name(session.team2_name ?? 'Team 2');
-      setTeamScores({ team1: session.team1_score ?? 0, team2: session.team2_score ?? 0 });
-      setActiveTeam(session.active_team ?? 1);
-      setStrikes(session.strikes ?? 0);
       prevStrikesRef.current = session.strikes ?? 0;
-      setIsFastMoney(session.round === 'fast_money');
-      setCurrentRound((session.round ?? null) as Round);
-
-      setFmRunning(!!session.fm_timer_running);
-      setFmStartedAt(session.fm_timer_started_at ?? null);
-      setFmDuration(session.fm_timer_duration ?? (session.fast_money_seconds ?? 20));
-      setFmRemain(() => {
-        if (session.fm_timer_running && session.fm_timer_started_at) {
-          const start = new Date(session.fm_timer_started_at).getTime();
-          const elapsed = Math.floor((Date.now() - start) / 1000);
-          return Math.max(0, (session.fm_timer_duration ?? 0) - elapsed);
-        }
-        return Math.max(0, session.fm_timer_duration ?? (session.fast_money_seconds ?? 20));
-      });
+      applySession(session);
     }
 
     if (!session?.round || session.round !== 'fast_money') {
@@ -127,11 +154,11 @@ export default function MainScreenPage() {
 
   useEffect(() => {
     loadInitial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // ── FAST MONEY title card: fires once on transition into fast_money ──
   useEffect(() => {
-    if (isFastMoney && !wasFastMoneyRef.current) {
+    if (isFastMoney && !wasFastMoneyRef.current && screenState === 'board') {
       setShowFmTitle(true);
       const t = setTimeout(() => setShowFmTitle(false), 2200);
       wasFastMoneyRef.current = true;
@@ -140,9 +167,8 @@ export default function MainScreenPage() {
     if (!isFastMoney) {
       wasFastMoneyRef.current = false;
     }
-  }, [isFastMoney]);
+  }, [isFastMoney, screenState]);
 
-  // RAF loop for FM timer smoothness
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const loop = () => {
@@ -158,7 +184,6 @@ export default function MainScreenPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fmRunning, fmStartedAt, fmDuration]);
 
-  // Realtime: session-level fields (names, scores, strikes, FM timer)
   useEffect(() => {
     if (!sessionId) return;
 
@@ -168,35 +193,7 @@ export default function MainScreenPage() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
         (payload: any) => {
-          const s = payload.new;
-
-          if (typeof s.team1_name === 'string') setTeam1Name(s.team1_name);
-          if (typeof s.team2_name === 'string') setTeam2Name(s.team2_name);
-
-          const newStrikes = s.strikes ?? 0;
-          if (newStrikes > prevStrikesRef.current) {
-            setShowStrikeModal(true);
-            setTimeout(() => setShowStrikeModal(false), 1200);
-          }
-          prevStrikesRef.current = newStrikes;
-          setStrikes(newStrikes);
-
-          setTeamScores({ team1: s.team1_score, team2: s.team2_score });
-          setActiveTeam(s.active_team);
-          setIsFastMoney(s.round === 'fast_money');
-          setCurrentRound((s.round ?? null) as Round);
-
-          setFmRunning(!!s.fm_timer_running);
-          setFmStartedAt(s.fm_timer_started_at ?? null);
-          setFmDuration(s.fm_timer_duration ?? (s.fast_money_seconds ?? 20));
-          setFmRemain(() => {
-            if (s.fm_timer_running && s.fm_timer_started_at) {
-              const start = new Date(s.fm_timer_started_at).getTime();
-              const elapsed = Math.floor((Date.now() - start) / 1000);
-              return Math.max(0, (s.fm_timer_duration ?? 0) - elapsed);
-            }
-            return Math.max(0, s.fm_timer_duration ?? (s.fast_money_seconds ?? 20));
-          });
+          applySession(payload.new);
         }
       )
       .on(
@@ -214,9 +211,9 @@ export default function MainScreenPage() {
       .subscribe();
 
     return () => { void supabase.removeChannel(sub); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // Realtime: session_questions (round switches + reveal flag)
   useEffect(() => {
     if (!sessionId) return;
 
@@ -237,7 +234,6 @@ export default function MainScreenPage() {
     return () => { void supabase.removeChannel(channel); };
   }, [sessionId]);
 
-  // Auto-fullscreen on first interaction
   useEffect(() => {
     const tryFs = async () => {
       if (!document.fullscreenElement) {
@@ -261,9 +257,7 @@ export default function MainScreenPage() {
     <div
       className={`${styles.mainScreen} ${presentationMode === 'venue' ? styles.venueMode : ''} ${calibrating ? styles.calibrating : ''}`}
       style={{
-        // CSS custom-property overrides — feeds the --pad-* tokens used
-        // by .mainScreen padding, FM timer, and the corner toggles.
-        ['--pad-top'   as string]: `${edgeMargins.top}vh`,
+        ['--pad-top' as string]: `${edgeMargins.top}vh`,
         ['--pad-right' as string]: `${edgeMargins.right}vw`,
         ['--pad-bottom' as string]: `${edgeMargins.bottom}vh`,
         ['--pad-left' as string]: `${edgeMargins.left}vw`,
@@ -274,57 +268,110 @@ export default function MainScreenPage() {
       <EdgeCalibrationPanel onChange={setEdgeMargins} onCalibratingChange={setCalibrating} />
 
       <div className={styles.stage}>
-        {/* ── Round indicator pill ── */}
-        <RoundBadge round={currentRound} />
-
-        {/* ── Header: compact integrated scoreboard ── */}
-        <TeamScore
-          team1Name={team1Name}
-          team2Name={team2Name}
-          team1={teamScores.team1}
-          team2={teamScores.team2}
-          activeTeam={activeTeam ?? 1}
-        />
-
-        {isFastMoney ? (
-          <>
-            {/* FM timer — top-right fixed overlay */}
-            <div className={styles.fmTimerTopRight}>
-              <svg viewBox="0 0 100 100" className={styles.timerSvg}>
-                <circle className={styles.bg} cx="50" cy="50" r="45" />
-                <circle
-                  className={styles.progress}
-                  cx="50" cy="50" r="45"
-                  style={{
-                    strokeDasharray: 2 * Math.PI * 45,
-                    strokeDashoffset: (fmRemain / Math.max(1, fmDuration)) * 2 * Math.PI * 45,
-                    stroke: getTimerColor(),
-                  }}
-                />
-                <text x="50" y="54" textAnchor="middle" className={styles.time}>
-                  {fmRemain}
-                </text>
-              </svg>
+        {screenState !== 'board' ? (
+          <section className={`${styles.introScreen} ${styles[screenState]}`}>
+            <div className={styles.introGlow} />
+            <div className={styles.introEyebrow}>
+              {screenState === 'team_intro' && "Tonight's Matchup"}
+              {screenState === 'fast_money_intro' && 'Final Round'}
+              {screenState === 'winner' && 'Final Score'}
+              {screenState === 'standby' && 'Live Family Game Experience'}
             </div>
-
-            <FastMoneyBoard />
-          </>
+            <h1>
+              {screenState === 'fast_money_intro'
+                ? 'Fast Money'
+                : screenState === 'winner'
+                  ? 'Winner'
+                  : eventTitle}
+            </h1>
+            {screenState === 'team_intro' ? (
+              <div className={styles.matchup}>
+                <div className={styles.teamCard}>
+                  <span>Team 1</span>
+                  <strong>{team1Name}</strong>
+                </div>
+                <div className={styles.versus}>VS</div>
+                <div className={styles.teamCard}>
+                  <span>Team 2</span>
+                  <strong>{team2Name}</strong>
+                </div>
+              </div>
+            ) : screenState === 'fast_money_intro' ? (
+              <div className={styles.standbyCopy}>
+                <span>{eventTitle}</span>
+                <strong>20 seconds on the clock</strong>
+              </div>
+            ) : screenState === 'winner' ? (
+              <div className={styles.winnerCard}>
+                <span>{teamScores.team1 === teamScores.team2 ? 'Final Result' : 'Congratulations'}</span>
+                <strong>{leadingTeamName}</strong>
+                <em>{teamScores.team1} - {teamScores.team2}</em>
+                {teamScores.team1 !== teamScores.team2 && <small>{leadingScore} points</small>}
+              </div>
+            ) : (
+              <div className={styles.standbyCopy}>
+                <span>Teams are getting ready</span>
+                <strong>The show begins shortly</strong>
+              </div>
+            )}
+            {showEventFooter && (
+              <div className={styles.introFooter}>
+                {eventFooterText}
+              </div>
+            )}
+          </section>
         ) : (
           <>
-            <QuestionDisplay question={question} revealed={revealQ} />
-            <AnswerBoxes answers={answers} />
-            <StrikeDisplay count={strikes} />
+            <RoundBadge round={currentRound} />
+            <TeamScore
+              team1Name={team1Name}
+              team2Name={team2Name}
+              team1={teamScores.team1}
+              team2={teamScores.team2}
+              activeTeam={activeTeam ?? 1}
+            />
+
+            {isFastMoney ? (
+              <>
+                <div className={styles.fmTimerTopRight}>
+                  <svg viewBox="0 0 100 100" className={styles.timerSvg}>
+                    <circle className={styles.bg} cx="50" cy="50" r="45" />
+                    <circle
+                      className={styles.progress}
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      style={{
+                        strokeDasharray: 2 * Math.PI * 45,
+                        strokeDashoffset: (fmRemain / Math.max(1, fmDuration)) * 2 * Math.PI * 45,
+                        stroke: getTimerColor(),
+                      }}
+                    />
+                    <text x="50" y="54" textAnchor="middle" className={styles.time}>
+                      {fmRemain}
+                    </text>
+                  </svg>
+                </div>
+
+                <FastMoneyBoard />
+              </>
+            ) : (
+              <>
+                <QuestionDisplay question={question} revealed={revealQ} />
+                <AnswerBoxes answers={answers} />
+                <StrikeDisplay count={strikes} />
+              </>
+            )}
           </>
         )}
       </div>
 
       {showStrikeModal && <div className={styles.strikeModal} />}
 
-      {/* ── FAST MONEY title card — flashes for ~2s on transition into FM ── */}
       {showFmTitle && (
         <div className={styles.fmTitleCard}>
           <div className={styles.fmTitleInner}>
-            <div className={styles.fmTitleSubtitle}>⚡ FINAL ROUND ⚡</div>
+            <div className={styles.fmTitleSubtitle}>FINAL ROUND</div>
             <div className={styles.fmTitleMain}>FAST MONEY</div>
           </div>
         </div>

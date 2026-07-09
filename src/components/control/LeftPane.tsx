@@ -4,11 +4,17 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './LeftPane.module.scss';
 
+type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
+
 export default function LeftPane() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [round, setRound] = useState<'round1'|'round2'|'round3'|'round4'|'sudden_death'|'fast_money'>('round1');
   const [fmIndex, setFmIndex] = useState<number>(1);
   const [resetOnSwitch, setResetOnSwitch] = useState(true);
+  const [screenState, setScreenState] = useState<ScreenState>('standby');
+  const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
+  const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
+  const [showEventFooter, setShowEventFooter] = useState(true);
 
   const [strikeLimit, setStrikeLimit] = useState(3);
   const [strikes, setStrikes] = useState(0);
@@ -24,7 +30,7 @@ export default function LeftPane() {
     const loadSession = async () => {
       const { data, error } = await supabase
         .from('game_sessions')
-        .select('id, strikes, strike_limit')
+        .select('id, strikes, strike_limit, screen_state, event_title, event_footer_text, show_event_footer')
         .eq('status', 'active')
         .single();
       if (error) { console.error('Failed to load active session:', error.message); return; }
@@ -32,6 +38,10 @@ export default function LeftPane() {
         setSessionId(data.id);
         setStrikes(data.strikes ?? 0);
         setStrikeLimit(data.strike_limit ?? 3);
+        setScreenState((data.screen_state ?? 'standby') as ScreenState);
+        setEventTitle(data.event_title ?? 'GABEKROSS FAMILY FEUD');
+        setEventFooterText(data.event_footer_text ?? 'Powered by Gabekross');
+        setShowEventFooter(data.show_event_footer ?? true);
       }
     };
     loadSession();
@@ -55,6 +65,79 @@ export default function LeftPane() {
     };
     getCurrent();
   }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const ch = supabase
+      .channel(`left_pane_stage_${sessionId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
+        (payload) => {
+          if (typeof payload.new.screen_state === 'string') {
+            setScreenState(payload.new.screen_state as ScreenState);
+          }
+          if (typeof payload.new.event_title === 'string') {
+            setEventTitle(payload.new.event_title);
+          }
+          if (typeof payload.new.event_footer_text === 'string') {
+            setEventFooterText(payload.new.event_footer_text);
+          }
+          if (typeof payload.new.show_event_footer === 'boolean') {
+            setShowEventFooter(payload.new.show_event_footer);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { void supabase.removeChannel(ch); };
+  }, [sessionId]);
+
+  const updateScreenState = async (next: ScreenState) => {
+    if (!sessionId) return;
+    setScreenState(next);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({ screen_state: next })
+      .eq('id', sessionId);
+    if (error) {
+      console.error('Screen state update failed:', error.message);
+      alert('Failed to update audience screen mode. Make sure the screen_state migration has run.');
+    }
+  };
+
+  const saveEventTitle = async () => {
+    if (!sessionId) return;
+    const nextTitle = eventTitle.trim() || 'GABEKROSS FAMILY FEUD';
+    setEventTitle(nextTitle);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({ event_title: nextTitle })
+      .eq('id', sessionId);
+    if (error) {
+      console.error('Event title update failed:', error.message);
+      alert('Failed to save event title. Make sure the event_title migration has run.');
+    }
+  };
+
+  const saveEventFooter = async (nextShow = showEventFooter) => {
+    if (!sessionId) return;
+    const nextText = eventFooterText.trim() || 'Powered by Gabekross';
+    setEventFooterText(nextText);
+    setShowEventFooter(nextShow);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({
+        event_footer_text: nextText,
+        show_event_footer: nextShow,
+      })
+      .eq('id', sessionId);
+    if (error) {
+      console.error('Event footer update failed:', error.message);
+      alert('Failed to save footer settings. Make sure the footer migration has run.');
+    }
+  };
 
   const updateStrikes = async (newCount: number) => {
     if (!sessionId) return;
@@ -174,6 +257,7 @@ export default function LeftPane() {
       strikes: 0,
       active_team: 1,
       round: 'round1',
+      screen_state: 'standby',
       fm_timer_running: false,
       fm_timer_started_at: null,
       fm_timer_duration: 20
@@ -203,12 +287,75 @@ export default function LeftPane() {
     setRound('round1');
     setFmIndex(1);
     setStrikes(0);
+    setScreenState('standby');
     alert('✅ Game session reset!');
   };
 
   return (
     <div className={styles.leftPane}>
       <h2>🎛️ Game Controls</h2>
+
+      <h4>Audience Screen</h4>
+      <label>Event Title</label>
+      <input
+        type="text"
+        value={eventTitle}
+        onChange={(e) => setEventTitle(e.target.value)}
+        onBlur={saveEventTitle}
+      />
+      <button onClick={saveEventTitle}>Save Event Title</button>
+
+      <label>Footer Text</label>
+      <input
+        type="text"
+        value={eventFooterText}
+        onChange={(e) => setEventFooterText(e.target.value)}
+        onBlur={() => saveEventFooter()}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={showEventFooter}
+          onChange={(e) => saveEventFooter(e.target.checked)}
+        />
+        Show footer on intro screens
+      </label>
+      <button onClick={() => saveEventFooter()}>Save Footer</button>
+
+      <div className={styles.screenModes}>
+        <button
+          className={screenState === 'standby' ? styles.activeMode : ''}
+          onClick={() => updateScreenState('standby')}
+        >
+          Standby
+        </button>
+        <button
+          className={screenState === 'team_intro' ? styles.activeMode : ''}
+          onClick={() => updateScreenState('team_intro')}
+        >
+          Team Intro
+        </button>
+        <button
+          className={screenState === 'fast_money_intro' ? styles.activeMode : ''}
+          onClick={() => updateScreenState('fast_money_intro')}
+        >
+          Fast Money Intro
+        </button>
+        <button
+          className={screenState === 'winner' ? styles.activeMode : ''}
+          onClick={() => updateScreenState('winner')}
+        >
+          Winner
+        </button>
+        <button
+          className={screenState === 'board' ? styles.activeMode : ''}
+          onClick={() => updateScreenState('board')}
+        >
+          Show Board
+        </button>
+      </div>
+
+      <hr />
 
       <label>Round:</label>
       <select value={round} onChange={(e) => setRound(e.target.value as any)}>
