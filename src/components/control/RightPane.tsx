@@ -15,6 +15,7 @@ export default function RightPane() {
   const [activeTeam, setActiveTeam] = useState<number>(1);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [round, setRound] = useState<string>('round1'); // track round to guard FM
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -92,6 +93,11 @@ export default function RightPane() {
     }, 500);
   };
 
+  const showNotice = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 2800);
+  };
+
   const handleTeam1NameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     setTeam1Name(name);
@@ -165,13 +171,14 @@ const finalizeRound = async () => {
   }
 
   // ⚠️ No round switching here.
-  alert(`🏁 ${activeTeam === 1 ? team1Name : team2Name} awarded ${roundPoints} pts.`);
+  showNotice(`${activeTeam === 1 ? team1Name : team2Name} awarded ${roundPoints} pts.`);
 };
 
 
   return (
     <div className={styles.rightPane}>
       <h2>🏆 Team Control</h2>
+      {notice && <div className={styles.notice}>{notice}</div>}
 
       <input placeholder="Team 1 name" value={team1Name} onChange={handleTeam1NameChange} />
       <div className={styles.scoreRow}>

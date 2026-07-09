@@ -26,6 +26,7 @@ export default function MainScreenPage() {
   const [teamScores, setTeamScores] = useState({ team1: 0, team2: 0 });
   const [activeTeam, setActiveTeam] = useState<number | null>(null);
   const [strikes, setStrikes] = useState(0);
+  const [strikeLimit, setStrikeLimit] = useState(3);
   const [showStrikeModal, setShowStrikeModal] = useState(false);
   const [isFastMoney, setIsFastMoney] = useState(false);
   const [screenState, setScreenState] = useState<ScreenState>('standby');
@@ -111,6 +112,7 @@ export default function MainScreenPage() {
     }
     prevStrikesRef.current = newStrikes;
     setStrikes(newStrikes);
+    setStrikeLimit(session.strike_limit ?? 3);
 
     setFmRunning(!!session.fm_timer_running);
     setFmStartedAt(session.fm_timer_started_at ?? null);
@@ -321,48 +323,32 @@ export default function MainScreenPage() {
             )}
           </section>
         ) : (
-          <>
+          <div className={`${styles.boardScene} ${isFastMoney ? styles.fastMoneyScene : ''}`}>
             <RoundBadge round={currentRound} />
-            <TeamScore
-              team1Name={team1Name}
-              team2Name={team2Name}
-              team1={teamScores.team1}
-              team2={teamScores.team2}
-              activeTeam={activeTeam ?? 1}
-            />
+            {!isFastMoney && (
+              <TeamScore
+                team1Name={team1Name}
+                team2Name={team2Name}
+                team1={teamScores.team1}
+                team2={teamScores.team2}
+                activeTeam={activeTeam ?? 1}
+              />
+            )}
 
             {isFastMoney ? (
-              <>
-                <div className={styles.fmTimerTopRight}>
-                  <svg viewBox="0 0 100 100" className={styles.timerSvg}>
-                    <circle className={styles.bg} cx="50" cy="50" r="45" />
-                    <circle
-                      className={styles.progress}
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      style={{
-                        strokeDasharray: 2 * Math.PI * 45,
-                        strokeDashoffset: (fmRemain / Math.max(1, fmDuration)) * 2 * Math.PI * 45,
-                        stroke: getTimerColor(),
-                      }}
-                    />
-                    <text x="50" y="54" textAnchor="middle" className={styles.time}>
-                      {fmRemain}
-                    </text>
-                  </svg>
-                </div>
-
-                <FastMoneyBoard />
-              </>
+              <FastMoneyBoard
+                timerRemain={fmRemain}
+                timerDuration={fmDuration}
+                timerColor={getTimerColor()}
+              />
             ) : (
               <>
                 <QuestionDisplay question={question} revealed={revealQ} />
                 <AnswerBoxes answers={answers} />
-                <StrikeDisplay count={strikes} />
+                <StrikeDisplay count={strikes} limit={strikeLimit} />
               </>
             )}
-          </>
+          </div>
         )}
       </div>
 

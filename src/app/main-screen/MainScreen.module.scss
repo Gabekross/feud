@@ -93,6 +93,106 @@
 }
 
 /* ── Strike flash modal ───────────────────────────────────────────── */
+.boardScene {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(5px, 0.9vmin, 14px);
+  animation: boardSceneIn 620ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 35%, rgba(255, 210, 77, 0.18), transparent 38%),
+      radial-gradient(ellipse at 50% 68%, rgba(46, 105, 255, 0.14), transparent 48%);
+    opacity: 0;
+    animation: boardGlowIn 900ms ease-out both;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.22) 42%, rgba(255, 210, 77, 0.28) 50%, rgba(255, 255, 255, 0.12) 58%, transparent 100%);
+    opacity: 0;
+    transform: translateX(-115%);
+    animation: boardSweepIn 820ms ease-out 140ms both;
+  }
+
+  > * {
+    animation: boardElementIn 520ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
+  }
+
+  > *:nth-child(1) { animation-delay: 90ms; }
+  > *:nth-child(2) { animation-delay: 150ms; }
+  > *:nth-child(3) { animation-delay: 210ms; }
+  > *:nth-child(4) { animation-delay: 270ms; }
+}
+
+.fastMoneyScene {
+  gap: clamp(8px, 1.2vmin, 18px);
+}
+
+@keyframes boardSceneIn {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: brightness(0.82) saturate(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.006);
+    filter: brightness(1.08) saturate(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes boardElementIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes boardGlowIn {
+  0% { opacity: 0; transform: scale(0.94); }
+  42% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.58; transform: scale(1); }
+}
+
+@keyframes boardSweepIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-115%);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(115%);
+  }
+}
+
 .introScreen {
   position: relative;
   isolation: isolate;
@@ -333,23 +433,53 @@
   display: grid;
   place-items: center;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.5);
+  background:
+    radial-gradient(circle at center, rgba(255, 59, 59, 0.28), rgba(0, 0, 0, 0.62) 48%, rgba(0, 0, 0, 0.84) 100%);
   pointer-events: none;
+  animation: strikeScreenShake 360ms ease-out;
 
   &::before {
-    content: "❌";
-    font-size: clamp(64px, 16vmin, 240px);
-    color: #ff3b3b;
-    text-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    content: "X";
+    width: clamp(150px, 24vmin, 310px);
+    height: clamp(130px, 21vmin, 270px);
+    display: grid;
+    place-items: center;
+    border: clamp(4px, 0.8vmin, 10px) solid rgba(255, 232, 232, 0.92);
+    border-radius: clamp(14px, 2vmin, 28px);
+    color: #fff;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 34%),
+      linear-gradient(180deg, #d91f32 0%, #740713 100%);
+    box-shadow:
+      inset 0 4px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -18px 36px rgba(0, 0, 0, 0.4),
+      0 18px 44px rgba(0, 0, 0, 0.72),
+      0 0 54px rgba(255, 59, 59, 0.62);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(86px, 18vmin, 230px);
+    font-weight: 950;
+    line-height: 1;
+    text-shadow:
+      0 4px 0 rgba(80, 0, 0, 0.7),
+      0 0 24px rgba(255, 230, 230, 0.62);
     animation: strikePop 1.2s ease-in-out forwards;
   }
 }
 
 @keyframes strikePop {
-  0%   { opacity: 0; transform: scale(0.5); }
-  20%  { opacity: 1; transform: scale(1.15); }
-  70%  { opacity: 1; transform: scale(1.0); }
-  100% { opacity: 0; transform: scale(0.6); }
+  0%   { opacity: 0; transform: scale(0.45) rotate(-8deg); }
+  18%  { opacity: 1; transform: scale(1.12) rotate(3deg); }
+  36%  { opacity: 1; transform: scale(0.98) rotate(-1deg); }
+  72%  { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 0; transform: scale(0.62) rotate(0); }
+}
+
+@keyframes strikeScreenShake {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-10px); }
+  36% { transform: translateX(9px); }
+  54% { transform: translateX(-6px); }
+  72% { transform: translateX(4px); }
 }
 
 /* ── Fast Money timer — fixed top-right overlay ─────────────────────
@@ -359,21 +489,54 @@
  */
 .fmTimerTopRight {
   position: fixed;
-  top:   max(var(--pad-top, 3vh), env(safe-area-inset-top, 24px));
+  top: max(var(--pad-top, 3vh), env(safe-area-inset-top, 24px));
   right: max(var(--pad-right, 3vw), env(safe-area-inset-right, 24px));
   z-index: 1500;
   pointer-events: none;
   user-select: none;
+  display: grid;
+  place-items: center;
+  gap: clamp(2px, 0.35vmin, 5px);
+  min-width: clamp(94px, 10.5vw, 148px);
+  padding: clamp(7px, 0.9vmin, 13px);
+  border: 2px solid rgba(255, 210, 77, 0.86);
+  border-radius: clamp(8px, 1.1vmin, 16px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(20, 54, 111, 0.96) 0%, rgba(7, 26, 61, 0.96) 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+    0 10px 24px rgba(0, 0, 0, 0.48),
+    0 0 22px rgba(255, 210, 77, 0.18);
+}
+
+.timerLabel,
+.timerCaption {
+  color: #ffe879;
+  font-size: clamp(0.62rem, 0.95vmin, 0.88rem);
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.timerCaption {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(0.58rem, 0.82vmin, 0.78rem);
+  letter-spacing: 0.12em;
 }
 
 .timerSvg {
-  width:  clamp(72px, 9vw, 128px);
+  width: clamp(70px, 8vw, 118px);
   height: auto;
+  filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.38));
 }
 
 .bg {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.12);
+  fill: rgba(2, 8, 20, 0.42);
+  stroke: rgba(255, 255, 255, 0.16);
   stroke-width: 8;
 }
 
@@ -382,16 +545,55 @@
   stroke-width: 8;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.5s linear, stroke 0.3s ease;
+  filter: drop-shadow(0 0 4px currentColor);
 }
 
 .time {
   fill: #fff;
-  font-weight: 800;
-  font-size: 28px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 950;
+  font-size: 30px;
   dominant-baseline: middle;
   paint-order: stroke;
-  stroke: rgba(0, 0, 0, 0.3);
+  stroke: rgba(0, 0, 0, 0.42);
   stroke-width: 2px;
+}
+
+.timerWarning {
+  border-color: rgba(255, 232, 121, 0.98);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+    0 10px 24px rgba(0, 0, 0, 0.48),
+    0 0 30px rgba(255, 210, 77, 0.38);
+}
+
+.timerDanger {
+  border-color: rgba(255, 88, 88, 0.96);
+  animation: timerDangerPulse 620ms ease-in-out infinite alternate;
+
+  .timerLabel {
+    color: #ffdddd;
+  }
+}
+
+@keyframes timerDangerPulse {
+  from {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+      0 10px 24px rgba(0, 0, 0, 0.48),
+      0 0 18px rgba(255, 76, 76, 0.34);
+    transform: scale(1);
+  }
+  to {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+      0 10px 24px rgba(0, 0, 0, 0.48),
+      0 0 34px rgba(255, 76, 76, 0.58);
+    transform: scale(1.035);
+  }
 }
 
 /* ── FAST MONEY title card ─────────────────────────────────────────

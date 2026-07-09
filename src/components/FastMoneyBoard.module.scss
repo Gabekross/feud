@@ -1,73 +1,210 @@
-/* FastMoneyBoard.module.scss — audience display for Fast Money round */
-
 .fmBoard {
+  position: relative;
+  isolation: isolate;
   flex: 1;
   min-height: 0;
+  width: min(94%, 1480px);
   display: flex;
   flex-direction: column;
-  /* Container fills available width; each child sets its own width to
-     create the intended visual hierarchy:
-       • header (question)  → wide, matches scoreboard
-       • grid (answer rows) → narrow, keeps rows proportional
-       • total              → hugs content, focal pill */
-  width: 100%;
   align-items: center;
+  gap: clamp(10px, 1.25vmin, 20px);
+  padding: clamp(14px, 1.65vmin, 26px);
+  border: clamp(3px, 0.55vmin, 8px) solid #d99b1e;
+  border-radius: clamp(9px, 1.3vmin, 18px);
+  background:
+    linear-gradient(180deg, rgba(255, 230, 87, 0.15), transparent 8%, transparent 92%, rgba(255, 174, 0, 0.14)),
+    radial-gradient(ellipse at 50% 0%, rgba(63, 126, 255, 0.25), transparent 48%),
+    linear-gradient(160deg, #071733 0%, #030b1d 52%, #061226 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 237, 154, 0.48),
+    inset 0 0 36px rgba(40, 107, 220, 0.24),
+    0 22px 60px rgba(0, 0, 0, 0.68),
+    0 0 34px rgba(255, 174, 0, 0.2);
+  box-sizing: border-box;
   font-family: var(--font-ui, system-ui, sans-serif);
-  gap: clamp(6px, 0.9vmin, 14px);
-}
+  overflow: hidden;
 
-/* ── Header: question text only ──────────────────────────────────────
-   The inner "FAST MONEY" pill was removed because the top-of-screen
-   Round Badge (RoundBadge component) already shows it more prominently.
-   Width matches the scoreboard (97%/1440px) so the question reads as a
-   wide "title strip" continuous with the scoreboard above. */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: min(97%, 1440px);
-  background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
-  border: 2px solid #1e3a6e;
-  border-radius: clamp(6px, 0.9vmin, 12px);
-  padding: clamp(8px, 1.2vmin, 18px) clamp(10px, 1.5vmin, 22px);
-  flex-shrink: 0;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: clamp(7px, 0.9vmin, 14px);
+    z-index: -1;
+    border-radius: clamp(6px, 0.9vmin, 12px);
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.032) 0 1px, transparent 1px 44px),
+      linear-gradient(180deg, rgba(8, 21, 50, 0.72), rgba(2, 8, 22, 0.72));
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.58);
+  }
 
-  .question {
-    color: #fff;
-    font-weight: 700;
-    /* Without the badge eating header width, FM question can use the
-       full question-size bucket (matches regular-round QuestionDisplay). */
-    font-size: var(--fs-question, clamp(1.4rem, 4vmin, 3.8rem));
-    text-align: center;
-    line-height: 1.2;
-    word-break: break-word;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: clamp(2px, 0.35vmin, 6px);
+    z-index: 2;
+    pointer-events: none;
+    border-radius: clamp(7px, 1vmin, 14px);
+    background:
+      linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.13), transparent) 0 0 / 280% 100%,
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18));
+    mix-blend-mode: screen;
+    opacity: 0.5;
   }
 }
 
-/* ── Player grid — switches between 1-col (P1's turn) and 2-col (P2's turn) ──
-   Narrower than the question header (72% vs 97%) so each answer row keeps
-   a proportional ~4:1 aspect ratio instead of stretching to ~5:1 banner. */
+.header {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(96px, 10vw, 142px);
+  align-items: center;
+  gap: clamp(10px, 1.4vmin, 22px);
+  min-height: clamp(92px, 12vmin, 142px);
+  padding: clamp(8px, 1vmin, 16px) clamp(10px, 1.5vmin, 22px);
+  border: 2px solid rgba(255, 210, 77, 0.82);
+  border-radius: clamp(6px, 0.9vmin, 12px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.11), transparent 30%),
+    linear-gradient(180deg, #102858 0%, #071734 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -10px 22px rgba(0, 0, 0, 0.32),
+    0 8px 22px rgba(0, 0, 0, 0.34);
+
+}
+
+.questionStage {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: clamp(8px, 1.1vmin, 16px) clamp(12px, 2vmin, 32px);
+  border: 1px solid rgba(124, 177, 255, 0.2);
+  border-radius: clamp(5px, 0.75vmin, 10px);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(68, 139, 255, 0.16), transparent 56%),
+    linear-gradient(180deg, rgba(2, 8, 20, 0.18), rgba(2, 8, 20, 0.32));
+  overflow: hidden;
+}
+
+.question {
+  max-width: 100%;
+  color: #fff;
+  font-weight: 850;
+  font-size: clamp(1.45rem, 3.05vmin, 3.05rem);
+  text-align: center;
+  line-height: 1.08;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.48),
+    0 0 18px rgba(64, 165, 255, 0.26);
+}
+
+.timerPod {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  gap: clamp(2px, 0.35vmin, 5px);
+  padding: clamp(6px, 0.8vmin, 10px);
+  border: 2px solid rgba(255, 210, 77, 0.86);
+  border-radius: clamp(7px, 0.95vmin, 13px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(20, 54, 111, 0.96) 0%, rgba(7, 26, 61, 0.96) 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 210, 77, 0.16);
+}
+
+.timerLabel,
+.timerCaption {
+  color: #ffe879;
+  font-size: clamp(0.56rem, 0.82vmin, 0.78rem);
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.timerCaption {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(0.52rem, 0.74vmin, 0.72rem);
+  letter-spacing: 0.1em;
+}
+
+.timerSvg {
+  width: clamp(64px, 7vw, 96px);
+  height: auto;
+  filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.38));
+}
+
+.bg {
+  fill: rgba(2, 8, 20, 0.42);
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 8;
+}
+
+.progress {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s linear, stroke 0.3s ease;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.time {
+  fill: #fff;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 950;
+  font-size: 30px;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.42);
+  stroke-width: 2px;
+}
+
+.timerWarning {
+  border-color: rgba(255, 232, 121, 0.98);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.4),
+    0 0 28px rgba(255, 210, 77, 0.36);
+}
+
+.timerDanger {
+  border-color: rgba(255, 88, 88, 0.96);
+  animation: timerDangerPulse 620ms ease-in-out infinite alternate;
+
+  .timerLabel {
+    color: #ffdddd;
+  }
+}
+
 .grid {
+  position: relative;
+  z-index: 3;
   flex: 1;
   min-height: 0;
   display: grid;
-  width: min(72%, 1200px);
-  gap: clamp(8px, 1.2vmin, 18px);
+  width: min(89%, 1220px);
+  gap: clamp(10px, 1.2vmin, 18px);
   transition: grid-template-columns 0.4s ease;
 }
 
-/* P1 is still playing — show only P1 column at the same width it has in
- * 2-col mode (~50% of the FM board), centered. This keeps each answer
- * row's width:height proportion consistent between solo and dual-player
- * states, instead of stretching rows to a banner-like 11:1 aspect ratio. */
 .gridP1Only {
   grid-template-columns: 1fr;
-  max-width: 50%;
+  max-width: min(54%, 640px);
   margin-left: auto;
   margin-right: auto;
 }
 
-/* P2 has started — show both columns side by side */
 .gridBoth {
   grid-template-columns: 1fr 1fr;
 }
@@ -75,109 +212,417 @@
 .col {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #0d1b3e 0%, #071225 100%);
-  border: 2px solid #1e3a6e;
-  border-radius: clamp(6px, 0.9vmin, 12px);
-  padding: clamp(8px, 1.2vmin, 16px);
-  gap: clamp(4px, 0.7vmin, 10px);
+  min-width: 0;
+  gap: clamp(5px, 0.7vmin, 9px);
+  padding: clamp(8px, 1vmin, 14px);
+  border: 2px solid rgba(255, 210, 77, 0.72);
+  border-radius: clamp(7px, 1vmin, 14px);
+  background:
+    linear-gradient(180deg, rgba(255, 230, 87, 0.1), transparent 18%),
+    linear-gradient(180deg, #0c1e46 0%, #061329 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -14px 24px rgba(0, 0, 0, 0.28),
+    0 10px 24px rgba(0, 0, 0, 0.42);
 
   .colTitle {
-    text-align: center;
-    font-weight: 800;
-    color: #a7c1ff;
-    /* Use the same scale-token as team names so column titles are
-       readable from across the room — bumps in venue mode automatically. */
-    font-size: var(--fs-team-name, clamp(0.75rem, 1.5vmin, 1.2rem));
-    letter-spacing: clamp(0.5px, 0.3vmin, 2px);
-    text-transform: uppercase;
     flex-shrink: 0;
-    padding-bottom: clamp(4px, 0.6vmin, 8px);
-    border-bottom: 1px solid rgba(30, 58, 110, 0.8);
+    display: grid;
+    place-items: center;
+    min-height: clamp(30px, 4.2vmin, 54px);
+    padding: clamp(4px, 0.7vmin, 10px) clamp(10px, 1.4vmin, 22px);
+    border: 2px solid rgba(255, 210, 77, 0.78);
+    border-radius: clamp(4px, 0.65vmin, 8px);
+    color: #fff3a6;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 34%),
+      linear-gradient(180deg, #14366f 0%, #071a3d 100%);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -7px 14px rgba(0, 0, 0, 0.3);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: var(--fs-team-name, clamp(0.85rem, 1.8vmin, 1.45rem));
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
   }
 
-  /* Per-column subtotal pill — appears at the bottom of each column
-     during Player 2's phase, matches Family Feud's per-player tally. */
   .subtotal {
     flex-shrink: 0;
-    margin-top: clamp(6px, 0.9vmin, 14px);
-    padding: clamp(4px, 0.6vmin, 10px) clamp(10px, 1.4vmin, 22px);
-    background: rgba(255, 210, 77, 0.12);
-    border: 2px solid rgba(255, 210, 77, 0.5);
-    border-radius: clamp(4px, 0.6vmin, 8px);
+    margin-top: clamp(4px, 0.7vmin, 10px);
+    padding: clamp(5px, 0.7vmin, 11px) clamp(10px, 1.4vmin, 22px);
+    border: 2px solid rgba(255, 210, 77, 0.78);
+    border-radius: clamp(4px, 0.65vmin, 8px);
     text-align: center;
-    color: #ffd24d;
-    font-weight: 800;
-    font-size: var(--fs-team-name, clamp(0.7rem, 1.4vmin, 1.15rem));
-    letter-spacing: clamp(1px, 0.4vmin, 3px);
+    color: #ffe879;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 35%),
+      linear-gradient(180deg, #112b5e 0%, #071834 100%);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.16),
+      0 4px 10px rgba(0, 0, 0, 0.34);
+    font-weight: 900;
+    font-size: var(--fs-team-name, clamp(0.72rem, 1.45vmin, 1.2rem));
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1;
 
     strong {
-      font-size: 1.4em;
+      display: inline-block;
+      min-width: 2ch;
+      margin-left: 0.35em;
       color: #fff;
+      font-size: 1.55em;
       font-variant-numeric: tabular-nums;
-      margin-left: 0.3em;
+      text-shadow: 0 0 12px rgba(255, 210, 77, 0.34);
     }
   }
 }
 
-/* ── Individual answer row ─────────────────────────────────────── */
 .answerRow {
+  position: relative;
   flex: 1;
+  min-height: clamp(42px, 5.7vmin, 70px);
   display: grid;
-  grid-template-columns: 1fr clamp(60px, 8vmin, 110px);
+  grid-template-columns: minmax(0, 1fr) clamp(54px, 7.2vmin, 92px);
   align-items: center;
-  gap: clamp(6px, 0.9vmin, 14px);
-  background: linear-gradient(180deg, #1e7ecf 0%, #0d559a 100%);
-  border: 2px solid #0b3a70;
-  border-radius: clamp(4px, 0.6vmin, 10px);
-  padding: clamp(6px, 0.9vmin, 14px) clamp(8px, 1.2vmin, 18px);
-  min-height: clamp(40px, 6vmin, 70px);
+  gap: clamp(7px, 0.9vmin, 14px);
+  padding: clamp(5px, 0.75vmin, 11px) clamp(7px, 1vmin, 14px);
+  border: 2px solid #032d5f;
+  border-radius: clamp(6px, 0.8vmin, 11px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 36%),
+    linear-gradient(180deg, #238ce1 0%, #0d5fa7 48%, #073d79 100%);
   box-shadow:
-    inset 0 2px 6px rgba(255, 255, 255, 0.12),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.2);
+    inset 0 3px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -7px 14px rgba(0, 0, 0, 0.42),
+    0 4px 10px rgba(0, 0, 0, 0.48);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.18) 42%, rgba(255, 235, 145, 0.26) 50%, rgba(255, 255, 255, 0.12) 58%, transparent 100%);
+    opacity: 0;
+    transform: translateX(-115%);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: clamp(3px, 0.45vmin, 7px);
+    border: 1px solid rgba(129, 199, 255, 0.24);
+    border-radius: clamp(4px, 0.55vmin, 8px);
+    pointer-events: none;
+  }
 
   &.activeRow {
     border-color: #ffd24d;
     box-shadow:
-      inset 0 2px 6px rgba(255, 255, 255, 0.15),
-      0 0 0 2px rgba(255, 210, 77, 0.45);
+      inset 0 3px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -7px 14px rgba(0, 0, 0, 0.42),
+      0 0 0 3px rgba(255, 210, 77, 0.62),
+      0 0 24px rgba(255, 210, 77, 0.34);
   }
 
-  .answerText {
-    font-size: var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem));
-    font-weight: 700;
-    color: #e8f4ff;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &.hasAnswer {
+    border-color: rgba(255, 210, 77, 0.8);
+
+    &::before {
+      animation: revealSweep 820ms ease-out;
+    }
+
+    .answerValue {
+      animation: answerPop 560ms cubic-bezier(0.2, 0.85, 0.2, 1);
+    }
   }
 
-  .points {
-    text-align: center;
-    font-weight: 900;
-    color: #2d1f00;
-    font-size: var(--fs-points, clamp(1.2rem, 3.4vmin, 2.8rem));
-    background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
-    border-radius: clamp(3px, 0.5vmin, 6px);
-    padding: clamp(2px, 0.4vmin, 6px) clamp(4px, 0.8vmin, 12px);
-    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), 0 2px 6px rgba(0, 0, 0, 0.25);
-    min-width: clamp(36px, 5vmin, 64px);
+  &.hasPoints .points {
+    opacity: 1;
+    transform: scale(1);
+    animation: pointsPop 680ms cubic-bezier(0.2, 0.85, 0.2, 1);
   }
 }
 
-/* ── Running total ─────────────────────────────────────────────── */
-.total {
-  flex-shrink: 0;
-  text-align: center;
-  font-size: clamp(1rem, 2.4vmin, 2rem);
+.answerText {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: clamp(8px, 1.1vmin, 18px);
+  color: #f4fbff;
+  font-size: clamp(1.05rem, 2.55vmin, 2.05rem);
   font-weight: 900;
-  color: #ffd24d;
-  background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
-  border: 2px solid #1e3a6e;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(64, 165, 255, 0.24);
+  overflow: hidden;
+}
+
+.slot {
+  flex-shrink: 0;
+  width: clamp(30px, 4.3vmin, 56px);
+  height: clamp(30px, 4.3vmin, 56px);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 35% 28%, #68c5ff 0%, #1675c9 52%, #053d82 100%);
+  border: 2px solid rgba(255, 210, 77, 0.86);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.32),
+    inset 0 -5px 8px rgba(0, 0, 0, 0.32),
+    0 5px 12px rgba(0, 0, 0, 0.36);
+  font-size: clamp(0.85rem, 1.65vmin, 1.4rem);
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.42);
+}
+
+.answerValue {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.points {
+  position: relative;
+  z-index: 1;
+  min-width: clamp(44px, 6.2vmin, 78px);
+  padding: clamp(4px, 0.7vmin, 12px) clamp(8px, 1.4vmin, 20px);
+  border-radius: clamp(4px, 0.6vmin, 8px);
+  color: #241800;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, transparent 22%),
+    linear-gradient(180deg, #fff06a 0%, #ffbd18 58%, #bc7b00 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -4px 8px rgba(111, 67, 0, 0.34),
+    0 4px 9px rgba(0, 0, 0, 0.38);
+  font-size: var(--fs-points, clamp(1.1rem, 3.1vmin, 2.55rem));
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.total {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  min-width: min(78%, 760px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2vmin, 28px);
+  text-align: center;
+  font-size: clamp(1.05rem, 2.4vmin, 2rem);
+  font-weight: 950;
+  color: #ffe879;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #14366f 0%, #071a3d 100%);
+  border: 2px solid rgba(255, 210, 77, 0.84);
   border-radius: clamp(6px, 0.9vmin, 12px);
-  padding: clamp(6px, 1vmin, 16px) clamp(12px, 2vmin, 28px);
-  letter-spacing: 1px;
+  padding: clamp(8px, 1.1vmin, 17px) clamp(16px, 2.4vmin, 34px);
+  letter-spacing: 0.1em;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.38),
+    0 0 22px rgba(255, 210, 77, 0.18);
+  text-transform: uppercase;
+
+  strong {
+    display: inline-block;
+    min-width: 3ch;
+    color: #fff;
+    font-size: 1.45em;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.45),
+      0 0 18px rgba(255, 210, 77, 0.44);
+    animation: totalPulse 900ms ease-out;
+  }
+}
+
+.targetMet {
+  border-color: rgba(255, 232, 121, 0.96);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.38),
+    0 0 30px rgba(255, 210, 77, 0.42);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.2) 42%, rgba(255, 235, 145, 0.34) 50%, rgba(255, 255, 255, 0.14) 58%, transparent 100%);
+    animation: totalSweep 1150ms ease-out;
+  }
+}
+
+.target {
+  display: inline-grid;
+  place-items: center;
+  min-height: clamp(30px, 4.2vmin, 50px);
+  padding: clamp(4px, 0.7vmin, 10px) clamp(10px, 1.5vmin, 24px);
+  border: 2px solid rgba(255, 210, 77, 0.72);
+  border-radius: 999px;
+  color: #241800;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, transparent 25%),
+    linear-gradient(180deg, #fff06a 0%, #ffbd18 58%, #bc7b00 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.58),
+    inset 0 -4px 8px rgba(111, 67, 0, 0.32),
+    0 4px 12px rgba(0, 0, 0, 0.32);
+  font-size: clamp(0.72rem, 1.45vmin, 1.15rem);
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    width: 100%;
+  }
+
+  .gridP1Only {
+    max-width: 100%;
+  }
+
+  .gridBoth {
+    grid-template-columns: 1fr;
+  }
+
+  .total {
+    flex-direction: column;
+    min-width: 100%;
+  }
+}
+
+@keyframes revealSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes answerPop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    filter: blur(1px);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(0) scale(1.035);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes pointsPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+    filter: brightness(1);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.18);
+    filter: brightness(1.28);
+  }
+  62% {
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes totalPulse {
+  0% {
+    transform: scale(0.92);
+    filter: brightness(1);
+  }
+  42% {
+    transform: scale(1.08);
+    filter: brightness(1.25);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes totalSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  16% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes timerDangerPulse {
+  from {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+      0 8px 20px rgba(0, 0, 0, 0.4),
+      0 0 18px rgba(255, 76, 76, 0.34);
+    transform: scale(1);
+  }
+  to {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -10px 18px rgba(0, 0, 0, 0.3),
+      0 8px 20px rgba(0, 0, 0, 0.4),
+      0 0 34px rgba(255, 76, 76, 0.58);
+    transform: scale(1.025);
+  }
 }

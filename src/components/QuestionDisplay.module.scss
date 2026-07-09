@@ -1,39 +1,97 @@
-/* QuestionDisplay.module.scss */
-
 .question {
-  width: min(97%, 1440px);  /* matches board width */
+  position: relative;
+  isolation: isolate;
+  width: min(97%, 1440px);
   flex-shrink: 0;
-
-  /* Dark navy box — visually connects to the answer board */
-  background: linear-gradient(180deg, #0c1a3a 0%, #071225 100%);
-  border: 2px solid #1e3a6e;
-  border-radius: clamp(6px, 1vmin, 12px);
-  padding: clamp(10px, 1.5vmin, 22px) clamp(16px, 3vmin, 40px);
-
-  /* Text */
+  padding: clamp(5px, 0.75vmin, 11px);
+  border-radius: clamp(8px, 1.15vmin, 15px);
+  background:
+    linear-gradient(180deg, #ffe986 0%, #d89a18 48%, #8a5600 100%);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.48),
+    0 0 26px rgba(255, 190, 36, 0.18);
+  box-sizing: border-box;
   text-align: center;
-  color: #ffffff;
-  overflow-wrap: break-word;
-  word-break: break-word;
 
-  /* Reset h2 browser defaults and apply our sizing */
-  h2 {
-    margin: 0;
-    font-weight: 800;
-    /*
-     * Was: clamp(1.1rem, 3vmin, 2.8rem)  → ~32 px at 1080p
-     * Now: clamp(1.4rem, 4vmin, 3.8rem)  → ~43 px at 1080p  (+33%, +2 visual steps)
-     * Raises min so mid-size laptops still see a commanding question.
-     */
-    font-size: var(--fs-question, clamp(1.4rem, 4vmin, 3.8rem));
-    line-height: 1.2;
-    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
-    letter-spacing: 0.3px;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: clamp(2px, 0.35vmin, 5px);
+    z-index: -1;
+    border-radius: clamp(6px, 0.95vmin, 12px);
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.22), transparent 18%, transparent 82%, rgba(255, 255, 255, 0.18)),
+      linear-gradient(180deg, #14295c 0%, #061532 100%);
   }
 }
 
-/* Hidden state — placeholder dots/label live in HiddenQuestionPlaceholder */
+.inner {
+  position: relative;
+  min-height: clamp(72px, 10vmin, 126px);
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 1.5vmin, 22px) clamp(18px, 3.2vmin, 46px);
+  border: 1px solid rgba(123, 176, 255, 0.34);
+  border-radius: clamp(5px, 0.8vmin, 10px);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 24%),
+    radial-gradient(ellipse at 50% 0%, rgba(72, 143, 255, 0.26), transparent 56%),
+    linear-gradient(180deg, #0c1d45 0%, #051127 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -14px 30px rgba(0, 0, 0, 0.32);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 36px);
+    opacity: 0.8;
+  }
+
+  h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: #fff;
+    font-size: var(--fs-question, clamp(1.4rem, 4vmin, 3.8rem));
+    font-weight: 950;
+    letter-spacing: 0;
+    line-height: 1.12;
+    overflow-wrap: anywhere;
+    text-shadow:
+      0 3px 0 rgba(0, 0, 0, 0.34),
+      0 0 16px rgba(87, 155, 255, 0.24);
+  }
+}
+
+.revealed .inner {
+  animation: questionReveal 420ms ease-out;
+}
+
+.hidden .inner {
+  border-color: rgba(255, 210, 77, 0.3);
+  background:
+    linear-gradient(180deg, rgba(255, 210, 77, 0.08), transparent 20%),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 210, 77, 0.14), transparent 54%),
+    linear-gradient(180deg, #0a1a3c 0%, #050f24 100%);
+}
+
 .hidden h2 {
-  font-weight: 700;
-  letter-spacing: clamp(2px, 0.6vmin, 8px);
+  letter-spacing: clamp(1px, 0.35vmin, 5px);
+}
+
+@keyframes questionReveal {
+  0% {
+    filter: brightness(1.25);
+    transform: scale(0.985);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
 }

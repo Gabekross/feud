@@ -1,64 +1,107 @@
-/* AnswerBoxes.module.scss */
-
 .boardWrap {
   flex: 1;
-  min-height: 0;          /* critical: lets flex item shrink below content size */
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-}
-
-.board {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(6px, 0.9vmin, 14px) clamp(10px, 1.5vmin, 22px);
-
-  /* Fill the boardWrap height so 1fr rows actually expand */
-  height: 100%;
-  width: min(97%, 1440px);  /* matches question width; removes old 960px cap */
-
-  padding: clamp(10px, 1.5vmin, 20px) clamp(12px, 2vmin, 24px);
-  background: linear-gradient(160deg, #0d1b3e 0%, #071225 100%);
-  border: 2px solid #1e3a6e;
-  border-radius: clamp(8px, 1.2vmin, 16px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  padding: clamp(2px, 0.4vmin, 8px);
   box-sizing: border-box;
 }
 
-/* Each grid cell — must have a height so the absolutely-positioned plate fills it */
-.cell {
+.board {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
-  perspective: 1200px;
-  /* The 1fr rows provide height; this ensures a floor on very small screens */
-  min-height: clamp(48px, 6vmin, 80px);
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(7px, 0.9vmin, 15px) clamp(10px, 1.4vmin, 22px);
+  height: 100%;
+  width: min(97%, 1460px);
+  padding: clamp(16px, 2vmin, 30px);
+  border: clamp(3px, 0.55vmin, 8px) solid #d99b1e;
+  border-radius: clamp(9px, 1.3vmin, 18px);
+  background:
+    linear-gradient(180deg, rgba(255, 230, 87, 0.18), transparent 7%, transparent 93%, rgba(255, 174, 0, 0.14)),
+    radial-gradient(ellipse at 50% 0%, rgba(63, 126, 255, 0.28), transparent 48%),
+    linear-gradient(160deg, #071733 0%, #030b1d 52%, #061226 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 237, 154, 0.48),
+    inset 0 0 36px rgba(40, 107, 220, 0.24),
+    0 22px 60px rgba(0, 0, 0, 0.68),
+    0 0 34px rgba(255, 174, 0, 0.2);
+  box-sizing: border-box;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: clamp(7px, 0.9vmin, 14px);
+    z-index: -1;
+    border-radius: clamp(6px, 0.9vmin, 12px);
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 44px),
+      linear-gradient(180deg, rgba(8, 21, 50, 0.72), rgba(2, 8, 22, 0.72));
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.58);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: clamp(2px, 0.35vmin, 6px);
+    pointer-events: none;
+    border-radius: clamp(7px, 1vmin, 14px);
+    background:
+      linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent) 0 0 / 280% 100%,
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18));
+    mix-blend-mode: screen;
+    opacity: 0.55;
+  }
 }
 
-/* ── Flip card ──────────────────────────────────────────────────────── */
+.cell {
+  display: grid;
+  overflow: hidden;
+  min-height: clamp(48px, 6vmin, 80px);
+  perspective: 1300px;
+  border-radius: clamp(6px, 0.8vmin, 11px);
+}
+
 .plate {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: clamp(6px, 0.8vmin, 12px);
+  min-width: 0;
+  border-radius: clamp(6px, 0.8vmin, 11px);
   transform-style: preserve-3d;
-  transition: transform 340ms ease, box-shadow 220ms ease;
+  transition: transform 380ms cubic-bezier(0.2, 0.75, 0.2, 1), box-shadow 220ms ease;
   will-change: transform;
-
-  background: linear-gradient(180deg, #1e7ecf 0%, #0d559a 100%);
-  border: 2px solid #0b3a70;
+  background: linear-gradient(180deg, #238ce1 0%, #0d5fa7 48%, #073d79 100%);
+  border: 2px solid #032d5f;
   box-shadow:
-    inset 0 3px 8px rgba(255, 255, 255, 0.18),
-    inset 0 -5px 10px rgba(0, 0, 0, 0.3),
-    0 4px 14px rgba(0, 0, 0, 0.4);
+    inset 0 3px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -7px 14px rgba(0, 0, 0, 0.42),
+    0 4px 10px rgba(0, 0, 0, 0.48);
 
-  /* Glass sheen */
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.07) 50%, transparent 100%);
-    pointer-events: none;
     border-radius: inherit;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 38%),
+      linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+    pointer-events: none;
+    transform: translateX(-120%);
+    transition: transform 520ms ease;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: clamp(3px, 0.45vmin, 7px);
+    border-radius: clamp(4px, 0.55vmin, 8px);
+    border: 1px solid rgba(129, 199, 255, 0.24);
+    pointer-events: none;
   }
 }
 
@@ -68,22 +111,38 @@
 
 .justFlipped {
   box-shadow:
-    inset 0 6px 14px rgba(255, 255, 255, 0.22),
-    inset 0 -8px 14px rgba(0, 0, 0, 0.4),
-    0 12px 28px rgba(0, 0, 0, 0.55),
-    0 0 0 2px #ffd24d;  /* gold pulse on reveal */
+    inset 0 4px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.42),
+    0 10px 24px rgba(0, 0, 0, 0.52),
+    0 0 0 3px rgba(255, 210, 77, 0.92),
+    0 0 24px rgba(255, 210, 77, 0.5);
+  animation: revealPulse 760ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &::before {
+    animation: revealSweep 820ms ease-out;
+  }
+
+  .back::before {
+    animation: revealSweep 820ms ease-out;
+  }
+
+  .answerText {
+    animation: answerPop 560ms cubic-bezier(0.2, 0.85, 0.2, 1);
+  }
+
+  .points {
+    animation: pointsPop 680ms cubic-bezier(0.2, 0.85, 0.2, 1);
+  }
 }
 
-/* Both faces share these base styles */
 .face {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
-  /* More horizontal breathing room for the larger text */
   padding: 0 clamp(12px, 2.2vmin, 36px);
   backface-visibility: hidden;
-  border-radius: clamp(6px, 0.8vmin, 12px);
+  border-radius: clamp(6px, 0.8vmin, 11px);
 }
 
 .front {
@@ -92,31 +151,55 @@
 
 .back {
   transform: rotateY(180deg);
+  border: 2px solid rgba(255, 210, 77, 0.76);
+  background:
+    linear-gradient(180deg, rgba(255, 210, 77, 0.14), transparent 24%, transparent 76%, rgba(255, 174, 0, 0.12)),
+    linear-gradient(180deg, #0c316c 0%, #082554 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -8px 18px rgba(0, 0, 0, 0.42);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.28) 42%, rgba(255, 235, 145, 0.38) 50%, rgba(255, 255, 255, 0.18) 58%, transparent 100%);
+    opacity: 0;
+    transform: translateX(-115%);
+  }
 }
 
-/* ── Front face: number badge ──────────────────────────────────────── */
 .badge {
-  width: clamp(38px, 5.5vmin, 72px);
-  height: clamp(38px, 5.5vmin, 72px);
-  border-radius: 999px;
+  width: clamp(42px, 5.8vmin, 78px);
+  height: clamp(42px, 5.8vmin, 78px);
   display: grid;
   place-items: center;
-  font-weight: 900;
-  /* +11% min, +11% preferred, +13% max vs old clamp(0.85rem, 1.8vmin, 1.5rem) */
-  font-size: clamp(0.95rem, 2vmin, 1.7rem);
+  border-radius: 999px;
   color: #fff;
-  background: radial-gradient(circle at 35% 30%, #3ab5ff 0%, #0b5aa2 70%);
-  border: 3px solid #073e72;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.2);
-  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 35% 28%, #68c5ff 0%, #1675c9 52%, #053d82 100%);
+  border: 3px solid rgba(255, 210, 77, 0.86);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.32),
+    inset 0 -5px 8px rgba(0, 0, 0, 0.32),
+    0 6px 14px rgba(0, 0, 0, 0.42),
+    0 0 14px rgba(64, 165, 255, 0.34);
+  font-size: clamp(1rem, 2.1vmin, 1.8rem);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.42);
 }
 
-/* ── Back face: answer text + points ──────────────────────────────── */
 .answerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  min-width: 0;
   gap: clamp(8px, 1.2vmin, 20px);
   overflow: hidden;
 }
@@ -124,43 +207,105 @@
 .answerText {
   flex: 1;
   min-width: 0;
-  color: #e8f4ff;
-  font-weight: 800;
-  /*
-   * Was: clamp(0.9rem, 2.4vmin, 2rem)   → ~26 px at 1080p
-   * Now: clamp(1.1rem, 3.2vmin, 2.6rem)  → ~35 px at 1080p  (+34%)
-   *      clamp min raised so mobile still readable
-   */
+  color: #f4fbff;
   font-size: var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem));
+  font-weight: 900;
   line-height: 1;
+  letter-spacing: 0;
   text-transform: uppercase;
-  letter-spacing: clamp(0.5px, 0.2vmin, 2.5px);
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(64, 165, 255, 0.24);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Gold points pill — wide rounded rectangle, easy to read from distance */
 .points {
   flex-shrink: 0;
-  /*
-   * min-width raised to accommodate larger font without squeezing 3-digit numbers.
-   * Was: clamp(44px, 6vmin, 80px)
-   * Now: clamp(52px, 7.5vmin, 100px)
-   */
-  min-width: clamp(52px, 7.5vmin, 100px);
+  min-width: clamp(58px, 8vmin, 108px);
   padding: clamp(4px, 0.7vmin, 12px) clamp(10px, 1.8vmin, 26px);
   border-radius: clamp(4px, 0.6vmin, 8px);
-  background: linear-gradient(180deg, #ffe657 0%, #ffae00 100%);
-  color: #2d1f00;
-  font-weight: 900;
-  /*
-   * Was: clamp(0.9rem, 2.4vmin, 2rem)   → ~26 px at 1080p
-   * Now: clamp(1.2rem, 3.4vmin, 2.8rem)  → ~37 px at 1080p  (+42%)
-   */
+  color: #241800;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, transparent 22%),
+    linear-gradient(180deg, #fff06a 0%, #ffbd18 58%, #bc7b00 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -4px 8px rgba(111, 67, 0, 0.34),
+    0 4px 9px rgba(0, 0, 0, 0.38);
   font-size: var(--fs-points, clamp(1.2rem, 3.4vmin, 2.8rem));
-  text-align: center;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.65), 0 3px 8px rgba(0, 0, 0, 0.3);
+  font-weight: 950;
   line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+@keyframes revealPulse {
+  0% {
+    filter: brightness(1);
+    transform: rotateY(180deg) scale(1);
+  }
+  35% {
+    filter: brightness(1.35);
+    transform: rotateY(180deg) scale(1.018);
+  }
+  100% {
+    filter: brightness(1);
+    transform: rotateY(180deg) scale(1);
+  }
+}
+
+@keyframes revealSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes answerPop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    filter: blur(1px);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(0) scale(1.035);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes pointsPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+    filter: brightness(1);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.18);
+    filter: brightness(1.28);
+  }
+  62% {
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }

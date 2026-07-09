@@ -15,6 +15,7 @@ export default function LeftPane() {
   const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
   const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
   const [showEventFooter, setShowEventFooter] = useState(true);
+  const [notice, setNotice] = useState('');
 
   const [strikeLimit, setStrikeLimit] = useState(3);
   const [strikes, setStrikes] = useState(0);
@@ -146,6 +147,11 @@ export default function LeftPane() {
     setStrikes(newCount);
   };
 
+  const showNotice = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 2800);
+  };
+
   const handleResetRound = async () => {
     if (!sessionId) return;
     const { error: e1 } = await supabase.from('game_sessions').update({ strikes: 0 }).eq('id', sessionId);
@@ -161,7 +167,7 @@ export default function LeftPane() {
       const { error: e3 } = await supabase.from('answers').update({ revealed: false }).eq('question_id', cur.question_id);
       if (e3) console.error('Reset answers failed:', e3.message);
     }
-    alert('🔁 Round has been reset.');
+    showNotice('Round has been reset.');
   };
 
   const handleSwitchRound = async () => {
@@ -243,7 +249,7 @@ export default function LeftPane() {
       if (!eStr) setStrikes(0);
     }
 
-    alert(`✅ Switched to ${round.replace('_',' ')}${targetRound===6 ? ` (Q${fmIndex})` : ''}`);
+    showNotice(`Switched to ${round.replace('_',' ')}${targetRound===6 ? ` (Q${fmIndex})` : ''}`);
   };
 
   const resetGameSession = async () => {
@@ -288,12 +294,13 @@ export default function LeftPane() {
     setFmIndex(1);
     setStrikes(0);
     setScreenState('standby');
-    alert('✅ Game session reset!');
+    showNotice('Game session reset.');
   };
 
   return (
     <div className={styles.leftPane}>
       <h2>🎛️ Game Controls</h2>
+      {notice && <div className={styles.notice}>{notice}</div>}
 
       <h4>Audience Screen</h4>
       <label>Event Title</label>

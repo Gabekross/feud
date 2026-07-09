@@ -10,7 +10,7 @@ type Answer = {
 };
 
 type Props = {
-  answers: Answer[]; // exact number of answers for the current question
+  answers: Answer[];
 };
 
 export default function AnswerBoxes({ answers }: Props) {
@@ -28,17 +28,16 @@ export default function AnswerBoxes({ answers }: Props) {
   const orderedAnswers: Answer[] = useMemo(
     () =>
       slotNumbers.map((num) => {
-        const a = answers[num - 1];
-        return a ?? { text: '', points: 0, revealed: false };
+        const answer = answers[num - 1];
+        return answer ?? { text: '', points: 0, revealed: false };
       }),
     [answers, slotNumbers]
   );
 
   const prevRevealedRef = useRef<boolean[]>([]);
   const [justRevealed, setJustRevealed] = useState<boolean[]>([]);
-
-  // Load ding sound once
   const dingSoundRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
     dingSoundRef.current = new Audio('/sounds/correct.mp3');
     dingSoundRef.current.volume = 0.7;
@@ -46,18 +45,17 @@ export default function AnswerBoxes({ answers }: Props) {
 
   useEffect(() => {
     const prev = prevRevealedRef.current;
-    const nextFlags = orderedAnswers.map((a, i) => !prev[i] && a.revealed);
+    const nextFlags = orderedAnswers.map((answer, i) => !prev[i] && answer.revealed);
 
-    // Play sound for any newly revealed answer
     nextFlags.forEach((isNew) => {
       if (isNew && dingSoundRef.current) {
-        dingSoundRef.current.currentTime = 0; // rewind if needed
+        dingSoundRef.current.currentTime = 0;
         dingSoundRef.current.play().catch(() => {});
       }
     });
 
     setJustRevealed(nextFlags);
-    prevRevealedRef.current = orderedAnswers.map((a) => a.revealed);
+    prevRevealedRef.current = orderedAnswers.map((answer) => answer.revealed);
   }, [orderedAnswers]);
 
   return (
@@ -65,23 +63,24 @@ export default function AnswerBoxes({ answers }: Props) {
       <div
         className={styles.board}
         style={{
-          // 1fr: rows fill the board height dynamically.
-          // minmax floor keeps cards readable on small screens.
           gridTemplateRows: `repeat(${Math.ceil(totalSlots / 2)}, minmax(clamp(48px, 6vmin, 80px), 1fr))`,
         }}
       >
-        {orderedAnswers.map((a, idx) => {
-          const flipClass = a.revealed ? styles.isRevealed : '';
+        {orderedAnswers.map((answer, idx) => {
+          const slotNumber = slotNumbers[idx];
+          const flipClass = answer.revealed ? styles.isRevealed : '';
           const justClass = justRevealed[idx] ? styles.justFlipped : '';
 
           return (
             <div key={idx} className={styles.cell}>
               <div className={`${styles.plate} ${flipClass} ${justClass}`}>
-                <div className={`${styles.face} ${styles.front}`} />
+                <div className={`${styles.face} ${styles.front}`}>
+                  <span className={styles.badge}>{slotNumber}</span>
+                </div>
                 <div className={`${styles.face} ${styles.back}`}>
                   <div className={styles.answerRow}>
-                    <span className={styles.answerText}>{a.text || '—'}</span>
-                    <span className={styles.points}>{a.points}</span>
+                    <span className={styles.answerText}>{answer.text || '-'}</span>
+                    <span className={styles.points}>{answer.points}</span>
                   </div>
                 </div>
               </div>

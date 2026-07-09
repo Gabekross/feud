@@ -1,7 +1,7 @@
 // src/components/control/MiddlePane.tsx
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
 import styles from './MiddlePane.module.scss';
@@ -25,7 +25,6 @@ export default function MiddlePane() {
   const [currentRowId, setCurrentRowId] = useState<string | null>(null);
 
   const strikeAudio = typeof Audio !== 'undefined' ? new Audio('/sounds/buzzer.mp3') : null;
-  const revealDingRef = useRef<HTMLAudioElement | null>(null);
 
   const loadCurrentQA = async () => {
     if (!sessionId) return;
@@ -67,13 +66,6 @@ export default function MiddlePane() {
   useEffect(() => {
     loadCurrentQA();
   }, [sessionId]);
-
-  // preload reveal ding
-  useEffect(() => {
-    if (!revealDingRef.current && typeof Audio !== 'undefined') {
-      revealDingRef.current = new Audio('/sounds/correct.mp3');
-    }
-  }, []);
 
   // 🔁 React to round switches (is_current flips)
   useEffect(() => {
@@ -147,13 +139,8 @@ export default function MiddlePane() {
     setRevealQ(false);
   };
 
-  // Toggle reveal for one answer (with ding on reveal)
+  // Toggle reveal for one answer. Main Screen owns the audience reveal sound.
   const toggleReveal = async (id: string, next: boolean) => {
-    if (next) {
-      const audio = new Audio('/sounds/correct.mp3');
-      audio.currentTime = 0;
-      try { await audio.play(); } catch {}
-    }
     setAnswers(prev => prev.map(a => (a.id === id ? { ...a, revealed: next } : a)));
     await supabase.from('answers').update({ revealed: next }).eq('id', id);
   };

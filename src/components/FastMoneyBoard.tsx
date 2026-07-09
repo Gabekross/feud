@@ -18,7 +18,40 @@ type Resp = {
 
 type FMRow = Resp | null;
 
-export default function FastMoneyBoard() {
+type Props = {
+  timerRemain?: number;
+  timerDuration?: number;
+  timerColor?: string;
+};
+
+function AnimatedNumber({ value, className }: { value: number; className?: string }) {
+  const [displayValue, setDisplayValue] = useState(value);
+
+  useEffect(() => {
+    const start = displayValue;
+    const change = value - start;
+    const duration = 650;
+    const startedAt = performance.now();
+    let frame = 0;
+
+    if (change === 0) return;
+
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(Math.round(start + change * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return <strong className={className}>{displayValue}</strong>;
+}
+
+export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, timerColor = '#4caf50' }: Props) {
   const sessionId = useActiveSession();
   const [fmIndex, setFmIndex] = useState<number>(1);
   const [qText, setQText] = useState<string>('');     // current FM question text
@@ -166,6 +199,7 @@ export default function FastMoneyBoard() {
   const p1Total = useMemo(() => sumPoints(p1Rows), [p1Rows]);
   const p2Total = useMemo(() => sumPoints(p2Rows), [p2Rows]);
   const grandTotal = p1Total + p2Total;
+  const timerCircumference = 2 * Math.PI * 45;
 
   return (
     <div className={styles.fmBoard}>
@@ -173,8 +207,33 @@ export default function FastMoneyBoard() {
           was removed since the top-of-screen Round Badge already conveys
           which round is active. */}
       <div className={styles.header}>
-        <div className={styles.question}>
-          {showQuestion ? qText : <HiddenQuestionPlaceholder />}
+        <div className={styles.questionStage}>
+          <div className={styles.question}>
+            {showQuestion ? qText : <HiddenQuestionPlaceholder />}
+          </div>
+        </div>
+        <div
+          className={`${styles.timerPod} ${timerRemain <= 5 ? styles.timerDanger : timerRemain <= 10 ? styles.timerWarning : ''}`}
+        >
+          <div className={styles.timerLabel}>Clock</div>
+          <svg viewBox="0 0 100 100" className={styles.timerSvg}>
+            <circle className={styles.bg} cx="50" cy="50" r="45" />
+            <circle
+              className={styles.progress}
+              cx="50"
+              cy="50"
+              r="45"
+              style={{
+                strokeDasharray: timerCircumference,
+                strokeDashoffset: (timerRemain / Math.max(1, timerDuration)) * timerCircumference,
+                stroke: timerColor,
+              }}
+            />
+            <text x="50" y="54" textAnchor="middle" className={styles.time}>
+              {timerRemain}
+            </text>
+          </svg>
+          <div className={styles.timerCaption}>seconds</div>
         </div>
       </div>
 
@@ -188,19 +247,27 @@ export default function FastMoneyBoard() {
         <div className={styles.col}>
           <div className={styles.colTitle}>Player 1</div>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={`p1-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
+            <div
+              key={`p1-${i}`}
+              className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''} ${p1Rows[i]?.reveal_answer ? styles.hasAnswer : ''} ${p1Rows[i]?.reveal_points ? styles.hasPoints : ''}`}
+            >
               <div className={styles.answerText}>
-                {p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
+                <span className={styles.slot}>{i}</span>
+                <span className={styles.answerValue}>
+                  {p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
+                </span>
               </div>
               <div className={styles.points}>
-                {p1Rows[i]?.reveal_points ? (p1Rows[i]?.points_awarded ?? 0) : ''}
+                {p1Rows[i]?.reveal_points ? (
+                  <AnimatedNumber value={p1Rows[i]?.points_awarded ?? 0} />
+                ) : ''}
               </div>
             </div>
           ))}
           {/* Per-column subtotal — only during P2 phase to mirror Family Feud */}
           {hideP1 && (
             <div className={styles.subtotal}>
-              SUBTOTAL <strong>{p1Total}</strong>
+              SUBTOTAL <AnimatedNumber value={p1Total} />
             </div>
           )}
         </div>
@@ -209,17 +276,25 @@ export default function FastMoneyBoard() {
           <div className={styles.col}>
             <div className={styles.colTitle}>Player 2</div>
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={`p2-${i}`} className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''}`}>
+              <div
+                key={`p2-${i}`}
+                className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''} ${p2Rows[i]?.reveal_answer ? styles.hasAnswer : ''} ${p2Rows[i]?.reveal_points ? styles.hasPoints : ''}`}
+              >
                 <div className={styles.answerText}>
-                  {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}
+                  <span className={styles.slot}>{i}</span>
+                  <span className={styles.answerValue}>
+                    {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}
+                  </span>
                 </div>
                 <div className={styles.points}>
-                  {p2Rows[i]?.reveal_points ? (p2Rows[i]?.points_awarded ?? 0) : ''}
+                  {p2Rows[i]?.reveal_points ? (
+                    <AnimatedNumber value={p2Rows[i]?.points_awarded ?? 0} />
+                  ) : ''}
                 </div>
               </div>
             ))}
             <div className={styles.subtotal}>
-              SUBTOTAL <strong>{p2Total}</strong>
+              SUBTOTAL <AnimatedNumber value={p2Total} />
             </div>
           </div>
         )}
@@ -228,12 +303,13 @@ export default function FastMoneyBoard() {
       {/* Context-aware bottom label:
           • P1 phase   → "PLAYER 1: 95"     (running solo total)
           • P2 phase   → "GRAND TOTAL: 285" (combined climax) */}
-      <div className={styles.total}>
+      <div className={`${styles.total} ${grandTotal >= 200 ? styles.targetMet : ''}`}>
         {hideP1 ? (
-          <>GRAND&nbsp;TOTAL: <strong>{grandTotal}</strong></>
+          <>GRAND&nbsp;TOTAL: <AnimatedNumber value={grandTotal} /></>
         ) : (
-          <>PLAYER&nbsp;1: <strong>{p1Total}</strong></>
+          <>PLAYER&nbsp;1: <AnimatedNumber value={p1Total} /></>
         )}
+        <span className={styles.target}>Target 200</span>
       </div>
     </div>
   );
