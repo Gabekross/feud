@@ -1,5 +1,12 @@
 // ─── Layout Utilities ───────────────────────────────────────────────────────
 
+html,
+body {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 // Screen-reader only (accessibility helper)
 .visually-hidden,
 .sr-only {

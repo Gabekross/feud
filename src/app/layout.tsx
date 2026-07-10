@@ -1,8 +1,8 @@
 import '@/styles/index.scss';
 
 export const metadata = {
-  title: 'Gabekross',
-  description: 'Family Feud-style in-person game',
+  title: 'Jemigah Family Games',
+  description: 'Premium live family game experiences for parties, events, and game nights.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
