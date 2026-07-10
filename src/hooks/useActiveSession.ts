@@ -11,12 +11,28 @@ export default function useActiveSession() {
         .from('game_sessions')
         .select('id')
         .eq('status', 'active')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
-      if (data) setSessionId(data.id);
+      setSessionId(data?.id ?? null);
     };
 
     getSession();
+
+    const channel = supabase
+      .channel(`active_session_watch_${Math.random().toString(36).slice(2)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'game_sessions' },
+        () => {
+          void getSession();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   return sessionId;

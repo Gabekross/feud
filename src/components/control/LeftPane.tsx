@@ -297,6 +297,60 @@ export default function LeftPane() {
     showNotice('Game session reset.');
   };
 
+  const exitGameSession = async () => {
+    if (!sessionId) return;
+    const sure = window.confirm('End this game and return the audience screen to standby? Scores, reveals, strikes, and Fast Money responses will reset.');
+    if (!sure) return;
+
+    const { error: sessionError } = await supabase.from('game_sessions').update({
+      team1_score: 0,
+      team2_score: 0,
+      strikes: 0,
+      active_team: 1,
+      round: 'round1',
+      screen_state: 'standby',
+      fm_timer_running: false,
+      fm_timer_started_at: null,
+      fm_timer_duration: 20,
+      fm_hide_p1: false,
+      fm_player1_name: 'Player 1',
+      fm_player2_name: 'Player 2',
+    }).eq('id', sessionId);
+
+    if (sessionError) {
+      console.error('End game session failed:', sessionError.message);
+      alert('Failed to end game session.');
+      return;
+    }
+
+    await supabase.from('answers').update({ revealed: false });
+
+    await supabase.from('fast_money_responses').update({
+      answer_text: '',
+      matched_answer_id: null,
+      points_awarded: 0,
+      reveal_answer: false,
+      reveal_points: false,
+    }).eq('session_id', sessionId);
+
+    await supabase
+      .from('session_questions')
+      .update({ is_current: false, fm_reveal_question: false, reveal_question: false })
+      .eq('session_id', sessionId);
+
+    await supabase
+      .from('session_questions')
+      .update({ is_current: true, reveal_question: false })
+      .eq('session_id', sessionId)
+      .eq('round_number', 1);
+
+    setRound('round1');
+    setFmIndex(1);
+    setStrikes(0);
+    setScreenState('standby');
+    showNotice('Game ended. Audience screen returned to standby.');
+  };
+
   return (
     <div className={styles.leftPane}>
       <h2>🎛️ Game Controls</h2>
@@ -404,6 +458,7 @@ export default function LeftPane() {
       <hr />
       <button className={styles.reset} onClick={handleResetRound}>🔁 Reset Round</button>
       <button className={styles.resetGameBtn} onClick={resetGameSession}>🔄 Reset Game Session</button>
+      <button className={styles.exitGameBtn} onClick={exitGameSession}>End Game Session</button>
     </div>
   );
 }

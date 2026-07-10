@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import useActiveSession from '@/hooks/useActiveSession';
 import LeftPane from '@/components/control/LeftPane';
 import MiddlePane from '@/components/control/MiddlePane';
 import RightPane from '@/components/control/RightPane';
@@ -9,16 +10,21 @@ import FastMoneyPane from '@/components/control/FastMoneyPane';
 import styles from './ControlPanel.module.scss';
 
 export default function ControlPanelPage() {
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const sessionId = useActiveSession();
   const [isFastMoney, setIsFastMoney] = useState(false);
 
-  // Load active session & current round
+  // Load current round for the active session
   useEffect(() => {
+    if (!sessionId) {
+      setIsFastMoney(false);
+      return;
+    }
+
     const load = async () => {
       const { data, error } = await supabase
         .from('game_sessions')
-        .select('id, round')
-        .eq('status', 'active')
+        .select('round')
+        .eq('id', sessionId)
         .single();
 
       if (error) {
@@ -26,13 +32,10 @@ export default function ControlPanelPage() {
         return;
       }
 
-      if (data) {
-        setSessionId(data.id);
-        setIsFastMoney(data.round === 'fast_money');
-      }
+      setIsFastMoney(data?.round === 'fast_money');
     };
     load();
-  }, []);
+  }, [sessionId]);
 
   // Realtime: react to round changes
   useEffect(() => {
@@ -44,7 +47,7 @@ export default function ControlPanelPage() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
         (payload) => {
-          setIsFastMoney(payload.new.round === 'fast_money');
+          setIsFastMoney(payload.new.status === 'active' && payload.new.round === 'fast_money');
         }
       )
       .subscribe();
