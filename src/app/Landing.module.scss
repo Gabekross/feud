@@ -33,9 +33,9 @@
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(90deg, rgba(2, 7, 18, 0.86), rgba(2, 7, 18, 0.34) 42%, rgba(2, 7, 18, 0.82)),
-      linear-gradient(180deg, rgba(2, 7, 18, 0.24), rgba(2, 7, 18, 0.72)),
-      url('/images/game-show-stage-clean.png') center / cover no-repeat;
+      linear-gradient(90deg, rgba(2, 7, 18, 0.5), rgba(2, 7, 18, 0.06) 44%, rgba(2, 7, 18, 0.5)),
+      linear-gradient(180deg, rgba(2, 7, 18, 0.02), rgba(2, 7, 18, 0.42)),
+      url('/images/family-games-luxury-bright-bg.png') center / cover no-repeat;
     z-index: -2;
   }
 
@@ -64,13 +64,13 @@
 .sectionHeading p,
 .cardTopline span {
   margin: 0;
-  color: #ffdf6b;
+  color: #ffe797;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(0.78rem, 1.4vw, 0.95rem);
   font-weight: 900;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  text-shadow: 0 0 18px rgba(255, 198, 43, 0.42);
+  text-shadow: 0 0.08rem 0.1rem rgba(44, 27, 4, 0.58), 0 0 1.1rem rgba(255, 216, 99, 0.5);
 }
 
 .hero h1 {
@@ -80,18 +80,24 @@
   font-size: clamp(2.35rem, 4.8vw, 4.7rem);
   line-height: 0.95;
   font-weight: 900;
-  letter-spacing: 0;
-  text-shadow: 0 0.25rem 0 #061326, 0 0 2.5rem rgba(255, 224, 126, 0.28);
+  letter-spacing: 0.04em;
+  color: #fff4cf;
+  background: linear-gradient(180deg, #ffffff 4%, #fff0b9 34%, #d49a24 63%, #fff2bd 86%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0.18rem 0.05rem rgba(13, 19, 35, 0.88)) drop-shadow(0 0 1.2rem rgba(255, 218, 104, 0.34));
 }
 
 .heroCopy {
   width: min(760px, 100%);
   margin: 0.25rem 0 0;
-  color: #d8e5f8;
+  color: #fff1c8;
+  opacity: 0.92;
   font-size: clamp(1rem, 1.8vw, 1.25rem);
   line-height: 1.55;
   font-weight: 700;
-  text-shadow: 0 0.15rem 0.3rem rgba(0, 0, 0, 0.7);
+  text-shadow: 0 0.12rem 0.22rem rgba(5, 12, 28, 0.72), 0 0 0.9rem rgba(255, 220, 128, 0.22);
 }
 
 .heroActions {
@@ -150,11 +156,12 @@
 
   h2 {
     margin: 0;
-    color: #eef5ff;
+    color: #fff3c7;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: clamp(1.65rem, 3vw, 2.45rem);
     line-height: 1.05;
-    letter-spacing: 0;
+    letter-spacing: 0.03em;
+    text-shadow: 0 0.1rem 0.1rem rgba(4, 10, 24, 0.75), 0 0 1rem rgba(255, 218, 104, 0.24);
   }
 }
 
@@ -175,18 +182,18 @@
   border: 1px solid rgba(255, 210, 78, 0.62);
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(28, 60, 111, 0.96), rgba(7, 19, 39, 0.98)),
+    linear-gradient(180deg, rgba(28, 60, 111, 0.82), rgba(7, 19, 39, 0.9)),
     radial-gradient(circle at 50% 0%, rgba(75, 151, 255, 0.34), transparent 15rem);
   box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(97, 148, 229, 0.24);
 
   h3 {
     margin: 0;
-    color: #ffffff;
+    color: #fff5ce;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: clamp(1.6rem, 2.7vw, 2.5rem);
     line-height: 1;
-    letter-spacing: 0;
-    text-shadow: 0 0.16rem 0 #061326;
+    letter-spacing: 0.03em;
+    text-shadow: 0 0.13rem 0.06rem rgba(4, 10, 24, 0.82), 0 0 0.9rem rgba(255, 217, 112, 0.26);
   }
 
   p {
