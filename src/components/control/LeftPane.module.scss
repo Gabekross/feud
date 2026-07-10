@@ -200,3 +200,58 @@
     &:disabled { opacity: 0.45; cursor: not-allowed; }
   }
 }
+
+@media (max-width: 640px) {
+  .leftPane {
+    padding: 0.85rem;
+    border-radius: 8px;
+    gap: 0.5rem;
+    background:
+      linear-gradient(180deg, rgba(28, 57, 105, 0.72), rgba(12, 20, 34, 0.92)),
+      #151515;
+    border: 1px solid rgba(255, 225, 135, 0.24);
+
+    h2 {
+      margin: 0 0 0.25rem;
+      font-size: 1.08rem;
+    }
+
+    h4 {
+      margin-top: 0.45rem;
+      font-size: 0.92rem;
+    }
+
+    label {
+      align-items: flex-start;
+      line-height: 1.25;
+    }
+
+    button,
+    select,
+    input[type="text"],
+    input[type="number"] {
+      font-size: 16px;
+    }
+
+    button {
+      text-align: center;
+    }
+  }
+
+  .screenModes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    button:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .revealControls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    button {
+      width: 100%;
+    }
+  }
+}

@@ -5,7 +5,10 @@
   grid-template-columns: 340px 1fr 340px;
   gap: 16px;
   padding: 16px;
-  background: radial-gradient(120% 140% at 50% -20%, #1a1a1a 0%, #0f0f0f 100%);
+  background:
+    radial-gradient(circle at 50% -12%, rgba(57, 126, 255, 0.18), transparent 34rem),
+    radial-gradient(circle at 50% 110%, rgba(255, 210, 77, 0.1), transparent 28rem),
+    linear-gradient(180deg, #071226, #05070d 74%);
   min-height: 100vh;
   box-sizing: border-box;
   font-family: var(--font-ui, system-ui, sans-serif);
@@ -50,7 +53,8 @@
     /* In single-column mode, panes shouldn't be taller than the viewport — but
        they can be shorter; let content drive height and scroll within each pane */
     > * {
-      max-height: 60vh;
+      max-height: none;
+      overflow: visible;
     }
   }
 
@@ -64,5 +68,19 @@
   .controlPanel {
     padding: 8px;
     gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .controlPanel {
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    gap: 10px;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  .fastMoneyBlock {
+    padding: 8px;
+    border-radius: 8px;
   }
 }

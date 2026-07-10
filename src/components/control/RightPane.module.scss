@@ -138,3 +138,50 @@
     line-height: 1.25;
   }
 }
+
+@media (max-width: 640px) {
+  .rightPane {
+    padding: 10px;
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgba(28, 57, 105, 0.68), rgba(12, 20, 34, 0.94)),
+      #151515;
+    border-color: rgba(255, 225, 135, 0.22);
+
+    h2 {
+      position: static;
+      margin: 0;
+      padding: 0 0 8px;
+      font-size: 1.08rem;
+      background: transparent;
+    }
+
+    label {
+      font-size: 0.86rem;
+    }
+
+    input {
+      min-height: 42px;
+      font-size: 16px;
+    }
+
+    .scoreRow {
+      grid-template-columns: 48px minmax(78px, 1fr) 48px;
+      gap: 6px;
+
+      span {
+        min-width: 0;
+        padding: 8px 8px;
+      }
+
+      button {
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    .teamToggle {
+      grid-template-columns: 1fr;
+    }
+  }
+}
