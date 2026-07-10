@@ -56,6 +56,8 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
   const [fmIndex, setFmIndex] = useState<number>(1);
   const [qText, setQText] = useState<string>('');     // current FM question text
   const [showQuestion, setShowQuestion] = useState(false);
+  const [player1Name, setPlayer1Name] = useState('Player 1');
+  const [player2Name, setPlayer2Name] = useState('Player 2');
 
   // hide P1 column content (triggered by operator’s toggle on FastMoneyPane)
   const [hideP1, setHideP1] = useState<boolean>(false);
@@ -94,10 +96,12 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
     // initial hide flag + (optional) other fm fields
     const { data: sess } = await supabase
       .from('game_sessions')
-      .select('fm_hide_p1')
+      .select('fm_hide_p1, fm_player1_name, fm_player2_name')
       .eq('id', sessionId)
       .single();
     setHideP1(!!sess?.fm_hide_p1);
+    setPlayer1Name(sess?.fm_player1_name ?? 'Player 1');
+    setPlayer2Name(sess?.fm_player2_name ?? 'Player 2');
 
     // all FM responses for both players in this session
     const { data: all } = await supabase
@@ -184,6 +188,8 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
         (payload: any) => {
           if ('fm_hide_p1' in payload.new) setHideP1(!!payload.new.fm_hide_p1);
+          setPlayer1Name(payload.new.fm_player1_name ?? 'Player 1');
+          setPlayer2Name(payload.new.fm_player2_name ?? 'Player 2');
         }
       )
       .subscribe();
@@ -200,9 +206,14 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
   const p2Total = useMemo(() => sumPoints(p2Rows), [p2Rows]);
   const grandTotal = p1Total + p2Total;
   const timerCircumference = 2 * Math.PI * 45;
+  const targetProgress = Math.min(100, Math.max(0, (grandTotal / 200) * 100));
+  const p2RevealStarted = p2Rows.some((row) => row?.reveal_answer || row?.reveal_points);
+  const finalRevealComplete = hideP1 && [1, 2, 3, 4, 5].every((i) => p2Rows[i]?.reveal_points);
+  const isPlayer2Answering = hideP1 && !p2RevealStarted;
+  const isScoringReveal = hideP1 && p2RevealStarted;
 
   return (
-    <div className={styles.fmBoard}>
+    <div className={`${styles.fmBoard} ${isScoringReveal ? styles.scoringPhase : ''} ${isPlayer2Answering ? styles.playerTwoPhase : ''}`}>
       {/* Header is just the question now — the redundant FAST MONEY pill
           was removed since the top-of-screen Round Badge already conveys
           which round is active. */}
@@ -213,7 +224,7 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
           </div>
         </div>
         <div
-          className={`${styles.timerPod} ${timerRemain <= 5 ? styles.timerDanger : timerRemain <= 10 ? styles.timerWarning : ''}`}
+          className={`${styles.timerPod} ${isScoringReveal ? styles.timerQuiet : ''} ${!isScoringReveal && timerRemain <= 5 ? styles.timerDanger : !isScoringReveal && timerRemain <= 10 ? styles.timerWarning : ''}`}
         >
           <div className={styles.timerLabel}>Clock</div>
           <svg viewBox="0 0 100 100" className={styles.timerSvg}>
@@ -244,21 +255,21 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
           screen during their turn (they're staged facing away / wearing
           headphones), so showing P1's column doesn't reveal anything to them. */}
       <div className={`${styles.grid} ${hideP1 ? styles.gridBoth : styles.gridP1Only}`}>
-        <div className={styles.col}>
-          <div className={styles.colTitle}>Player 1</div>
+        <div className={`${styles.col} ${isPlayer2Answering ? styles.coveredColumn : ''}`}>
+          <div className={styles.colTitle}>{player1Name}</div>
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={`p1-${i}`}
-              className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''} ${p1Rows[i]?.reveal_answer ? styles.hasAnswer : ''} ${p1Rows[i]?.reveal_points ? styles.hasPoints : ''}`}
+              className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''} ${p1Rows[i]?.reveal_answer ? styles.hasAnswer : styles.hiddenAnswer} ${p1Rows[i]?.reveal_points ? styles.hasPoints : ''} ${p1Rows[i]?.reveal_points && (p1Rows[i]?.points_awarded ?? 0) === 0 ? styles.zeroPoints : ''} ${isPlayer2Answering ? styles.coveredRow : ''}`}
             >
               <div className={styles.answerText}>
                 <span className={styles.slot}>{i}</span>
                 <span className={styles.answerValue}>
-                  {p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
+                  {isPlayer2Answering ? '' : p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
                 </span>
               </div>
               <div className={styles.points}>
-                {p1Rows[i]?.reveal_points ? (
+                {!isPlayer2Answering && p1Rows[i]?.reveal_points ? (
                   <AnimatedNumber value={p1Rows[i]?.points_awarded ?? 0} />
                 ) : ''}
               </div>
@@ -267,18 +278,22 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
           {/* Per-column subtotal — only during P2 phase to mirror Family Feud */}
           {hideP1 && (
             <div className={styles.subtotal}>
-              SUBTOTAL <AnimatedNumber value={p1Total} />
+              {isPlayer2Answering ? (
+                <>SUBTOTAL <strong className={styles.coveredTotal}>--</strong></>
+              ) : (
+                <>SUBTOTAL <AnimatedNumber value={p1Total} /></>
+              )}
             </div>
           )}
         </div>
 
         {hideP1 && (
           <div className={styles.col}>
-            <div className={styles.colTitle}>Player 2</div>
+            <div className={styles.colTitle}>{player2Name}</div>
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={`p2-${i}`}
-                className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''} ${p2Rows[i]?.reveal_answer ? styles.hasAnswer : ''} ${p2Rows[i]?.reveal_points ? styles.hasPoints : ''}`}
+                className={`${styles.answerRow} ${fmIndex === i ? styles.activeRow : ''} ${p2Rows[i]?.reveal_answer ? styles.hasAnswer : styles.hiddenAnswer} ${p2Rows[i]?.reveal_points ? styles.hasPoints : ''} ${p2Rows[i]?.reveal_points && (p2Rows[i]?.points_awarded ?? 0) === 0 ? styles.zeroPoints : ''}`}
               >
                 <div className={styles.answerText}>
                   <span className={styles.slot}>{i}</span>
@@ -304,12 +319,25 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
           • P1 phase   → "PLAYER 1: 95"     (running solo total)
           • P2 phase   → "GRAND TOTAL: 285" (combined climax) */}
       <div className={`${styles.total} ${grandTotal >= 200 ? styles.targetMet : ''}`}>
+        {finalRevealComplete && (
+          <span className={`${styles.resultBadge} ${grandTotal >= 200 ? styles.winnerBadge : styles.finalBadge}`}>
+            {grandTotal >= 200 ? 'Winner' : 'Final Total'}
+          </span>
+        )}
         {hideP1 ? (
           <>GRAND&nbsp;TOTAL: <AnimatedNumber value={grandTotal} /></>
         ) : (
           <>PLAYER&nbsp;1: <AnimatedNumber value={p1Total} /></>
         )}
-        <span className={styles.target}>Target 200</span>
+        <span className={styles.target}>
+          <span className={styles.targetLabel}>Target 200</span>
+          <span className={styles.targetTrack}>
+            <span
+              className={styles.targetFill}
+              style={{ width: `${targetProgress}%` }}
+            />
+          </span>
+        </span>
       </div>
     </div>
   );

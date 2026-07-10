@@ -21,6 +21,8 @@ export default function MainScreenPage() {
 
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
+  const [fmPlayer1Name, setFmPlayer1Name] = useState('Player 1');
+  const [fmPlayer2Name, setFmPlayer2Name] = useState('Player 2');
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState<{ text: string; revealed: boolean; points: number }[]>([]);
   const [teamScores, setTeamScores] = useState({ team1: 0, team2: 0 });
@@ -96,6 +98,8 @@ export default function MainScreenPage() {
   const applySession = (session: any) => {
     setTeam1Name(session.team1_name ?? 'Team 1');
     setTeam2Name(session.team2_name ?? 'Team 2');
+    setFmPlayer1Name(session.fm_player1_name ?? 'Player 1');
+    setFmPlayer2Name(session.fm_player2_name ?? 'Player 2');
     setTeamScores({ team1: session.team1_score ?? 0, team2: session.team2_score ?? 0 });
     setActiveTeam(session.active_team ?? 1);
     setIsFastMoney(session.round === 'fast_money');
@@ -301,7 +305,8 @@ export default function MainScreenPage() {
             ) : screenState === 'fast_money_intro' ? (
               <div className={styles.standbyCopy}>
                 <span>{eventTitle}</span>
-                <strong>20 seconds on the clock</strong>
+                <strong>{fmPlayer1Name} &amp; {fmPlayer2Name}</strong>
+                <em>20 seconds on the clock</em>
               </div>
             ) : screenState === 'winner' ? (
               <div className={styles.winnerCard}>

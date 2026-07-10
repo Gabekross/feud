@@ -35,6 +35,8 @@ export default function FastMoneyPane() {
   // ===== Current player's response for current fmIndex =====
   const [resp, setResp] = useState<FMResp | null>(null);
   const [typing, setTyping] = useState<string>(''); // local text input
+  const [player1Name, setPlayer1Name] = useState('Player 1');
+  const [player2Name, setPlayer2Name] = useState('Player 2');
 
   // ===== Timer controls (synced with game_sessions) =====
   const [running, setRunning] = useState<boolean>(false);
@@ -131,7 +133,7 @@ export default function FastMoneyPane() {
     // Load timer snapshot from session
     const { data: sess } = await supabase
       .from('game_sessions')
-      .select('fm_timer_running, fm_timer_started_at, fm_timer_duration, fast_money_seconds')
+      .select('fm_timer_running, fm_timer_started_at, fm_timer_duration, fast_money_seconds, fm_player1_name, fm_player2_name')
       .eq('id', sessionId)
       .single();
 
@@ -139,6 +141,8 @@ export default function FastMoneyPane() {
     setStartedAt(sess?.fm_timer_started_at ?? null);
     setDuration(sess?.fm_timer_duration ?? (sess?.fast_money_seconds ?? 20));
     setDefaultSeconds(sess?.fast_money_seconds ?? 20);
+    setPlayer1Name(sess?.fm_player1_name ?? 'Player 1');
+    setPlayer2Name(sess?.fm_player2_name ?? 'Player 2');
   };
 
   // ====== NEW: Hide Player 1 on Main Screen (auto + manual) ======
@@ -225,6 +229,8 @@ export default function FastMoneyPane() {
           setStartedAt(payload.new.fm_timer_started_at ?? null);
           setDuration(payload.new.fm_timer_duration ?? (payload.new.fast_money_seconds ?? 20));
           setDefaultSeconds(payload.new.fast_money_seconds ?? 20);
+          setPlayer1Name(payload.new.fm_player1_name ?? 'Player 1');
+          setPlayer2Name(payload.new.fm_player2_name ?? 'Player 2');
         }
       )
       .subscribe();
@@ -287,6 +293,22 @@ export default function FastMoneyPane() {
         fm_timer_duration: defaultSeconds,
       })
       .eq('id', sessionId);
+  };
+
+  const savePlayerNames = async (nextP1 = player1Name, nextP2 = player2Name) => {
+    if (!sessionId) return;
+    const cleanP1 = nextP1.trim() || 'Player 1';
+    const cleanP2 = nextP2.trim() || 'Player 2';
+    setPlayer1Name(cleanP1);
+    setPlayer2Name(cleanP2);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({
+        fm_player1_name: cleanP1,
+        fm_player2_name: cleanP2,
+      })
+      .eq('id', sessionId);
+    if (error) console.error('Fast Money player name update failed:', error.message);
   };
 
   // ===== Navigate FM (Prev / Next) =====
@@ -384,7 +406,31 @@ export default function FastMoneyPane() {
 
   return (
     <div className={styles.fastMoneyPane}>
-      <h2>⚡ Fast Money (Player {player})</h2>
+      <h2>⚡ Fast Money ({player === 1 ? player1Name : player2Name})</h2>
+
+      <div className={styles.playerNamesPanel}>
+        <div>
+          <label>Player 1 Name</label>
+          <input
+            type="text"
+            value={player1Name}
+            onChange={(e) => setPlayer1Name(e.target.value)}
+            onBlur={() => savePlayerNames()}
+            placeholder="Player 1"
+          />
+        </div>
+        <div>
+          <label>Player 2 Name</label>
+          <input
+            type="text"
+            value={player2Name}
+            onChange={(e) => setPlayer2Name(e.target.value)}
+            onBlur={() => savePlayerNames()}
+            placeholder="Player 2"
+          />
+        </div>
+        <button onClick={() => savePlayerNames()}>Save Names</button>
+      </div>
 
       {/* TIMER PANEL */}
       <div className={styles.timerPanel}>
@@ -421,8 +467,8 @@ export default function FastMoneyPane() {
         </div>
 
         <div className={styles.playerToggle}>
-          <button className={player === 1 ? styles.active : ''} onClick={() => switchPlayer(1)}>Player 1</button>
-          <button className={player === 2 ? styles.active : ''} onClick={() => switchPlayer(2)}>Player 2</button>
+          <button className={player === 1 ? styles.active : ''} onClick={() => switchPlayer(1)}>{player1Name}</button>
+          <button className={player === 2 ? styles.active : ''} onClick={() => switchPlayer(2)}>{player2Name}</button>
         </div>
 
       </div>
