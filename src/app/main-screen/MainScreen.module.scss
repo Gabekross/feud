@@ -279,7 +279,29 @@
 }
 
 .standby h1 {
-  color: #fff;
+  color: #fff4cf;
+  background: linear-gradient(180deg, #ffffff 4%, #fff0b9 34%, #d49a24 63%, #fff2bd 86%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.1em;
+  text-shadow: none;
+  filter:
+    drop-shadow(0 4px 0 rgba(8, 13, 28, 0.82))
+    drop-shadow(0 0 26px rgba(255, 218, 104, 0.38))
+    drop-shadow(0 14px 24px rgba(0, 0, 0, 0.58));
+}
+
+.standby .introEyebrow,
+.standby .introFooter {
+  color: #ffe797;
+  text-shadow:
+    0 2px 3px rgba(44, 27, 4, 0.62),
+    0 0 18px rgba(255, 216, 99, 0.46);
+}
+
+.standby .introFooter {
+  color: #fff1c8;
 }
 
 .fast_money_intro h1,
@@ -300,27 +322,34 @@
   color: #fff;
 
   span {
-    color: #a8bddb;
+    color: #fff1c8;
     font-size: clamp(1rem, 2.4vmin, 2rem);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(5, 12, 28, 0.72), 0 0 14px rgba(255, 220, 128, 0.24);
   }
 
   strong {
-    color: #fff;
+    color: #fff4cf;
     font-size: clamp(1.2rem, 3vmin, 2.7rem);
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    text-shadow:
+      0 3px 4px rgba(5, 12, 28, 0.78),
+      0 0 18px rgba(255, 220, 128, 0.3);
   }
 
   em {
-    color: #ffd24d;
+    color: #ffe797;
     font-size: clamp(0.95rem, 2vmin, 1.55rem);
     font-style: normal;
     font-weight: 800;
     letter-spacing: 0.16em;
     text-transform: uppercase;
+    text-shadow:
+      0 2px 3px rgba(44, 27, 4, 0.62),
+      0 0 16px rgba(255, 216, 99, 0.42);
   }
 }
 
