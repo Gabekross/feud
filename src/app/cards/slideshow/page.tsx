@@ -7,8 +7,8 @@ import styles from './Slideshow.module.scss';
 
 type Item = {
   question_id: string;
-  round_number: number;      // 1..6 (6 = fast money)
-  fm_index: number | null;   // 1..5 for fast money, else null
+  round_number: number;
+  fm_index: number | null;
 };
 
 type QA = {
@@ -18,17 +18,18 @@ type QA = {
 
 export default function SlideshowPage() {
   const sessionId = useActiveSession();
-
-  // ordered list of questions for the session
   const [items, setItems] = useState<Item[]>([]);
-  const [idx, setIdx] = useState(0); // current slide index
+  const [idx, setIdx] = useState(0);
   const [qa, setQa] = useState<QA | null>(null);
   const [showAnswers, setShowAnswers] = useState(false);
 
-  // load ordered list of session questions (rounds 1..5 then fast money fm_index 1..5)
   useEffect(() => {
     const loadList = async () => {
-      if (!sessionId) return;
+      if (!sessionId) {
+        setItems([]);
+        setIdx(0);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('session_questions')
@@ -49,9 +50,11 @@ export default function SlideshowPage() {
     loadList();
   }, [sessionId]);
 
-  // load the QA for the current slide
   const loadQa = useCallback(async (it: Item | undefined) => {
-    if (!it) { setQa(null); return; }
+    if (!it) {
+      setQa(null);
+      return;
+    }
 
     const { data: q, error: eq } = await supabase
       .from('questions')
@@ -77,62 +80,74 @@ export default function SlideshowPage() {
 
     setQa({
       question_text: q?.question_text ?? '',
-      answers: (a ?? []) as any[],
+      answers: (a ?? []) as QA['answers'],
     });
   }, []);
 
   useEffect(() => {
-    setShowAnswers(false); // default to question side on slide change
+    setShowAnswers(false);
     loadQa(items[idx]);
   }, [idx, items, loadQa]);
 
-  // navigation
-  const next = () => setIdx((i) => Math.min(i + 1, Math.max(0, items.length - 1)));
-  const prev = () => setIdx((i) => Math.max(0, i - 1));
+  const next = useCallback(() => {
+    setIdx((i) => Math.min(i + 1, Math.max(0, items.length - 1)));
+  }, [items.length]);
 
-  // keyboard arrows
+  const prev = useCallback(() => {
+    setIdx((i) => Math.max(0, i - 1));
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') next();
       if (e.key === 'ArrowLeft') prev();
-      if (e.key.toLowerCase() === 'f') setShowAnswers((v) => !v); // quick flip
+      if (e.key.toLowerCase() === 'f' && qa) setShowAnswers((v) => !v);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [items.length]);
+  }, [next, prev, qa]);
 
+  const currentItem = items[idx];
+  const hasItems = items.length > 0;
   const tag =
-    items[idx]?.round_number === 6
-      ? `FAST MONEY Q${items[idx]?.fm_index ?? ''}`
-      : `ROUND ${items[idx]?.round_number}`;
+    currentItem?.round_number === 6
+      ? `FAST MONEY Q${currentItem.fm_index ?? ''}`
+      : currentItem
+        ? `ROUND ${currentItem.round_number}`
+        : sessionId
+          ? 'NO QUESTIONS'
+          : 'NO SESSION';
 
   return (
     <div className={styles.slideRoot}>
-      {/* Nav buttons */}
-      <button className={`${styles.navBtn} ${styles.prev}`} onClick={prev} disabled={idx === 0} aria-label="Previous">‹</button>
+      <button className={`${styles.navBtn} ${styles.prev}`} onClick={prev} disabled={!hasItems || idx === 0} aria-label="Previous">
+        ‹
+      </button>
       <button
         className={`${styles.navBtn} ${styles.next}`}
         onClick={next}
-        disabled={idx >= items.length - 1}
+        disabled={!hasItems || idx >= items.length - 1}
         aria-label="Next"
-      >›</button>
+      >
+        ›
+      </button>
 
-      {/* Progress / controls bar */}
       <div className={styles.topBar}>
         <div className={styles.badge}>{tag}</div>
-        <div className={styles.progress}>{idx + 1} / {items.length || 0}</div>
+        <div className={styles.progress}>{hasItems ? idx + 1 : 0} / {items.length}</div>
         <div className={styles.actions}>
-          <button className={styles.flipBtn} onClick={() => setShowAnswers((v) => !v)}>
+          <button className={styles.flipBtn} onClick={() => setShowAnswers((v) => !v)} disabled={!qa}>
             {showAnswers ? 'Show Question' : 'Show Answers'}
           </button>
         </div>
       </div>
 
-      {/* Fullscreen card */}
       <div className={styles.card}>
         {!showAnswers ? (
           <div className={styles.questionSide}>
-            <div className={styles.qText}>{qa?.question_text ?? '—'}</div>
+            <div className={styles.qText}>
+              {qa?.question_text ?? (sessionId ? 'No questions in this session yet.' : 'Open an active game session to review questions.')}
+            </div>
           </div>
         ) : (
           <div className={styles.answerSide}>
@@ -143,7 +158,7 @@ export default function SlideshowPage() {
                   <span className={styles.points}>{a.points}</span>
                 </li>
               ))}
-              {(qa?.answers?.length ?? 0) === 0 && <li className={styles.answerItem}>—</li>}
+              {(qa?.answers?.length ?? 0) === 0 && <li className={styles.answerItem}>No answers found.</li>}
             </ul>
           </div>
         )}
