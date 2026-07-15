@@ -73,7 +73,8 @@
   min-width: 0;
   border-radius: clamp(6px, 0.8vmin, 11px);
   transform-style: preserve-3d;
-  transition: transform 380ms cubic-bezier(0.2, 0.75, 0.2, 1), box-shadow 220ms ease;
+  transform-origin: center;
+  transition: transform 620ms cubic-bezier(0.18, 0.72, 0.18, 1), box-shadow 260ms ease;
   will-change: transform;
   background: linear-gradient(180deg, #238ce1 0%, #0d5fa7 48%, #073d79 100%);
   border: 2px solid #032d5f;
@@ -116,22 +117,22 @@
     0 10px 24px rgba(0, 0, 0, 0.52),
     0 0 0 3px rgba(255, 210, 77, 0.92),
     0 0 24px rgba(255, 210, 77, 0.5);
-  animation: revealPulse 760ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: tileReveal 880ms cubic-bezier(0.18, 0.72, 0.18, 1) 70ms both;
 
   &::before {
-    animation: revealSweep 820ms ease-out;
+    animation: revealSweep 920ms ease-out 170ms;
   }
 
   .back::before {
-    animation: revealSweep 820ms ease-out;
+    animation: revealSweep 920ms ease-out 170ms;
   }
 
   .answerText {
-    animation: answerPop 560ms cubic-bezier(0.2, 0.85, 0.2, 1);
+    animation: answerPop 620ms cubic-bezier(0.2, 0.85, 0.2, 1) 360ms both;
   }
 
   .points {
-    animation: pointsPop 680ms cubic-bezier(0.2, 0.85, 0.2, 1);
+    animation: pointsPop 700ms cubic-bezier(0.2, 0.85, 0.2, 1) 430ms both;
   }
 }
 
@@ -242,14 +243,22 @@
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
-@keyframes revealPulse {
+@keyframes tileReveal {
   0% {
     filter: brightness(1);
-    transform: rotateY(180deg) scale(1);
+    transform: rotateY(0deg) scale(1);
   }
-  35% {
-    filter: brightness(1.35);
-    transform: rotateY(180deg) scale(1.018);
+  14% {
+    filter: brightness(1.08);
+    transform: rotateY(-7deg) scale(1.006);
+  }
+  58% {
+    filter: brightness(1.28);
+    transform: rotateY(186deg) scale(1.018);
+  }
+  78% {
+    filter: brightness(1.14);
+    transform: rotateY(176deg) scale(1.01);
   }
   100% {
     filter: brightness(1);
