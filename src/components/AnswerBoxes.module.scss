@@ -128,11 +128,11 @@
   }
 
   .answerText {
-    animation: answerPop 620ms cubic-bezier(0.2, 0.85, 0.2, 1) 360ms both;
+    animation: answerPop 520ms cubic-bezier(0.2, 0.85, 0.2, 1) 180ms both;
   }
 
   .points {
-    animation: pointsPop 700ms cubic-bezier(0.2, 0.85, 0.2, 1) 430ms both;
+    animation: pointsPop 560ms cubic-bezier(0.2, 0.85, 0.2, 1) 210ms both;
   }
 }
 
