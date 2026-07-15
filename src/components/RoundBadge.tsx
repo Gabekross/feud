@@ -2,10 +2,10 @@
 //
 // Game-show style pill that tells the audience which round is active.
 // Color-coded so it reads at a glance from across the room:
-//   • Regular rounds 1–4: blue/electric (informational)
-//   • Sudden Death:        red (high tension)
-//   • Fast Money:          gold + pulsing glow (climactic)
-//   • Winner:              deep gold (celebratory)
+//   - Regular rounds 1-4: blue/electric (informational)
+//   - Tie Breaker:        red (high tension)
+//   - Fast Money:          gold + pulsing glow (climactic)
+//   - Winner:              deep gold (celebratory)
 
 import styles from './RoundBadge.module.scss';
 
@@ -19,7 +19,7 @@ const LABELS: Record<string, string> = {
   round2:       'ROUND 2',
   round3:       'ROUND 3',
   round4:       'ROUND 4',
-  sudden_death: 'SUDDEN DEATH',
+  sudden_death: 'TIE BREAKER',
   fast_money:   'FAST MONEY',
   winner:       'GAME OVER',
 };

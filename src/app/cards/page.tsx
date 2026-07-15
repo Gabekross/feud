@@ -38,7 +38,7 @@ const ROUND_LABEL: Record<number, string> = {
   2: 'Round 2',
   3: 'Round 3',
   4: 'Round 4',
-  5: 'Sudden Death',
+  5: 'Tie Breaker',
   6: 'Fast Money',
 };
 

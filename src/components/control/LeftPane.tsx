@@ -424,7 +424,7 @@ export default function LeftPane() {
         <option value="round2">Round 2</option>
         <option value="round3">Round 3</option>
         <option value="round4">Round 4</option>
-        <option value="sudden_death">Sudden Death</option>
+        <option value="sudden_death">Tie Breaker</option>
         <option value="fast_money">Fast Money</option>
       </select>
 

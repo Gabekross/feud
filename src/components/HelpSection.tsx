@@ -69,7 +69,7 @@ export default function HelpSection() {
             <p>From the <strong>Create Game Session</strong> card on the landing page:</p>
             <ol>
               <li>Enter the two team names (e.g. <em>Lions</em> and <em>Eagles</em>).</li>
-              <li>Pick one question for each: Round 1, Round 2, Round 3, Round 4, Sudden Death.</li>
+              <li>Pick one question for each: Round 1, Round 2, Round 3, Round 4, Tie Breaker.</li>
               <li>Pick <strong>5 different questions</strong> for Fast Money (FM1 through FM5).</li>
               <li>Click <strong>🎮 Create Game Session</strong>.</li>
             </ol>
@@ -160,7 +160,7 @@ export default function HelpSection() {
                 team gets them → 3 strikes flips control to the other team for a steal.
               </li>
               <li>
-                <strong>Sudden Death (Round 5):</strong> Used as a tiebreaker if needed — one
+                <strong>Tie Breaker (Round 5):</strong> Used as a tiebreaker if needed — one
                 question, fastest correct answer wins.
               </li>
               <li>

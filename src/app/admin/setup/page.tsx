@@ -10,7 +10,16 @@ type Q = { id: string; question_text: string; type: QuestionType };
 const ROUND_TYPES: QuestionType[] = ['round1', 'round2', 'round3', 'round4', 'sudden_death'];
 const REQUIRED_SELECTIONS = ['round1','round2','round3','round4','sudden_death','fm1','fm2','fm3','fm4','fm5'];
 
-const formatType = (type: string) => type.replace('_', ' ').toUpperCase();
+const TYPE_LABELS: Record<QuestionType, string> = {
+  round1: 'ROUND 1',
+  round2: 'ROUND 2',
+  round3: 'ROUND 3',
+  round4: 'ROUND 4',
+  sudden_death: 'TIE BREAKER',
+  fast_money: 'FAST MONEY',
+};
+
+const formatType = (type: QuestionType) => TYPE_LABELS[type];
 
 export default function GameSetupPage() {
   const [pools, setPools] = useState<Record<QuestionType, Q[]>>({

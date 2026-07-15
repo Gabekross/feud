@@ -48,7 +48,16 @@ fast_money,Name something you do before going to sleep.,2,Set alarm,24`;
 const blankAnswers = (): AnswerDraft[] =>
   Array.from({ length: 6 }, () => ({ answer_text: '', points: '' }));
 
-const formatType = (type: string) => type.replace('_', ' ').toUpperCase();
+const TYPE_LABELS: Record<QuestionType, string> = {
+  round1: 'ROUND 1',
+  round2: 'ROUND 2',
+  round3: 'ROUND 3',
+  round4: 'ROUND 4',
+  sudden_death: 'TIE BREAKER',
+  fast_money: 'FAST MONEY',
+};
+
+const formatType = (type: QuestionType) => TYPE_LABELS[type];
 
 const parseCsvLine = (line: string) => {
   const cells: string[] = [];

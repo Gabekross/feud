@@ -35,7 +35,7 @@ export default function FamilyFaceOffHubPage() {
           <div className={styles.emoji}>SET</div>
           <h2>Create Game Session</h2>
           <p>
-            Pick questions for rounds 1-4, Sudden Death, and 5 Fast Money questions. Set team names.
+            Pick questions for rounds 1-4, Tie Breaker, and 5 Fast Money questions. Set team names.
           </p>
           <span className={styles.cta}>Create</span>
         </Link>
