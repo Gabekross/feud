@@ -9,12 +9,11 @@ let debounceTimer: ReturnType<typeof setTimeout>;
 export default function RightPane() {
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
-
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
   const [activeTeam, setActiveTeam] = useState<number>(1);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [round, setRound] = useState<string>('round1'); // track round to guard FM
+  const [round, setRound] = useState<string>('round1');
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
@@ -63,7 +62,9 @@ export default function RightPane() {
       )
       .subscribe();
 
-    return () => { void supabase.removeChannel(ch); };
+    return () => {
+      void supabase.removeChannel(ch);
+    };
   }, [sessionId]);
 
   const updateScore = async (team: 1 | 2, newScore: number) => {
@@ -103,81 +104,77 @@ export default function RightPane() {
     setTeam1Name(name);
     updateTeamNames(name, team2Name);
   };
+
   const handleTeam2NameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     setTeam2Name(name);
     updateTeamNames(team1Name, name);
   };
 
-  // Award revealed answer points to active team (non-FM only), and auto-advance round
-// ── Finalize round: sum revealed answers for the CURRENT question, award to active team.
-// Does NOT switch rounds, does NOT change is_current, does NOT reset anything else.
-const finalizeRound = async () => {
-  if (!sessionId || !activeTeam) return;
+  const finalizeRound = async (multiplier: 1 | 2 | 3 = 1) => {
+    if (!sessionId || !activeTeam) return;
 
-  // 1) find current question
-  const { data: current, error: e1 } = await supabase
-    .from('session_questions')
-    .select('question_id')
-    .eq('session_id', sessionId)
-    .eq('is_current', true)
-    .single();
+    const { data: current, error: e1 } = await supabase
+      .from('session_questions')
+      .select('question_id')
+      .eq('session_id', sessionId)
+      .eq('is_current', true)
+      .single();
 
-  if (e1 || !current?.question_id) {
-    alert('No current question to finalize.');
-    return;
-  }
+    if (e1 || !current?.question_id) {
+      alert('No current question to finalize.');
+      return;
+    }
 
-  // 2) sum revealed answers' points
-  const { data: revealed, error: e2 } = await supabase
-    .from('answers')
-    .select('points')
-    .eq('question_id', current.question_id)
-    .eq('revealed', true);
+    const { data: revealed, error: e2 } = await supabase
+      .from('answers')
+      .select('points')
+      .eq('question_id', current.question_id)
+      .eq('revealed', true);
 
-  if (e2) {
-    console.error('Could not fetch revealed answers:', e2.message);
-    alert('Could not calculate round points.');
-    return;
-  }
+    if (e2) {
+      console.error('Could not fetch revealed answers:', e2.message);
+      alert('Could not calculate round points.');
+      return;
+    }
 
-  const roundPoints = (revealed ?? []).reduce((sum, r) => sum + (r?.points ?? 0), 0);
+    const roundPoints = (revealed ?? []).reduce((sum, r) => sum + (r?.points ?? 0), 0);
+    const awardedPoints = roundPoints * multiplier;
+    const column = activeTeam === 1 ? 'team1_score' : 'team2_score';
 
-  // 3) read freshest team score, then add
-  const column = activeTeam === 1 ? 'team1_score' : 'team2_score';
-  const { data: sRow, error: e3 } = await supabase
-    .from('game_sessions')
-    .select(column)
-    .eq('id', sessionId)
-    .single();
+    const { data: sRow, error: e3 } = await supabase
+      .from('game_sessions')
+      .select(column)
+      .eq('id', sessionId)
+      .single();
 
-  if (e3) {
-    console.error('Could not read current score:', e3.message);
-    return;
-  }
+    if (e3) {
+      console.error('Could not read current score:', e3.message);
+      return;
+    }
 
-  const currentScore = (sRow as any)?.[column] ?? 0;
-  const newScore = currentScore + roundPoints;
+    const currentScore = (sRow as any)?.[column] ?? 0;
+    const newScore = currentScore + awardedPoints;
 
-  const { error: e4 } = await supabase
-    .from('game_sessions')
-    .update({ [column]: newScore }) // ← score only
-    .eq('id', sessionId);
+    const { error: e4 } = await supabase
+      .from('game_sessions')
+      .update({ [column]: newScore })
+      .eq('id', sessionId);
 
-  if (e4) {
-    console.error('Score update failed:', e4.message);
-    alert('Failed to finalize round.');
-    return;
-  }
+    if (e4) {
+      console.error('Score update failed:', e4.message);
+      alert('Failed to finalize round.');
+      return;
+    }
 
-  // ⚠️ No round switching here.
-  showNotice(`${activeTeam === 1 ? team1Name : team2Name} awarded ${roundPoints} pts.`);
-};
-
+    showNotice(
+      `${activeTeam === 1 ? team1Name : team2Name} awarded ${awardedPoints} pts${multiplier > 1 ? ` (${roundPoints} x ${multiplier})` : ''}.`
+    );
+  };
 
   return (
     <div className={styles.rightPane}>
-      <h2>🏆 Team Control</h2>
+      <h2>Team Control</h2>
       {notice && <div className={styles.notice}>{notice}</div>}
 
       <input placeholder="Team 1 name" value={team1Name} onChange={handleTeam1NameChange} />
@@ -198,24 +195,28 @@ const finalizeRound = async () => {
 
       <h4>Active Team</h4>
       <div className={styles.teamToggle}>
-        <button
-          className={activeTeam === 1 ? styles.active : ''}
-          onClick={() => updateActiveTeam(1)}
-        >
+        <button className={activeTeam === 1 ? styles.active : ''} onClick={() => updateActiveTeam(1)}>
           {team1Name}
         </button>
-        <button
-          className={activeTeam === 2 ? styles.active : ''}
-          onClick={() => updateActiveTeam(2)}
-        >
+        <button className={activeTeam === 2 ? styles.active : ''} onClick={() => updateActiveTeam(2)}>
           {team2Name}
         </button>
       </div>
 
       <hr />
-      <button className={styles.finalize} onClick={finalizeRound}>
-        🏁 Finalize Round
-      </button>
+
+      <h4>Finalize Score</h4>
+      <div className={styles.finalizeGroup}>
+        <button className={styles.finalize} onClick={() => finalizeRound(1)}>
+          Finalize 1x
+        </button>
+        <button className={styles.finalize} onClick={() => finalizeRound(2)}>
+          Double 2x
+        </button>
+        <button className={styles.finalize} onClick={() => finalizeRound(3)}>
+          Triple 3x
+        </button>
+      </div>
     </div>
   );
 }

@@ -127,6 +127,17 @@
     &:hover { filter: brightness(1.06); }
   }
 
+  .finalizeGroup {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+
+    .finalize {
+      margin-top: 0;
+      padding-inline: 10px;
+    }
+  }
+
   .notice {
     padding: 0.6rem 0.75rem;
     border: 1px solid rgba(255, 210, 77, 0.55);
@@ -181,6 +192,10 @@
     }
 
     .teamToggle {
+      grid-template-columns: 1fr;
+    }
+
+    .finalizeGroup {
       grid-template-columns: 1fr;
     }
   }
