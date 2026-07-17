@@ -277,7 +277,8 @@ export default function QuestionAdminPage() {
 
     if (answerError) {
       console.error(answerError);
-      setStatus('Question saved, but answers failed to save.');
+      await supabase.from('questions').delete().eq('id', question.id);
+      setStatus('Answers failed to save, so the question was not added. Run the answers RLS migration if this persists.');
       setIsSaving(false);
       return;
     }
@@ -331,7 +332,8 @@ export default function QuestionAdminPage() {
 
       if (answerError) {
         console.error(answerError);
-        setStatus(`Question inserted, but answers failed for: ${group.question_text}`);
+        await supabase.from('questions').delete().eq('id', question.id);
+        setStatus(`Import stopped because answers failed for: ${group.question_text}`);
         setIsSaving(false);
         return;
       }
@@ -339,6 +341,42 @@ export default function QuestionAdminPage() {
 
     await loadQuestions();
     setStatus(`Imported ${csvGroups.length} questions.`);
+    setIsSaving(false);
+  };
+
+  const deleteQuestion = async (question: QuestionRow) => {
+    const confirmed = window.confirm(`Delete this question and all its answers?\n\n${question.question_text}`);
+    if (!confirmed) return;
+
+    setIsSaving(true);
+    setStatus('Deleting question...');
+
+    const { error: answerError } = await supabase
+      .from('answers')
+      .delete()
+      .eq('question_id', question.id);
+
+    if (answerError) {
+      console.error(answerError);
+      setStatus('Could not delete answers for this question. Make sure the answers delete policy migration has run.');
+      setIsSaving(false);
+      return;
+    }
+
+    const { error: questionError } = await supabase
+      .from('questions')
+      .delete()
+      .eq('id', question.id);
+
+    if (questionError) {
+      console.error(questionError);
+      setStatus('Could not delete question. It may be used by an active or previous game session.');
+      setIsSaving(false);
+      return;
+    }
+
+    await loadQuestions();
+    setStatus('Question deleted.');
     setIsSaving(false);
   };
 
@@ -490,6 +528,14 @@ export default function QuestionAdminPage() {
               <span>{formatType(question.type)}</span>
               <strong>{question.question_text}</strong>
               <em>{answerCounts[question.id] ?? 0} answers</em>
+              <button
+                type="button"
+                className={styles.deleteQuestion}
+                onClick={() => deleteQuestion(question)}
+                disabled={isSaving}
+              >
+                Delete
+              </button>
             </div>
           ))}
         </div>
