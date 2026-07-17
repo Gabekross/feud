@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import MusicControls from './MusicControls';
 import styles from './LeftPane.module.scss';
 
 type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
@@ -415,6 +416,10 @@ export default function LeftPane() {
           Show Board
         </button>
       </div>
+
+      <hr />
+
+      <MusicControls />
 
       <hr />
 
