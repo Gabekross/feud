@@ -206,7 +206,6 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
   const p2Total = useMemo(() => sumPoints(p2Rows), [p2Rows]);
   const grandTotal = p1Total + p2Total;
   const timerCircumference = 2 * Math.PI * 45;
-  const targetProgress = Math.min(100, Math.max(0, (grandTotal / 200) * 100));
   const p2RevealStarted = p2Rows.some((row) => row?.reveal_answer || row?.reveal_points);
   const finalRevealComplete = hideP1 && [1, 2, 3, 4, 5].every((i) => p2Rows[i]?.reveal_points);
   const isPlayer2Answering = hideP1 && !p2RevealStarted;
@@ -329,15 +328,6 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
         ) : (
           <>PLAYER&nbsp;1: <AnimatedNumber value={p1Total} /></>
         )}
-        <span className={styles.target}>
-          <span className={styles.targetLabel}>Target 200</span>
-          <span className={styles.targetTrack}>
-            <span
-              className={styles.targetFill}
-              style={{ width: `${targetProgress}%` }}
-            />
-          </span>
-        </span>
       </div>
     </div>
   );
