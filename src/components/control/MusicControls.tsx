@@ -3,13 +3,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './MusicControls.module.scss';
 
-type TrackMode = 'intro' | 'full';
+type TrackId = 'intro' | 'full' | 'applause' | 'massive';
 
-const TRACK_SRC = '/sounds/family-feud-theme.mp3';
+type Track = {
+  id: TrackId;
+  label: string;
+  src: string;
+  limitSeconds?: number;
+  loopable?: boolean;
+};
+
+const THEME_SRC = '/sounds/family-feud-theme.mp3';
 const INTRO_SECONDS = 33;
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 1;
 const SPEED_STEP = 0.1;
+
+const TRACKS: Track[] = [
+  { id: 'intro', label: 'Intro 33s', src: THEME_SRC, limitSeconds: INTRO_SECONDS },
+  { id: 'full', label: 'Full Theme', src: THEME_SRC },
+  { id: 'applause', label: 'Applause', src: '/sounds/applause.mp3', loopable: true },
+  { id: 'massive', label: 'Massive Crowd', src: '/sounds/massive-ecstatic-crowd.mp3', loopable: true },
+];
 
 const formatTime = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -18,45 +33,44 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export default function MusicControls() {
+function TrackMixer({ track }: { track: Track }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [mode, setMode] = useState<TrackMode>('intro');
-  const [duration, setDuration] = useState(INTRO_SECONDS);
+  const [duration, setDuration] = useState(track.limitSeconds ?? INTRO_SECONDS);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [shouldLoop, setShouldLoop] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const maxTime = useMemo(
-    () => (mode === 'intro' ? INTRO_SECONDS : Math.max(duration, INTRO_SECONDS)),
-    [duration, mode]
+    () => track.limitSeconds ?? Math.max(duration, INTRO_SECONDS),
+    [duration, track.limitSeconds]
   );
 
   useEffect(() => {
-    const audio = new Audio(TRACK_SRC);
+    const audio = new Audio(track.src);
     audio.preload = 'metadata';
     audio.volume = volume;
     audio.playbackRate = playbackRate;
+    audio.loop = shouldLoop && !!track.loopable;
     audioRef.current = audio;
 
     const handleLoadedMetadata = () => {
-      setDuration(Number.isFinite(audio.duration) ? audio.duration : INTRO_SECONDS);
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : (track.limitSeconds ?? INTRO_SECONDS));
     };
+
     const handleTimeUpdate = () => {
-      const nextLimit = mode === 'intro' ? INTRO_SECONDS : audio.duration;
-      if (mode === 'intro' && audio.currentTime >= INTRO_SECONDS) {
+      const nextLimit = track.limitSeconds ?? audio.duration;
+      if (track.limitSeconds && audio.currentTime >= track.limitSeconds) {
         audio.pause();
         audio.currentTime = 0;
         setCurrentTime(0);
         setIsPlaying(false);
         return;
       }
-      if (Number.isFinite(nextLimit)) {
-        setCurrentTime(Math.min(audio.currentTime, nextLimit));
-      } else {
-        setCurrentTime(audio.currentTime);
-      }
+      setCurrentTime(Number.isFinite(nextLimit) ? Math.min(audio.currentTime, nextLimit) : audio.currentTime);
     };
+
     const handleEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
@@ -73,7 +87,7 @@ export default function MusicControls() {
       audio.removeEventListener('ended', handleEnded);
       audioRef.current = null;
     };
-  }, [mode]);
+  }, [track.limitSeconds, track.loopable, track.src]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
@@ -83,29 +97,32 @@ export default function MusicControls() {
     if (audioRef.current) audioRef.current.playbackRate = playbackRate;
   }, [playbackRate]);
 
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.loop = shouldLoop && !!track.loopable;
+  }, [shouldLoop, track.loopable]);
+
+  const seekTo = (nextTime: number) => {
+    const boundedTime = Math.min(Math.max(nextTime, 0), maxTime);
+    setCurrentTime(boundedTime);
+    if (audioRef.current) audioRef.current.currentTime = boundedTime;
+  };
+
   const changeSpeed = (nextRate: number) => {
     const roundedRate = Math.round(nextRate * 10) / 10;
     setPlaybackRate(Math.min(MAX_SPEED, Math.max(MIN_SPEED, roundedRate)));
   };
 
-  const seekTo = (nextTime: number) => {
-    const audio = audioRef.current;
-    const boundedTime = Math.min(Math.max(nextTime, 0), maxTime);
-    setCurrentTime(boundedTime);
-    if (audio) audio.currentTime = boundedTime;
-  };
-
   const play = async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (mode === 'intro' && audio.currentTime >= INTRO_SECONDS) {
+    if (track.limitSeconds && audio.currentTime >= track.limitSeconds) {
       audio.currentTime = 0;
     }
     try {
       await audio.play();
       setIsPlaying(true);
     } catch (error) {
-      console.error('Music playback failed:', error);
+      console.error(`${track.label} playback failed:`, error);
     }
   };
 
@@ -123,37 +140,26 @@ export default function MusicControls() {
     setIsPlaying(false);
   };
 
-  const changeMode = (nextMode: TrackMode) => {
-    stop();
-    setMode(nextMode);
-  };
-
   return (
-    <section className={styles.musicPanel} aria-label="Music controls">
-      <div className={styles.header}>
-        <span className={styles.kicker}>Music</span>
-        <strong>{isPlaying ? 'Playing' : 'Ready'}</strong>
+    <div className={styles.trackCard}>
+      <div className={styles.trackHeader}>
+        <strong>{track.label}</strong>
+        <span className={isPlaying ? styles.playing : ''}>{isPlaying ? 'Playing' : 'Ready'}</span>
       </div>
 
-      <div className={styles.modeButtons}>
-        <button
-          type="button"
-          className={mode === 'intro' ? styles.active : ''}
-          onClick={() => changeMode('intro')}
-        >
-          Intro 33s
-        </button>
-        <button
-          type="button"
-          className={mode === 'full' ? styles.active : ''}
-          onClick={() => changeMode('full')}
-        >
-          Full Theme
-        </button>
-      </div>
+      {track.loopable && (
+        <label className={styles.loopToggle}>
+          <input
+            type="checkbox"
+            checked={shouldLoop}
+            onChange={(e) => setShouldLoop(e.target.checked)}
+          />
+          Loop
+        </label>
+      )}
 
       <label className={styles.sliderLabel}>
-        <span>Start / seek</span>
+        <span>Seek</span>
         <span>{formatTime(currentTime)} / {formatTime(maxTime)}</span>
       </label>
       <input
@@ -214,6 +220,23 @@ export default function MusicControls() {
         >
           +10%
         </button>
+      </div>
+    </div>
+  );
+}
+
+export default function MusicControls() {
+  return (
+    <section className={styles.musicPanel} aria-label="Music controls">
+      <div className={styles.header}>
+        <span className={styles.kicker}>Music Mixer</span>
+        <strong>Layer Tracks</strong>
+      </div>
+
+      <div className={styles.trackList}>
+        {TRACKS.map((track) => (
+          <TrackMixer key={track.id} track={track} />
+        ))}
       </div>
     </section>
   );

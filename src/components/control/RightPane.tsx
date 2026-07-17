@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import MusicControls from './MusicControls';
 import styles from './RightPane.module.scss';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
@@ -217,6 +218,10 @@ export default function RightPane() {
           Triple 3x
         </button>
       </div>
+
+      <hr />
+
+      <MusicControls />
     </div>
   );
 }
