@@ -18,6 +18,12 @@ type AnswerDraft = {
   points: string;
 };
 
+type AnswerRow = {
+  answer_text: string;
+  points: number;
+  order: number;
+};
+
 type ParsedCsvRow = {
   type: QuestionType;
   question_text: string;
@@ -158,6 +164,7 @@ export default function QuestionAdminPage() {
   const [questionText, setQuestionText] = useState('');
   const [questionType, setQuestionType] = useState<QuestionType>('round1');
   const [answers, setAnswers] = useState<AnswerDraft[]>(blankAnswers);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [csvText, setCsvText] = useState(CSV_TEMPLATE);
   const [status, setStatus] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -223,6 +230,7 @@ export default function QuestionAdminPage() {
     setQuestionText('');
     setQuestionType('round1');
     setAnswers(blankAnswers());
+    setEditingQuestionId(null);
   };
 
   const saveManualQuestion = async () => {
@@ -250,7 +258,56 @@ export default function QuestionAdminPage() {
     }
 
     setIsSaving(true);
-    setStatus('Saving question...');
+    setStatus(editingQuestionId ? 'Updating question...' : 'Saving question...');
+
+    if (editingQuestionId) {
+      const { error: questionError } = await supabase
+        .from('questions')
+        .update({ question_text: questionText.trim(), type: questionType })
+        .eq('id', editingQuestionId);
+
+      if (questionError) {
+        console.error(questionError);
+        setStatus('Could not update question. Make sure the questions update policy migration has run.');
+        setIsSaving(false);
+        return;
+      }
+
+      const { error: deleteError } = await supabase
+        .from('answers')
+        .delete()
+        .eq('question_id', editingQuestionId);
+
+      if (deleteError) {
+        console.error(deleteError);
+        setStatus('Question updated, but old answers could not be replaced.');
+        setIsSaving(false);
+        return;
+      }
+
+      const { error: answerError } = await supabase.from('answers').insert(
+        validAnswers.map((answer) => ({
+          question_id: editingQuestionId,
+          answer_text: answer.answer_text,
+          points: answer.points,
+          order: answer.order,
+          revealed: false,
+        }))
+      );
+
+      if (answerError) {
+        console.error(answerError);
+        setStatus('Question updated, but answers failed to save. Run the answers RLS migration if this persists.');
+        setIsSaving(false);
+        return;
+      }
+
+      resetManualForm();
+      await loadQuestions();
+      setStatus('Question updated.');
+      setIsSaving(false);
+      return;
+    }
 
     const { data: question, error: questionError } = await supabase
       .from('questions')
@@ -344,6 +401,39 @@ export default function QuestionAdminPage() {
     setIsSaving(false);
   };
 
+  const editQuestion = async (question: QuestionRow) => {
+    setIsSaving(true);
+    setStatus('Loading question for editing...');
+
+    const { data: answerRows, error } = await supabase
+      .from('answers')
+      .select('answer_text, points, "order"')
+      .eq('question_id', question.id)
+      .order('order', { ascending: true });
+
+    if (error) {
+      console.error(error);
+      setStatus('Could not load answers for this question.');
+      setIsSaving(false);
+      return;
+    }
+
+    setEditingQuestionId(question.id);
+    setQuestionText(question.question_text);
+    setQuestionType(question.type);
+    setAnswers(
+      ((answerRows ?? []) as AnswerRow[]).length
+        ? ((answerRows ?? []) as AnswerRow[]).map((answer) => ({
+            answer_text: answer.answer_text,
+            points: String(answer.points),
+          }))
+        : blankAnswers()
+    );
+    setStatus('Editing question. Make your changes, then click Update Question.');
+    setIsSaving(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const deleteQuestion = async (question: QuestionRow) => {
     const confirmed = window.confirm(`Delete this question and all its answers?\n\n${question.question_text}`);
     if (!confirmed) return;
@@ -417,8 +507,12 @@ export default function QuestionAdminPage() {
       <section className={styles.layout}>
         <form className={styles.panel} onSubmit={(event) => { event.preventDefault(); saveManualQuestion(); }}>
           <div className={styles.panelHeader}>
-            <h2>Add One Question</h2>
-            <p>Use this for curated entry while building a clean game bank.</p>
+            <h2>{editingQuestionId ? 'Edit Question' : 'Add One Question'}</h2>
+            <p>
+              {editingQuestionId
+                ? 'Update the question text, round type, and answer board.'
+                : 'Use this for curated entry while building a clean game bank.'}
+            </p>
           </div>
 
           <label>
@@ -468,8 +562,12 @@ export default function QuestionAdminPage() {
           </div>
 
           <div className={styles.actions}>
-            <button type="submit" disabled={isSaving}>Save Question</button>
-            <button type="button" onClick={resetManualForm}>Reset</button>
+            <button type="submit" disabled={isSaving}>
+              {editingQuestionId ? 'Update Question' : 'Save Question'}
+            </button>
+            <button type="button" onClick={resetManualForm}>
+              {editingQuestionId ? 'Cancel Edit' : 'Reset'}
+            </button>
           </div>
         </form>
 
@@ -528,6 +626,14 @@ export default function QuestionAdminPage() {
               <span>{formatType(question.type)}</span>
               <strong>{question.question_text}</strong>
               <em>{answerCounts[question.id] ?? 0} answers</em>
+              <button
+                type="button"
+                className={styles.editQuestion}
+                onClick={() => editQuestion(question)}
+                disabled={isSaving}
+              >
+                Edit
+              </button>
               <button
                 type="button"
                 className={styles.deleteQuestion}
