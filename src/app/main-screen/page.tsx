@@ -12,6 +12,7 @@ import FullscreenToggle from '@/components/FullscreenToggle';
 import PresentationModeToggle, { type PresentationMode } from '@/components/PresentationModeToggle';
 import RoundBadge, { type Round } from '@/components/RoundBadge';
 import EdgeCalibrationPanel, { type EdgeMargins } from '@/components/EdgeCalibrationPanel';
+import MainScreenAudioController from '@/components/MainScreenAudioController';
 import styles from './MainScreen.module.scss';
 
 type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
@@ -272,6 +273,7 @@ export default function MainScreenPage() {
       <FullscreenToggle />
       <PresentationModeToggle onChange={setPresentationMode} />
       <EdgeCalibrationPanel onChange={setEdgeMargins} onCalibratingChange={setCalibrating} />
+      <MainScreenAudioController sessionId={sessionId} />
 
       <div className={styles.stage}>
         {screenState !== 'board' ? (

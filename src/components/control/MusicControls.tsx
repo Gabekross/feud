@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import useActiveSession from '@/hooks/useActiveSession';
+import { emitSoundEvent } from '@/lib/soundEvents';
 import styles from './MusicControls.module.scss';
 
 type TrackId = 'intro' | 'full' | 'applause' | 'massive';
@@ -34,7 +36,8 @@ const formatTime = (seconds: number) => {
 };
 
 function TrackMixer({ track }: { track: Track }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const sessionId = useActiveSession();
+  const progressTimerRef = useRef<number | null>(null);
   const [duration, setDuration] = useState(track.limitSeconds ?? INTRO_SECONDS);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.8);
@@ -50,94 +53,114 @@ function TrackMixer({ track }: { track: Track }) {
   useEffect(() => {
     const audio = new Audio(track.src);
     audio.preload = 'metadata';
-    audio.volume = volume;
-    audio.playbackRate = playbackRate;
-    audio.loop = shouldLoop && !!track.loopable;
-    audioRef.current = audio;
-
-    const handleLoadedMetadata = () => {
+    const handleLoadedMetadata = () =>
       setDuration(Number.isFinite(audio.duration) ? audio.duration : (track.limitSeconds ?? INTRO_SECONDS));
-    };
-
-    const handleTimeUpdate = () => {
-      const nextLimit = track.limitSeconds ?? audio.duration;
-      if (track.limitSeconds && audio.currentTime >= track.limitSeconds) {
-        audio.pause();
-        audio.currentTime = 0;
-        setCurrentTime(0);
-        setIsPlaying(false);
-        return;
-      }
-      setCurrentTime(Number.isFinite(nextLimit) ? Math.min(audio.currentTime, nextLimit) : audio.currentTime);
-    };
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-      setCurrentTime(0);
-    };
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('ended', handleEnded);
+    return () => audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+  }, [track.limitSeconds, track.src]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    progressTimerRef.current = window.setInterval(() => {
+      setCurrentTime((prev) => {
+        const next = prev + (playbackRate * 0.5);
+        if (next >= maxTime && !shouldLoop) {
+          if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
+          setIsPlaying(false);
+          return 0;
+        }
+        return shouldLoop && next >= maxTime ? 0 : Math.min(next, maxTime);
+      });
+    }, 500);
 
     return () => {
-      audio.pause();
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('ended', handleEnded);
-      audioRef.current = null;
+      if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
     };
-  }, [track.limitSeconds, track.loopable, track.src]);
+  }, [isPlaying, maxTime, playbackRate, shouldLoop]);
 
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = playbackRate;
-  }, [playbackRate]);
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.loop = shouldLoop && !!track.loopable;
-  }, [shouldLoop, track.loopable]);
+  const sendMusicCommand = (command: 'play' | 'pause' | 'stop' | 'seek' | 'config', seekTime = currentTime) =>
+    emitSoundEvent(sessionId, {
+      sound_type: 'music',
+      command,
+      track_id: track.id,
+      src: track.src,
+      seek_time: seekTime,
+      volume,
+      playback_rate: playbackRate,
+      loop: shouldLoop && !!track.loopable,
+    });
 
   const seekTo = (nextTime: number) => {
     const boundedTime = Math.min(Math.max(nextTime, 0), maxTime);
     setCurrentTime(boundedTime);
-    if (audioRef.current) audioRef.current.currentTime = boundedTime;
+    void sendMusicCommand('seek', boundedTime);
   };
 
   const changeSpeed = (nextRate: number) => {
     const roundedRate = Math.round(nextRate * 10) / 10;
-    setPlaybackRate(Math.min(MAX_SPEED, Math.max(MIN_SPEED, roundedRate)));
+    const nextPlaybackRate = Math.min(MAX_SPEED, Math.max(MIN_SPEED, roundedRate));
+    setPlaybackRate(nextPlaybackRate);
+    void emitSoundEvent(sessionId, {
+      sound_type: 'music',
+      command: 'config',
+      track_id: track.id,
+      src: track.src,
+      seek_time: currentTime,
+      volume,
+      playback_rate: nextPlaybackRate,
+      loop: shouldLoop && !!track.loopable,
+    });
   };
 
   const play = async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (track.limitSeconds && audio.currentTime >= track.limitSeconds) {
-      audio.currentTime = 0;
+    let seekTime = currentTime;
+    if (track.limitSeconds && currentTime >= track.limitSeconds) {
+      seekTime = 0;
+      setCurrentTime(0);
     }
-    try {
-      await audio.play();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error(`${track.label} playback failed:`, error);
-    }
+    await sendMusicCommand('play', seekTime);
+    setIsPlaying(true);
   };
 
   const pause = () => {
-    audioRef.current?.pause();
+    void sendMusicCommand('pause');
     setIsPlaying(false);
   };
 
   const stop = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
+    void sendMusicCommand('stop', 0);
     setCurrentTime(0);
     setIsPlaying(false);
+  };
+
+  const changeVolume = (nextVolume: number) => {
+    setVolume(nextVolume);
+    void emitSoundEvent(sessionId, {
+      sound_type: 'music',
+      command: 'config',
+      track_id: track.id,
+      src: track.src,
+      seek_time: currentTime,
+      volume: nextVolume,
+      playback_rate: playbackRate,
+      loop: shouldLoop && !!track.loopable,
+    });
+  };
+
+  const changeLoop = (nextLoop: boolean) => {
+    setShouldLoop(nextLoop);
+    void emitSoundEvent(sessionId, {
+      sound_type: 'music',
+      command: 'config',
+      track_id: track.id,
+      src: track.src,
+      seek_time: currentTime,
+      volume,
+      playback_rate: playbackRate,
+      loop: nextLoop && !!track.loopable,
+    });
   };
 
   return (
@@ -152,7 +175,7 @@ function TrackMixer({ track }: { track: Track }) {
           <input
             type="checkbox"
             checked={shouldLoop}
-            onChange={(e) => setShouldLoop(e.target.checked)}
+            onChange={(e) => changeLoop(e.target.checked)}
           />
           Loop
         </label>
@@ -189,7 +212,7 @@ function TrackMixer({ track }: { track: Track }) {
         max={1}
         step={0.01}
         value={volume}
-        onChange={(e) => setVolume(Number(e.target.value))}
+        onChange={(e) => changeVolume(Number(e.target.value))}
       />
 
       <label className={styles.sliderLabel}>

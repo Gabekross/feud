@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
+import { emitSoundEvent } from '@/lib/soundEvents';
 import styles from './FastMoneyPane.module.scss';
 
 type FMResp = {
@@ -46,8 +47,6 @@ export default function FastMoneyPane() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 🔊 sounds
-  const revealSound = typeof Audio !== 'undefined' ? new Audio('/sounds/correct.mp3') : null;
-  const zeroSound   = typeof Audio !== 'undefined' ? new Audio('/sounds/buzzer.mp3')  : null;
 
   // === Helpers ===
   const nowIso = () => new Date().toISOString();
@@ -384,7 +383,12 @@ export default function FastMoneyPane() {
   const revealPoints = async () => {
     if (!sessionId || !resp) return;
     const pts = bestMatch ? bestMatch.points : 0;
-    revealSound?.play();
+    void emitSoundEvent(sessionId, {
+      sound_type: 'effect',
+      command: 'play',
+      track_id: 'correct',
+      volume: 0.85,
+    });
     await supabase
       .from('fast_money_responses')
       .update({ reveal_points: true, points_awarded: pts })
@@ -395,7 +399,12 @@ export default function FastMoneyPane() {
 
   const revealZero = async () => {
     if (!sessionId || !resp) return;
-    zeroSound?.play();
+    void emitSoundEvent(sessionId, {
+      sound_type: 'effect',
+      command: 'play',
+      track_id: 'buzzer',
+      volume: 0.9,
+    });
     await supabase
       .from('fast_money_responses')
       .update({ matched_answer_id: null, reveal_answer: true, reveal_points: true, points_awarded: 0 })

@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
+import { emitSoundEvent } from '@/lib/soundEvents';
 import styles from './MiddlePane.module.scss';
 
 type AnswerRow = {
@@ -23,8 +24,6 @@ export default function MiddlePane() {
   const [isFastMoney, setIsFastMoney] = useState(false);
   const [revealQ, setRevealQ] = useState(false);
   const [currentRowId, setCurrentRowId] = useState<string | null>(null);
-
-  const strikeAudio = typeof Audio !== 'undefined' ? new Audio('/sounds/buzzer.mp3') : null;
 
   const loadCurrentQA = async () => {
     if (!sessionId) return;
@@ -156,7 +155,12 @@ export default function MiddlePane() {
   // ❌ Wrong answer -> strike
   const handleWrongAnswer = async () => {
     if (!sessionId) return;
-    strikeAudio?.play();
+    void emitSoundEvent(sessionId, {
+      sound_type: 'effect',
+      command: 'play',
+      track_id: 'buzzer',
+      volume: 0.9,
+    });
 
     const { data } = await supabase
       .from('game_sessions')
@@ -172,7 +176,12 @@ export default function MiddlePane() {
   };
 
   const handleIncorrect = async () => {
-    strikeAudio?.play();
+    await emitSoundEvent(sessionId, {
+      sound_type: 'effect',
+      command: 'play',
+      track_id: 'buzzer',
+      volume: 0.9,
+    });
   };
 
   return (
