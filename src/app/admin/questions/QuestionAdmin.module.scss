@@ -162,6 +162,13 @@
   font-weight: 800;
 }
 
+.answerHint {
+  margin: -0.25rem 0 0.7rem;
+  color: #93a4bd;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .answerRow {
   display: grid;
   grid-template-columns: 2rem minmax(0, 1fr) 5.5rem auto;

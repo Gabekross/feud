@@ -206,7 +206,7 @@
   justify-content: space-between;
   width: 100%;
   min-width: 0;
-  gap: clamp(8px, 1.2vmin, 20px);
+  gap: clamp(7px, 1vmin, 16px);
   overflow: hidden;
 }
 
@@ -227,10 +227,26 @@
   text-overflow: ellipsis;
 }
 
+.answerMedium {
+  font-size: calc(var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem)) * 0.9);
+}
+
+.answerLong {
+  font-size: calc(var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem)) * 0.78);
+}
+
+.answerVeryLong {
+  font-size: calc(var(--fs-answer, clamp(1.1rem, 3.2vmin, 2.6rem)) * 0.68);
+  line-height: 0.9;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
 .points {
   flex-shrink: 0;
-  min-width: clamp(58px, 8vmin, 108px);
-  padding: clamp(4px, 0.7vmin, 12px) clamp(10px, 1.8vmin, 26px);
+  min-width: clamp(52px, 7vmin, 96px);
+  padding: clamp(4px, 0.7vmin, 12px) clamp(8px, 1.45vmin, 22px);
   border-radius: clamp(4px, 0.6vmin, 8px);
   color: #241800;
   background:

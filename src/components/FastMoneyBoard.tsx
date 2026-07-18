@@ -24,6 +24,14 @@ type Props = {
   timerColor?: string;
 };
 
+const getAnswerFitClass = (text: string | null | undefined) => {
+  const length = (text ?? '').trim().length;
+  if (length >= 33) return styles.answerVeryLong;
+  if (length >= 24) return styles.answerLong;
+  if (length >= 15) return styles.answerMedium;
+  return '';
+};
+
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   const [displayValue, setDisplayValue] = useState(value);
 
@@ -263,7 +271,7 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
             >
               <div className={styles.answerText}>
                 <span className={styles.slot}>{i}</span>
-                <span className={styles.answerValue}>
+                <span className={`${styles.answerValue} ${getAnswerFitClass(p1Rows[i]?.answer_text)}`}>
                   {isPlayer2Answering ? '' : p1Rows[i]?.reveal_answer ? (p1Rows[i]?.answer_text ?? '') : ''}
                 </span>
               </div>
@@ -296,7 +304,7 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
               >
                 <div className={styles.answerText}>
                   <span className={styles.slot}>{i}</span>
-                  <span className={styles.answerValue}>
+                  <span className={`${styles.answerValue} ${getAnswerFitClass(p2Rows[i]?.answer_text)}`}>
                     {p2Rows[i]?.reveal_answer ? (p2Rows[i]?.answer_text ?? '') : ''}
                   </span>
                 </div>

@@ -323,10 +323,10 @@
   flex: 1;
   min-height: clamp(42px, 5.7vmin, 70px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(54px, 7.2vmin, 92px);
+  grid-template-columns: minmax(0, 1fr) clamp(48px, 6.4vmin, 82px);
   align-items: center;
-  gap: clamp(7px, 0.9vmin, 14px);
-  padding: clamp(5px, 0.75vmin, 11px) clamp(36px, 4.6vmin, 92px) clamp(5px, 0.75vmin, 11px) clamp(7px, 1vmin, 14px);
+  gap: clamp(6px, 0.8vmin, 12px);
+  padding: clamp(5px, 0.75vmin, 11px) clamp(22px, 3.2vmin, 58px) clamp(5px, 0.75vmin, 11px) clamp(7px, 1vmin, 14px);
   border: 2px solid #032d5f;
   border-radius: clamp(6px, 0.8vmin, 11px);
   background:
@@ -425,7 +425,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  gap: clamp(8px, 1.1vmin, 18px);
+  gap: clamp(7px, 0.9vmin, 14px);
   color: #f4fbff;
   font-size: clamp(1.05rem, 2.55vmin, 2.05rem);
   font-weight: 900;
@@ -466,11 +466,27 @@
   text-transform: uppercase;
 }
 
+.answerMedium {
+  font-size: 0.9em;
+}
+
+.answerLong {
+  font-size: 0.78em;
+}
+
+.answerVeryLong {
+  font-size: 0.68em;
+  line-height: 0.92;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
 .points {
   position: relative;
   z-index: 1;
-  min-width: clamp(44px, 6.2vmin, 78px);
-  padding: clamp(4px, 0.7vmin, 12px) clamp(8px, 1.4vmin, 20px);
+  min-width: clamp(42px, 5.7vmin, 72px);
+  padding: clamp(4px, 0.7vmin, 12px) clamp(7px, 1.1vmin, 16px);
   border-radius: clamp(4px, 0.6vmin, 8px);
   color: #241800;
   background:

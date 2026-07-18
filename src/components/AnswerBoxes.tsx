@@ -13,6 +13,14 @@ type Props = {
   answers: Answer[];
 };
 
+const getAnswerFitClass = (text: string) => {
+  const length = text.trim().length;
+  if (length >= 33) return styles.answerVeryLong;
+  if (length >= 24) return styles.answerLong;
+  if (length >= 15) return styles.answerMedium;
+  return '';
+};
+
 export default function AnswerBoxes({ answers }: Props) {
   const totalSlots = answers.length;
 
@@ -79,7 +87,9 @@ export default function AnswerBoxes({ answers }: Props) {
                 </div>
                 <div className={`${styles.face} ${styles.back}`}>
                   <div className={styles.answerRow}>
-                    <span className={styles.answerText}>{answer.text || '-'}</span>
+                    <span className={`${styles.answerText} ${getAnswerFitClass(answer.text)}`}>
+                      {answer.text || '-'}
+                    </span>
                     <span className={styles.points}>{answer.points}</span>
                   </div>
                 </div>

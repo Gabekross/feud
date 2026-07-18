@@ -539,6 +539,9 @@ export default function QuestionAdminPage() {
               <span>Answers</span>
               <button type="button" onClick={addAnswerRow}>Add answer</button>
             </div>
+            <p className={styles.answerHint}>
+              Answers over 15 characters will display smaller on the show board. Very long answers may wrap to two lines.
+            </p>
 
             {answers.map((answer, index) => (
               <div key={index} className={styles.answerRow}>
