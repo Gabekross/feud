@@ -232,29 +232,29 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
           </div>
         </div>
         {showClock && (
-        <div
+          <div
             className={`${styles.timerPod} ${isScoringReveal ? styles.timerQuiet : ''} ${!isScoringReveal && timerRemain <= 5 ? styles.timerDanger : !isScoringReveal && timerRemain <= 10 ? styles.timerWarning : ''}`}
           >
-          <div className={styles.timerLabel}>Clock</div>
-          <svg viewBox="0 0 100 100" className={styles.timerSvg}>
-            <circle className={styles.bg} cx="50" cy="50" r="45" />
-            <circle
-              className={styles.progress}
-              cx="50"
-              cy="50"
-              r="45"
-              style={{
-                strokeDasharray: timerCircumference,
-                strokeDashoffset: (timerRemain / Math.max(1, timerDuration)) * timerCircumference,
-                stroke: timerColor,
-              }}
-            />
-            <text x="50" y="54" textAnchor="middle" className={styles.time}>
-              {timerRemain}
-            </text>
-          </svg>
-          <div className={styles.timerCaption}>seconds</div>
-        </div>
+            <div className={styles.timerLabel}>Clock</div>
+            <svg viewBox="0 0 100 100" className={styles.timerSvg}>
+              <circle className={styles.bg} cx="50" cy="50" r="45" />
+              <circle
+                className={styles.progress}
+                cx="50"
+                cy="50"
+                r="45"
+                style={{
+                  strokeDasharray: timerCircumference,
+                  strokeDashoffset: (timerRemain / Math.max(1, timerDuration)) * timerCircumference,
+                  stroke: timerColor,
+                }}
+              />
+              <text x="50" y="54" textAnchor="middle" className={styles.time}>
+                {timerRemain}
+              </text>
+            </svg>
+            <div className={styles.timerCaption}>seconds</div>
+          </div>
         )}
       </div>
 
