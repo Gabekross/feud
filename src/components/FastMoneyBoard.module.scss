@@ -57,11 +57,10 @@
   width: 100%;
   flex-shrink: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(96px, 10vw, 142px);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: clamp(10px, 1.4vmin, 22px);
   min-height: clamp(92px, 12vmin, 142px);
-  padding: clamp(8px, 1vmin, 16px) clamp(10px, 1.5vmin, 22px);
+  padding: clamp(8px, 1vmin, 16px) clamp(132px, 12vw, 190px);
   border: 2px solid rgba(255, 210, 77, 0.82);
   border-radius: clamp(6px, 0.9vmin, 12px);
   background:
@@ -104,7 +103,12 @@
 }
 
 .timerPod {
-  align-self: stretch;
+  position: absolute;
+  top: 50%;
+  right: clamp(10px, 1.5vmin, 22px);
+  width: clamp(96px, 10vw, 142px);
+  min-height: calc(100% - clamp(16px, 2vmin, 32px));
+  transform: translateY(-50%);
   display: grid;
   place-items: center;
   gap: clamp(2px, 0.35vmin, 5px);
@@ -610,6 +614,17 @@
 @media (max-width: 900px) {
   .header {
     grid-template-columns: 1fr;
+    padding: clamp(8px, 1vmin, 16px);
+    padding-bottom: clamp(102px, 15vmin, 152px);
+  }
+
+  .timerPod {
+    top: auto;
+    right: 50%;
+    bottom: clamp(8px, 1vmin, 16px);
+    width: clamp(92px, 18vmin, 130px);
+    min-height: auto;
+    transform: translateX(50%);
   }
 
   .grid {
