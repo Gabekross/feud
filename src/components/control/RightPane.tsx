@@ -15,7 +15,6 @@ export default function RightPane() {
   const [team2Score, setTeam2Score] = useState(0);
   const [activeTeam, setActiveTeam] = useState<number>(1);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [round, setRound] = useState<string>('round1');
   const [notice, setNotice] = useState('');
   const [showAudioControls, setShowAudioControls] = useState(true);
 
@@ -23,7 +22,7 @@ export default function RightPane() {
     const fetchSession = async () => {
       const { data, error } = await supabase
         .from('game_sessions')
-        .select('id, active_team, team1_score, team2_score, team1_name, team2_name, round')
+        .select('id, active_team, team1_score, team2_score, team1_name, team2_name')
         .eq('status', 'active')
         .limit(1)
         .maybeSingle();
@@ -40,7 +39,6 @@ export default function RightPane() {
         setTeam2Score(data.team2_score ?? 0);
         setTeam1Name(data.team1_name ?? 'Team 1');
         setTeam2Name(data.team2_name ?? 'Team 2');
-        setRound(data.round ?? 'round1');
       }
     };
 
@@ -61,7 +59,6 @@ export default function RightPane() {
           setTeam2Score(payload.new.team2_score ?? 0);
           setTeam1Name(payload.new.team1_name ?? 'Team 1');
           setTeam2Name(payload.new.team2_name ?? 'Team 2');
-          setRound(payload.new.round ?? 'round1');
         }
       )
       .subscribe();

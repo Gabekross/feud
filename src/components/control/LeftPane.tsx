@@ -2,36 +2,43 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { clampRulesStep, getRulesSlides, type RulesMode } from '@/lib/rulesPresentation';
 import styles from './LeftPane.module.scss';
 
-type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
+type RestorableScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
+type ScreenState = RestorableScreenState | 'rules';
+type RoundState = 'round1'|'round2'|'round3'|'round4'|'sudden_death'|'fast_money';
+
+const roundNumberMap: Record<RoundState, number> = {
+  round1: 1, round2: 2, round3: 3, round4: 4, sudden_death: 5, fast_money: 6,
+};
+
+const numberToRound: Record<number, RoundState> = {
+  1: 'round1', 2: 'round2', 3: 'round3', 4: 'round4', 5: 'sudden_death', 6: 'fast_money',
+};
 
 export default function LeftPane() {
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [round, setRound] = useState<'round1'|'round2'|'round3'|'round4'|'sudden_death'|'fast_money'>('round1');
+  const [round, setRound] = useState<RoundState>('round1');
   const [fmIndex, setFmIndex] = useState<number>(1);
   const [resetOnSwitch, setResetOnSwitch] = useState(true);
   const [screenState, setScreenState] = useState<ScreenState>('standby');
   const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
   const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
   const [showEventFooter, setShowEventFooter] = useState(true);
+  const [rulesMode, setRulesMode] = useState<RulesMode>('full');
+  const [rulesStep, setRulesStep] = useState(0);
+  const [rulesReturnScreenState, setRulesReturnScreenState] = useState<RestorableScreenState>('standby');
   const [notice, setNotice] = useState('');
 
   const [strikeLimit, setStrikeLimit] = useState(3);
   const [strikes, setStrikes] = useState(0);
 
-  const roundNumberMap: Record<typeof round, number> = {
-    round1: 1, round2: 2, round3: 3, round4: 4, sudden_death: 5, fast_money: 6,
-  };
-  const numberToRound: Record<number, typeof round> = {
-    1: 'round1', 2: 'round2', 3: 'round3', 4: 'round4', 5: 'sudden_death', 6: 'fast_money',
-  };
-
   useEffect(() => {
     const loadSession = async () => {
       const { data, error } = await supabase
         .from('game_sessions')
-        .select('id, strikes, strike_limit, screen_state, event_title, event_footer_text, show_event_footer')
+        .select('id, strikes, strike_limit, screen_state, event_title, event_footer_text, show_event_footer, rules_mode, rules_step, rules_return_screen_state')
         .eq('status', 'active')
         .limit(1)
         .maybeSingle();
@@ -44,6 +51,10 @@ export default function LeftPane() {
         setEventTitle(data.event_title ?? 'GABEKROSS FAMILY FEUD');
         setEventFooterText(data.event_footer_text ?? 'Powered by Gabekross');
         setShowEventFooter(data.show_event_footer ?? true);
+        const nextRulesMode = (data.rules_mode === 'quick' ? 'quick' : 'full') as RulesMode;
+        setRulesMode(nextRulesMode);
+        setRulesStep(clampRulesStep(nextRulesMode, data.rules_step ?? 0));
+        setRulesReturnScreenState((data.rules_return_screen_state ?? 'standby') as RestorableScreenState);
       }
     };
     loadSession();
@@ -89,12 +100,22 @@ export default function LeftPane() {
           if (typeof payload.new.show_event_footer === 'boolean') {
             setShowEventFooter(payload.new.show_event_footer);
           }
+          if (payload.new.rules_mode === 'quick' || payload.new.rules_mode === 'full') {
+            const nextMode = payload.new.rules_mode as RulesMode;
+            setRulesMode(nextMode);
+            setRulesStep(clampRulesStep(nextMode, payload.new.rules_step ?? 0));
+          } else if (typeof payload.new.rules_step === 'number') {
+            setRulesStep(clampRulesStep(rulesMode, payload.new.rules_step));
+          }
+          if (typeof payload.new.rules_return_screen_state === 'string') {
+            setRulesReturnScreenState(payload.new.rules_return_screen_state as RestorableScreenState);
+          }
         }
       )
       .subscribe();
 
     return () => { void supabase.removeChannel(ch); };
-  }, [sessionId]);
+  }, [sessionId, rulesMode]);
 
   const updateScreenState = async (next: ScreenState) => {
     if (!sessionId) return;
@@ -106,6 +127,52 @@ export default function LeftPane() {
     if (error) {
       console.error('Screen state update failed:', error.message);
       alert('Failed to update audience screen mode. Make sure the screen_state migration has run.');
+    }
+  };
+
+  const showRules = async (mode: RulesMode) => {
+    if (!sessionId) return;
+    const returnState = screenState === 'rules' ? rulesReturnScreenState : (screenState as RestorableScreenState);
+    setScreenState('rules');
+    setRulesMode(mode);
+    setRulesStep(0);
+    setRulesReturnScreenState(returnState);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({
+        screen_state: 'rules',
+        rules_mode: mode,
+        rules_step: 0,
+        rules_return_screen_state: returnState,
+      })
+      .eq('id', sessionId);
+    if (error) {
+      console.error('Show rules failed:', error.message);
+      alert('Failed to show rules. Make sure the rules presentation migration has run.');
+    }
+  };
+
+  const setRulesPresentationStep = async (step: number) => {
+    if (!sessionId) return;
+    const nextStep = clampRulesStep(rulesMode, step);
+    setRulesStep(nextStep);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({ rules_step: nextStep })
+      .eq('id', sessionId);
+    if (error) console.error('Rules step update failed:', error.message);
+  };
+
+  const exitRules = async (nextScreen: RestorableScreenState = rulesReturnScreenState) => {
+    if (!sessionId) return;
+    setScreenState(nextScreen);
+    const { error } = await supabase
+      .from('game_sessions')
+      .update({ screen_state: nextScreen })
+      .eq('id', sessionId);
+    if (error) {
+      console.error('Exit rules failed:', error.message);
+      alert('Failed to exit rules.');
     }
   };
 
@@ -152,6 +219,27 @@ export default function LeftPane() {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2800);
   };
+
+  useEffect(() => {
+    if (screenState !== 'rules') return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        void setRulesPresentationStep(rulesStep + 1);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        void setRulesPresentationStep(rulesStep - 1);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        void exitRules();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screenState, rulesStep, rulesMode, rulesReturnScreenState, sessionId]);
 
   const handleResetRound = async () => {
     if (!sessionId) return;
@@ -273,6 +361,9 @@ export default function LeftPane() {
       active_team: 1,
       round: 'round1',
       screen_state: 'standby',
+      rules_mode: 'full',
+      rules_step: 0,
+      rules_return_screen_state: 'standby',
       fm_timer_running: false,
       fm_timer_started_at: null,
       fm_timer_duration: 20,
@@ -319,6 +410,9 @@ export default function LeftPane() {
       active_team: 1,
       round: 'round1',
       screen_state: 'standby',
+      rules_mode: 'full',
+      rules_step: 0,
+      rules_return_screen_state: 'standby',
       fm_timer_running: false,
       fm_timer_started_at: null,
       fm_timer_duration: 20,
@@ -396,6 +490,15 @@ export default function LeftPane() {
 
       <div className={styles.screenModes}>
         <button
+          className={screenState === 'rules' ? styles.activeMode : ''}
+          onClick={() => showRules('full')}
+        >
+          Show Rules
+        </button>
+        <button onClick={() => showRules('quick')}>
+          Show Quick Rules
+        </button>
+        <button
           className={screenState === 'standby' ? styles.activeMode : ''}
           onClick={() => updateScreenState('standby')}
         >
@@ -427,10 +530,30 @@ export default function LeftPane() {
         </button>
       </div>
 
+      {screenState === 'rules' && (
+        <div className={styles.rulesControls}>
+          <div className={styles.rulesStatus}>
+            <span>Rules: Step {rulesStep + 1} of {getRulesSlides(rulesMode).length}</span>
+            <strong>{getRulesSlides(rulesMode)[rulesStep]?.title}</strong>
+          </div>
+          <div className={styles.rulesNav}>
+            <button onClick={() => setRulesPresentationStep(rulesStep - 1)} disabled={rulesStep <= 0}>Previous</button>
+            <button onClick={() => setRulesPresentationStep(rulesStep + 1)}>
+              {rulesStep >= getRulesSlides(rulesMode).length - 1 ? 'Stay Ready' : rulesStep === getRulesSlides(rulesMode).length - 2 ? 'Ready Screen' : 'Next'}
+            </button>
+            <button onClick={() => setRulesPresentationStep(0)}>Restart</button>
+            <button onClick={() => setRulesPresentationStep(getRulesSlides(rulesMode).length - 1)}>Skip to Ready</button>
+            <button onClick={() => exitRules()}>Exit Rules</button>
+            <button onClick={() => exitRules('team_intro')}>Go to Team Intro</button>
+            <button onClick={() => exitRules('board')}>Go to Board</button>
+          </div>
+        </div>
+      )}
+
       <hr />
 
       <label>Round:</label>
-      <select value={round} onChange={(e) => setRound(e.target.value as any)}>
+      <select value={round} onChange={(e) => setRound(e.target.value as RoundState)}>
         <option value="round1">Round 1</option>
         <option value="round2">Round 2</option>
         <option value="round3">Round 3</option>

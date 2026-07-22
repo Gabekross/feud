@@ -166,6 +166,62 @@
   color: #1d1600 !important;
 }
 
+.rulesControls {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.7rem;
+  border: 1px solid rgba(255, 210, 77, 0.28);
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(11, 31, 72, 0.45);
+}
+
+.rulesStatus {
+  display: grid;
+  gap: 0.2rem;
+
+  span {
+    color: #ffe879;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: #fff;
+    font-size: 0.95rem;
+    line-height: 1.15;
+  }
+}
+
+.rulesNav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+
+  button {
+    min-height: 38px;
+    margin: 0;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid #38465d;
+    background: #17243a;
+    color: #dbe8ff;
+    font-size: 0.78rem;
+    text-align: center;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.42;
+    }
+
+    &:last-child,
+    &:nth-last-child(2) {
+      grid-column: span 1;
+      background: #263247;
+    }
+  }
+}
+
 .notice {
   padding: 0.6rem 0.75rem;
   border: 1px solid rgba(255, 210, 77, 0.55);

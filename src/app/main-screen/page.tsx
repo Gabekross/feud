@@ -14,9 +14,11 @@ import RoundBadge, { type Round } from '@/components/RoundBadge';
 import EdgeCalibrationPanel, { type EdgeMargins } from '@/components/EdgeCalibrationPanel';
 import MainScreenAudioController from '@/components/MainScreenAudioController';
 import MainScreenPresenceBeacon from '@/components/MainScreenPresenceBeacon';
+import RulesPresentation from '@/components/RulesPresentation';
+import { clampRulesStep, type RulesMode } from '@/lib/rulesPresentation';
 import styles from './MainScreen.module.scss';
 
-type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
+type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board' | 'rules';
 
 export default function MainScreenPage() {
   const sessionId = useActiveSession();
@@ -38,6 +40,8 @@ export default function MainScreenPage() {
   const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
   const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
   const [showEventFooter, setShowEventFooter] = useState(true);
+  const [rulesMode, setRulesMode] = useState<RulesMode>('full');
+  const [rulesStep, setRulesStep] = useState(0);
   const [revealQ, setRevealQ] = useState(false);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('cozy');
   const [currentRound, setCurrentRound] = useState<Round>(null);
@@ -115,6 +119,9 @@ export default function MainScreenPage() {
     setEventTitle(session.event_title ?? 'GABEKROSS FAMILY FEUD');
     setEventFooterText(session.event_footer_text ?? 'Powered by Gabekross');
     setShowEventFooter(session.show_event_footer ?? true);
+    const nextRulesMode = (session.rules_mode === 'quick' ? 'quick' : 'full') as RulesMode;
+    setRulesMode(nextRulesMode);
+    setRulesStep(clampRulesStep(nextRulesMode, session.rules_step ?? 0));
 
     const newStrikes = session.strikes ?? 0;
     if (newStrikes > prevStrikesRef.current) {
@@ -286,7 +293,9 @@ export default function MainScreenPage() {
       <MainScreenPresenceBeacon sessionId={sessionId} />
 
       <div className={styles.stage}>
-        {screenState !== 'board' ? (
+        {screenState === 'rules' ? (
+          <RulesPresentation mode={rulesMode} step={rulesStep} />
+        ) : screenState !== 'board' ? (
           <section className={`${styles.introScreen} ${styles[screenState]}`}>
             <div className={styles.introGlow} />
             <div className={styles.introEyebrow}>
