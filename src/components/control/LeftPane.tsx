@@ -274,7 +274,8 @@ export default function LeftPane() {
       screen_state: 'standby',
       fm_timer_running: false,
       fm_timer_started_at: null,
-      fm_timer_duration: 20
+      fm_timer_duration: 20,
+      fm_show_clock: true
     }).eq('id', sessionId);
 
     await supabase.from('answers').update({ revealed: false });
@@ -320,6 +321,7 @@ export default function LeftPane() {
       fm_timer_running: false,
       fm_timer_started_at: null,
       fm_timer_duration: 20,
+      fm_show_clock: true,
       fm_hide_p1: false,
       fm_player1_name: 'Player 1',
       fm_player2_name: 'Player 2',

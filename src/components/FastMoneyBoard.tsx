@@ -22,6 +22,7 @@ type Props = {
   timerRemain?: number;
   timerDuration?: number;
   timerColor?: string;
+  showClock?: boolean;
 };
 
 const getAnswerFitClass = (text: string | null | undefined) => {
@@ -59,7 +60,7 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   return <strong className={className}>{displayValue}</strong>;
 }
 
-export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, timerColor = '#4caf50' }: Props) {
+export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, timerColor = '#4caf50', showClock = true }: Props) {
   const sessionId = useActiveSession();
   const [fmIndex, setFmIndex] = useState<number>(1);
   const [qText, setQText] = useState<string>('');     // current FM question text
@@ -230,9 +231,10 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
             {showQuestion ? qText : <HiddenQuestionPlaceholder />}
           </div>
         </div>
+        {showClock && (
         <div
-          className={`${styles.timerPod} ${isScoringReveal ? styles.timerQuiet : ''} ${!isScoringReveal && timerRemain <= 5 ? styles.timerDanger : !isScoringReveal && timerRemain <= 10 ? styles.timerWarning : ''}`}
-        >
+            className={`${styles.timerPod} ${isScoringReveal ? styles.timerQuiet : ''} ${!isScoringReveal && timerRemain <= 5 ? styles.timerDanger : !isScoringReveal && timerRemain <= 10 ? styles.timerWarning : ''}`}
+          >
           <div className={styles.timerLabel}>Clock</div>
           <svg viewBox="0 0 100 100" className={styles.timerSvg}>
             <circle className={styles.bg} cx="50" cy="50" r="45" />
@@ -253,6 +255,7 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
           </svg>
           <div className={styles.timerCaption}>seconds</div>
         </div>
+        )}
       </div>
 
       {/* Layout switches between single-column (P1's solo turn) and two-column

@@ -71,7 +71,7 @@
 
   .timerPanel {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     gap: 1rem;
     align-items: end;
     background: #242424;
@@ -81,6 +81,25 @@
 
     @media (max-width: 600px) {
       grid-template-columns: 1fr;
+    }
+
+    .timerReadout {
+      display: grid;
+      gap: 0.2rem;
+      min-width: 7rem;
+
+      span {
+        color: #dbe8ff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        opacity: 0.82;
+      }
+
+      strong {
+        color: #ffd24d;
+        font-size: 1.35rem;
+        line-height: 1;
+      }
     }
 
     .timerLeft {

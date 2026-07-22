@@ -48,6 +48,7 @@ export default function MainScreenPage() {
   const [fmStartedAt, setFmStartedAt] = useState<string | null>(null);
   const [fmDuration, setFmDuration] = useState(20);
   const [fmRemain, setFmRemain] = useState(20);
+  const [fmShowClock, setFmShowClock] = useState(true);
 
   const rafRef = useRef<number | null>(null);
   const prevStrikesRef = useRef(0);
@@ -126,6 +127,7 @@ export default function MainScreenPage() {
     setFmRunning(!!session.fm_timer_running);
     setFmStartedAt(session.fm_timer_started_at ?? null);
     setFmDuration(session.fm_timer_duration ?? (session.fast_money_seconds ?? 20));
+    setFmShowClock(session.fm_show_clock ?? true);
     setFmRemain(() => {
       if (session.fm_timer_running && session.fm_timer_started_at) {
         const start = new Date(session.fm_timer_started_at).getTime();
@@ -354,6 +356,7 @@ export default function MainScreenPage() {
                 timerRemain={fmRemain}
                 timerDuration={fmDuration}
                 timerColor={getTimerColor()}
+                showClock={fmShowClock}
               />
             ) : (
               <>

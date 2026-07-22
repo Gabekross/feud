@@ -44,6 +44,8 @@ export default function FastMoneyPane() {
   const [startedAt, setStartedAt] = useState<string | null>(null);
   const [duration, setDuration] = useState<number>(20); // seconds
   const [defaultSeconds, setDefaultSeconds] = useState<number>(20);
+  const [showClock, setShowClock] = useState<boolean>(true);
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 🔊 sounds
@@ -132,7 +134,7 @@ export default function FastMoneyPane() {
     // Load timer snapshot from session
     const { data: sess } = await supabase
       .from('game_sessions')
-      .select('fm_timer_running, fm_timer_started_at, fm_timer_duration, fast_money_seconds, fm_player1_name, fm_player2_name')
+      .select('fm_timer_running, fm_timer_started_at, fm_timer_duration, fast_money_seconds, fm_show_clock, fm_player1_name, fm_player2_name')
       .eq('id', sessionId)
       .single();
 
@@ -140,6 +142,7 @@ export default function FastMoneyPane() {
     setStartedAt(sess?.fm_timer_started_at ?? null);
     setDuration(sess?.fm_timer_duration ?? (sess?.fast_money_seconds ?? 20));
     setDefaultSeconds(sess?.fast_money_seconds ?? 20);
+    setShowClock(sess?.fm_show_clock ?? true);
     setPlayer1Name(sess?.fm_player1_name ?? 'Player 1');
     setPlayer2Name(sess?.fm_player2_name ?? 'Player 2');
   };
@@ -228,6 +231,7 @@ export default function FastMoneyPane() {
           setStartedAt(payload.new.fm_timer_started_at ?? null);
           setDuration(payload.new.fm_timer_duration ?? (payload.new.fast_money_seconds ?? 20));
           setDefaultSeconds(payload.new.fast_money_seconds ?? 20);
+          setShowClock(payload.new.fm_show_clock ?? true);
           setPlayer1Name(payload.new.fm_player1_name ?? 'Player 1');
           setPlayer2Name(payload.new.fm_player2_name ?? 'Player 2');
         }
@@ -236,6 +240,18 @@ export default function FastMoneyPane() {
 
     return () => { void supabase.removeChannel(ch); };
   }, [sessionId, fmIndex, player]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClockNow(Date.now()), 250);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const operatorTimeLeft = useMemo(() => {
+    if (!running || !startedAt) return Math.max(0, duration);
+    const start = new Date(startedAt).getTime();
+    const elapsed = Math.floor((clockNow - start) / 1000);
+    return Math.max(0, duration - elapsed);
+  }, [clockNow, duration, running, startedAt]);
 
   // ===== Timer actions =====
   const onDurationChange = (seconds: number) => {
@@ -291,6 +307,16 @@ export default function FastMoneyPane() {
         fm_timer_started_at: null,
         fm_timer_duration: defaultSeconds,
       })
+      .eq('id', sessionId);
+  };
+
+  const toggleMainClock = async () => {
+    if (!sessionId) return;
+    const next = !showClock;
+    setShowClock(next);
+    await supabase
+      .from('game_sessions')
+      .update({ fm_show_clock: next })
       .eq('id', sessionId);
   };
 
@@ -443,6 +469,10 @@ export default function FastMoneyPane() {
 
       {/* TIMER PANEL */}
       <div className={styles.timerPanel}>
+        <div className={styles.timerReadout}>
+          <span>Operator Timer</span>
+          <strong>{operatorTimeLeft}s</strong>
+        </div>
         <div className={styles.timerLeft}>
           <label>Duration (sec)</label>
           <input
@@ -458,6 +488,7 @@ export default function FastMoneyPane() {
           <button onClick={startTimer} disabled={running}>▶ Start</button>
           <button onClick={pauseTimer} disabled={!running}>⏸ Pause</button>
           <button onClick={resetTimer}>↺ Reset</button>
+          <button onClick={toggleMainClock}>{showClock ? 'Hide Main Clock' : 'Show Main Clock'}</button>
         </div>
       </div>
 
