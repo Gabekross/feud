@@ -13,6 +13,7 @@ import PresentationModeToggle, { type PresentationMode } from '@/components/Pres
 import RoundBadge, { type Round } from '@/components/RoundBadge';
 import EdgeCalibrationPanel, { type EdgeMargins } from '@/components/EdgeCalibrationPanel';
 import MainScreenAudioController from '@/components/MainScreenAudioController';
+import MainScreenPresenceBeacon from '@/components/MainScreenPresenceBeacon';
 import styles from './MainScreen.module.scss';
 
 type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
@@ -282,6 +283,7 @@ export default function MainScreenPage() {
       <PresentationModeToggle onChange={setPresentationMode} />
       <EdgeCalibrationPanel onChange={setEdgeMargins} onCalibratingChange={setCalibrating} />
       <MainScreenAudioController sessionId={sessionId} />
+      <MainScreenPresenceBeacon sessionId={sessionId} />
 
       <div className={styles.stage}>
         {screenState !== 'board' ? (

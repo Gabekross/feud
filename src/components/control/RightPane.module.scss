@@ -157,6 +157,24 @@
     font-weight: 800;
     line-height: 1.25;
   }
+
+  .audioToggle {
+    min-height: 42px;
+    border: 1px solid #3a3a3a;
+    border-radius: var(--radius-sm, 8px);
+    background: #242424;
+    color: #dbe8ff;
+    cursor: pointer;
+    font-weight: 850;
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-color, #3b82f6);
+    }
+  }
 }
 
 @media (max-width: 640px) {

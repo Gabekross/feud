@@ -4,6 +4,7 @@ import styles from './FamilyFaceOffHub.module.scss';
 
 const MAIN_PATH = '/main-screen';
 const CONTROL_PATH = '/control';
+const AUDIO_PATH = '/control/audio';
 const SETUP_PATH = '/admin/setup';
 const QUESTIONS_PATH = '/admin/questions';
 const VIEW_PATH = '/cards/slideshow';
@@ -47,6 +48,15 @@ export default function FamilyFaceOffHubPage() {
             Reveal answers, track strikes, switch rounds, manage teams, and run Fast Money live.
           </p>
           <span className={styles.cta}>Launch</span>
+        </Link>
+
+        <Link href={AUDIO_PATH} className={styles.card}>
+          <div className={styles.emoji}>AUD</div>
+          <h2>Audio Operator</h2>
+          <p>
+            Dedicated music and crowd controls for a second operator browser.
+          </p>
+          <span className={styles.cta}>Open Mixer</span>
         </Link>
 
         <Link href={QUESTIONS_PATH} className={styles.card}>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import MusicControls from './MusicControls';
+import ScreenConnectionStatus from './ScreenConnectionStatus';
 import styles from './RightPane.module.scss';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
@@ -16,6 +17,7 @@ export default function RightPane() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [round, setRound] = useState<string>('round1');
   const [notice, setNotice] = useState('');
+  const [showAudioControls, setShowAudioControls] = useState(true);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -23,7 +25,8 @@ export default function RightPane() {
         .from('game_sessions')
         .select('id, active_team, team1_score, team2_score, team1_name, team2_name, round')
         .eq('status', 'active')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.error('Load session failed:', error.message);
@@ -68,12 +71,23 @@ export default function RightPane() {
     };
   }, [sessionId]);
 
-  const updateScore = async (team: 1 | 2, newScore: number) => {
+  const adjustScore = async (team: 1 | 2, delta: number) => {
     if (!sessionId) return;
-    const column = team === 1 ? 'team1_score' : 'team2_score';
-    const { error } = await supabase.from('game_sessions').update({ [column]: newScore }).eq('id', sessionId);
-    if (error) console.error('Score update failed:', error.message);
-    else (team === 1 ? setTeam1Score(newScore) : setTeam2Score(newScore));
+    const { data, error } = await supabase.rpc('adjust_team_score', {
+      p_session_id: sessionId,
+      p_team: team,
+      p_delta: delta,
+    });
+
+    if (error) {
+      console.error('Score adjustment failed:', error.message);
+      alert('Score adjustment failed. Make sure the operator RPC migration has run.');
+      return;
+    }
+
+    const nextScore = typeof data === 'number' ? data : 0;
+    if (team === 1) setTeam1Score(nextScore);
+    else setTeam2Score(nextScore);
   };
 
   const updateActiveTeam = async (team: number) => {
@@ -115,96 +129,45 @@ export default function RightPane() {
   const finalizeRound = async (multiplier: 1 | 2 | 3 = 1) => {
     if (!sessionId || !activeTeam) return;
 
-    const { data: current, error: e1 } = await supabase
-      .from('session_questions')
-      .select('id, question_id, score_finalized')
-      .eq('session_id', sessionId)
-      .eq('is_current', true)
-      .single();
+    const { data, error } = await supabase.rpc('finalize_round_score', {
+      p_session_id: sessionId,
+      p_multiplier: multiplier,
+    });
 
-    if (e1 || !current?.question_id) {
-      alert('No current question to finalize.');
+    if (error) {
+      console.error('Finalize round failed:', error.message);
+      alert(error.message || 'Failed to finalize round. Make sure the operator RPC migration has run.');
       return;
     }
 
-    if (current.score_finalized) {
-      alert('This round score has already been finalized. Reset the round or switch rounds before finalizing again.');
-      return;
-    }
-
-    const { data: revealed, error: e2 } = await supabase
-      .from('answers')
-      .select('points')
-      .eq('question_id', current.question_id)
-      .eq('revealed', true);
-
-    if (e2) {
-      console.error('Could not fetch revealed answers:', e2.message);
-      alert('Could not calculate round points.');
-      return;
-    }
-
-    const roundPoints = (revealed ?? []).reduce((sum, r) => sum + (r?.points ?? 0), 0);
-    const awardedPoints = roundPoints * multiplier;
-    const column = activeTeam === 1 ? 'team1_score' : 'team2_score';
-
-    const { data: sRow, error: e3 } = await supabase
-      .from('game_sessions')
-      .select(column)
-      .eq('id', sessionId)
-      .single();
-
-    if (e3) {
-      console.error('Could not read current score:', e3.message);
-      return;
-    }
-
-    const currentScore = (sRow as any)?.[column] ?? 0;
-    const newScore = currentScore + awardedPoints;
-
-    const { error: e4 } = await supabase
-      .from('game_sessions')
-      .update({ [column]: newScore })
-      .eq('id', sessionId);
-
-    if (e4) {
-      console.error('Score update failed:', e4.message);
-      alert('Failed to finalize round.');
-      return;
-    }
-
-    const { error: e5 } = await supabase
-      .from('session_questions')
-      .update({ score_finalized: true })
-      .eq('id', current.id);
-
-    if (e5) {
-      console.error('Score finalized flag update failed:', e5.message);
-      alert('Score was awarded, but the board-points display could not be locked. Make sure the score_finalized migration has run.');
-    }
+    const result = Array.isArray(data) ? data[0] : data;
+    const roundPoints = result?.round_points ?? 0;
+    const awardedPoints = result?.awarded_points ?? 0;
+    const awardedTeam = result?.active_team ?? activeTeam;
 
     showNotice(
-      `${activeTeam === 1 ? team1Name : team2Name} awarded ${awardedPoints} pts${multiplier > 1 ? ` (${roundPoints} x ${multiplier})` : ''}.`
+      `${awardedTeam === 1 ? team1Name : team2Name} awarded ${awardedPoints} pts${multiplier > 1 ? ` (${roundPoints} x ${multiplier})` : ''}.`
     );
   };
 
   return (
     <div className={styles.rightPane}>
       <h2>Team Control</h2>
+      <ScreenConnectionStatus />
       {notice && <div className={styles.notice}>{notice}</div>}
 
       <input placeholder="Team 1 name" value={team1Name} onChange={handleTeam1NameChange} />
       <div className={styles.scoreRow}>
-        <button onClick={() => updateScore(1, Math.max(0, team1Score - 1))}>-</button>
+        <button onClick={() => adjustScore(1, -1)}>-</button>
         <span>{team1Score} pts</span>
-        <button onClick={() => updateScore(1, team1Score + 1)}>+</button>
+        <button onClick={() => adjustScore(1, 1)}>+</button>
       </div>
 
       <input placeholder="Team 2 name" value={team2Name} onChange={handleTeam2NameChange} />
       <div className={styles.scoreRow}>
-        <button onClick={() => updateScore(2, Math.max(0, team2Score - 1))}>-</button>
+        <button onClick={() => adjustScore(2, -1)}>-</button>
         <span>{team2Score} pts</span>
-        <button onClick={() => updateScore(2, team2Score + 1)}>+</button>
+        <button onClick={() => adjustScore(2, 1)}>+</button>
       </div>
 
       <hr />
@@ -236,7 +199,10 @@ export default function RightPane() {
 
       <hr />
 
-      <MusicControls />
+      <button className={styles.audioToggle} onClick={() => setShowAudioControls((value) => !value)}>
+        {showAudioControls ? 'Hide Audio Controls' : 'Show Audio Controls'}
+      </button>
+      {showAudioControls && <MusicControls />}
     </div>
   );
 }

@@ -1,0 +1,56 @@
+.page {
+  min-height: 100dvh;
+  padding: clamp(1rem, 3vw, 2rem);
+  background:
+    radial-gradient(circle at 50% -12%, rgba(57, 126, 255, 0.18), transparent 34rem),
+    radial-gradient(circle at 50% 110%, rgba(255, 210, 77, 0.1), transparent 28rem),
+    linear-gradient(180deg, #071226, #05070d 74%);
+  color: #eef2f7;
+  font-family: var(--font-ui, system-ui, sans-serif);
+}
+
+.shell {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 1rem;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid #263247;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #151e2f, #111827);
+
+  h1 {
+    margin: 0.35rem 0 0.25rem;
+    color: #ffd24d;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+  }
+
+  p {
+    margin: 0;
+    color: #b6c2d2;
+  }
+}
+
+.backLink {
+  color: #8fb5ff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 720px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+}

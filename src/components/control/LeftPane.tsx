@@ -33,7 +33,8 @@ export default function LeftPane() {
         .from('game_sessions')
         .select('id, strikes, strike_limit, screen_state, event_title, event_footer_text, show_event_footer')
         .eq('status', 'active')
-        .single();
+        .limit(1)
+        .maybeSingle();
       if (error) { console.error('Failed to load active session:', error.message); return; }
       if (data) {
         setSessionId(data.id);

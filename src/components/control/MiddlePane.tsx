@@ -162,16 +162,13 @@ export default function MiddlePane() {
       volume: 0.9,
     });
 
-    const { data } = await supabase
-      .from('game_sessions')
-      .select('strikes, strike_limit')
-      .eq('id', sessionId)
-      .single();
+    const { error } = await supabase.rpc('add_strike_atomic', {
+      p_session_id: sessionId,
+    });
 
-    const current = data?.strikes ?? 0;
-    const limit = data?.strike_limit ?? 3;
-    if (current < limit) {
-      await supabase.from('game_sessions').update({ strikes: current + 1 }).eq('id', sessionId);
+    if (error) {
+      console.error('Add strike failed:', error.message);
+      alert('Could not add strike. Make sure the operator RPC migration has run.');
     }
   };
 
