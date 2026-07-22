@@ -195,16 +195,16 @@ export default function RightPane() {
 
       <input placeholder="Team 1 name" value={team1Name} onChange={handleTeam1NameChange} />
       <div className={styles.scoreRow}>
-        <button onClick={() => updateScore(1, Math.max(0, team1Score - 5))}>-</button>
+        <button onClick={() => updateScore(1, Math.max(0, team1Score - 1))}>-</button>
         <span>{team1Score} pts</span>
-        <button onClick={() => updateScore(1, team1Score + 5)}>+</button>
+        <button onClick={() => updateScore(1, team1Score + 1)}>+</button>
       </div>
 
       <input placeholder="Team 2 name" value={team2Name} onChange={handleTeam2NameChange} />
       <div className={styles.scoreRow}>
-        <button onClick={() => updateScore(2, Math.max(0, team2Score - 5))}>-</button>
+        <button onClick={() => updateScore(2, Math.max(0, team2Score - 1))}>-</button>
         <span>{team2Score} pts</span>
-        <button onClick={() => updateScore(2, team2Score + 5)}>+</button>
+        <button onClick={() => updateScore(2, team2Score + 1)}>+</button>
       </div>
 
       <hr />
