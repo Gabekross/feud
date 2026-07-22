@@ -9,6 +9,8 @@ type Props = {
   team1: number;
   team2: number;
   activeTeam?: number;
+  boardPoints?: number;
+  showBoardPoints?: boolean;
 };
 
 function AnimatedScore({ value }: { value: number }) {
@@ -50,13 +52,28 @@ function AnimatedScore({ value }: { value: number }) {
   );
 }
 
-export default function TeamScore({ team1Name, team2Name, team1, team2, activeTeam }: Props) {
+export default function TeamScore({
+  team1Name,
+  team2Name,
+  team1,
+  team2,
+  activeTeam,
+  boardPoints = 0,
+  showBoardPoints = true,
+}: Props) {
   return (
     <div className={styles.scoreBoard}>
       <div className={`${styles.teamSide} ${activeTeam === 1 ? styles.activeTeam : ''}`}>
         <div className={styles.teamName}>{team1Name}</div>
         <AnimatedScore value={team1} />
       </div>
+
+      {showBoardPoints && (
+        <div className={styles.boardBank} aria-label="Points on board">
+          <span>Points on Board</span>
+          <AnimatedScore value={boardPoints} />
+        </div>
+      )}
 
       <div className={`${styles.teamSide} ${activeTeam === 2 ? styles.activeTeam : ''}`}>
         <div className={styles.teamName}>{team2Name}</div>

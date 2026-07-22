@@ -117,13 +117,18 @@ export default function RightPane() {
 
     const { data: current, error: e1 } = await supabase
       .from('session_questions')
-      .select('question_id')
+      .select('id, question_id, score_finalized')
       .eq('session_id', sessionId)
       .eq('is_current', true)
       .single();
 
     if (e1 || !current?.question_id) {
       alert('No current question to finalize.');
+      return;
+    }
+
+    if (current.score_finalized) {
+      alert('This round score has already been finalized. Reset the round or switch rounds before finalizing again.');
       return;
     }
 
@@ -166,6 +171,16 @@ export default function RightPane() {
       console.error('Score update failed:', e4.message);
       alert('Failed to finalize round.');
       return;
+    }
+
+    const { error: e5 } = await supabase
+      .from('session_questions')
+      .update({ score_finalized: true })
+      .eq('id', current.id);
+
+    if (e5) {
+      console.error('Score finalized flag update failed:', e5.message);
+      alert('Score was awarded, but the board-points display could not be locked. Make sure the score_finalized migration has run.');
     }
 
     showNotice(

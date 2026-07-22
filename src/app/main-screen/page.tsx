@@ -26,6 +26,7 @@ export default function MainScreenPage() {
   const [fmPlayer2Name, setFmPlayer2Name] = useState('Player 2');
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState<{ text: string; revealed: boolean; points: number }[]>([]);
+  const [scoreFinalized, setScoreFinalized] = useState(false);
   const [teamScores, setTeamScores] = useState({ team1: 0, team2: 0 });
   const [activeTeam, setActiveTeam] = useState<number | null>(null);
   const [strikes, setStrikes] = useState(0);
@@ -76,6 +77,9 @@ export default function MainScreenPage() {
         : team2Name;
 
   const leadingScore = Math.max(teamScores.team1, teamScores.team2);
+  const pointsOnBoard = scoreFinalized
+    ? 0
+    : answers.reduce((sum, answer) => sum + (answer.revealed ? answer.points : 0), 0);
 
   const loadQAByQuestionId = async (qid: string) => {
     const { data: q } = await supabase
@@ -149,12 +153,13 @@ export default function MainScreenPage() {
     if (!session?.round || session.round !== 'fast_money') {
       const { data: sessionQ } = await supabase
         .from('session_questions')
-        .select('question_id, reveal_question')
+        .select('question_id, reveal_question, score_finalized')
         .eq('session_id', sessionId)
         .eq('is_current', true)
         .single();
 
       setRevealQ(!!sessionQ?.reveal_question);
+      setScoreFinalized(!!sessionQ?.score_finalized);
       if (sessionQ?.question_id) await loadQAByQuestionId(sessionQ.question_id);
     }
   };
@@ -210,7 +215,7 @@ export default function MainScreenPage() {
           const updated = payload.new;
           setAnswers((prev) =>
             prev.map((a) =>
-              a.text === updated.answer_text ? { ...a, revealed: updated.revealed } : a
+              a.text === updated.answer_text ? { ...a, revealed: updated.revealed, points: updated.points ?? a.points } : a
             )
           );
         }
@@ -232,6 +237,7 @@ export default function MainScreenPage() {
         async (payload: any) => {
           if (payload.new?.is_current) {
             setRevealQ(!!payload.new.reveal_question);
+            setScoreFinalized(!!payload.new.score_finalized);
             await loadQAByQuestionId(payload.new.question_id as string);
           }
         }
@@ -339,6 +345,7 @@ export default function MainScreenPage() {
                 team1={teamScores.team1}
                 team2={teamScores.team2}
                 activeTeam={activeTeam ?? 1}
+                boardPoints={pointsOnBoard}
               />
             )}
 

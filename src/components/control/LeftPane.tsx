@@ -167,6 +167,11 @@ export default function LeftPane() {
       const { error: e3 } = await supabase.from('answers').update({ revealed: false }).eq('question_id', cur.question_id);
       if (e3) console.error('Reset answers failed:', e3.message);
     }
+    await supabase
+      .from('session_questions')
+      .update({ score_finalized: false })
+      .eq('session_id', sessionId)
+      .eq('is_current', true);
     showNotice('Round has been reset.');
   };
 
@@ -218,7 +223,10 @@ export default function LeftPane() {
     if (eSet) { console.error('Set new current round failed:', eSet.message); alert('❌ Failed to switch round (set).'); return; }
 
     if (targetRound !== 6) {
-      await supabase.from('session_questions').update({ reveal_question: false }).eq('id', targetRowId);
+      const resetPayload = resetOnSwitch
+        ? { reveal_question: false, score_finalized: false }
+        : { reveal_question: false };
+      await supabase.from('session_questions').update(resetPayload).eq('id', targetRowId);
     } else {
       // Fast Money: Q1 stays hidden by default (operator manually clicks
       // "Reveal Question" to start the round). Q2–Q5 are pre-revealed so
@@ -281,12 +289,12 @@ export default function LeftPane() {
 
     await supabase
       .from('session_questions')
-      .update({ is_current: false, fm_reveal_question: false, reveal_question: false })
+      .update({ is_current: false, fm_reveal_question: false, reveal_question: false, score_finalized: false })
       .eq('session_id', sessionId);
 
     await supabase
       .from('session_questions')
-      .update({ is_current: true, reveal_question: false })
+      .update({ is_current: true, reveal_question: false, score_finalized: false })
       .eq('session_id', sessionId)
       .eq('round_number', 1);
 
@@ -335,12 +343,12 @@ export default function LeftPane() {
 
     await supabase
       .from('session_questions')
-      .update({ is_current: false, fm_reveal_question: false, reveal_question: false })
+      .update({ is_current: false, fm_reveal_question: false, reveal_question: false, score_finalized: false })
       .eq('session_id', sessionId);
 
     await supabase
       .from('session_questions')
-      .update({ is_current: true, reveal_question: false })
+      .update({ is_current: true, reveal_question: false, score_finalized: false })
       .eq('session_id', sessionId)
       .eq('round_number', 1);
 
