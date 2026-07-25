@@ -1,4 +1,5 @@
 import { FULL_RULES_SLIDES, QUICK_RULES_SLIDES } from '@/lib/rulesPresentation';
+import RulesGuide from './RulesGuide';
 import styles from './RulesPage.module.scss';
 
 const ruleSections = FULL_RULES_SLIDES.filter((slide) => slide.id !== 'ready');
@@ -34,24 +35,7 @@ export default function RulesPage() {
         </ol>
       </section>
 
-      <section className={styles.rulesGrid} aria-label="Full game rules">
-        {ruleSections.map((section, index) => (
-          <article className={styles.ruleCard} key={section.id}>
-            <div className={styles.ruleNumber}>{String(index + 1).padStart(2, '0')}</div>
-            <div className={styles.ruleCopy}>
-              {section.eyebrow && <p className={styles.ruleEyebrow}>{section.eyebrow}</p>}
-              <h2>{section.title}</h2>
-              {section.description && <p className={styles.description}>{section.description}</p>}
-              <ul>
-                {section.bullets.map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
-              {section.highlight && <strong className={styles.highlight}>{section.highlight}</strong>}
-            </div>
-          </article>
-        ))}
-      </section>
+      <RulesGuide sections={ruleSections} />
 
       <section className={styles.readyPanel}>
         <p>Ready to play?</p>

@@ -98,6 +98,7 @@
 }
 
 .quickPanel,
+.guidePanel,
 .rulesGrid,
 .readyPanel {
   width: min(1120px, calc(100% - 2rem));
@@ -165,11 +166,110 @@
   }
 }
 
+.guidePanel {
+  margin-top: 1rem;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
+  border: 1px solid rgba(255, 220, 126, 0.42);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(11, 28, 57, 0.82), rgba(5, 15, 31, 0.92)),
+    radial-gradient(circle at 50% 0%, rgba(71, 147, 255, 0.18), transparent 18rem);
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(102, 152, 226, 0.14);
+}
+
+.guideHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0.35rem 0 0;
+    color: #fff3c8;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.75rem, 4vw, 2.8rem);
+    line-height: 1;
+  }
+}
+
+.progressBadge {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(255, 229, 154, 0.56);
+  border-radius: 999px;
+  background: rgba(255, 221, 107, 0.12);
+  color: #ffe99f;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.86rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stepTabs {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0 0 0.7rem;
+  margin-bottom: 1rem;
+  scrollbar-color: rgba(255, 221, 107, 0.42) rgba(7, 16, 34, 0.8);
+}
+
+.stepTab {
+  flex: 0 0 auto;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(126, 178, 255, 0.3);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(6, 17, 36, 0.76);
+  color: #d9eaff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+
+  span {
+    color: #ffe99f;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 950;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 221, 107, 0.55);
+  }
+}
+
+.activeStep {
+  border-color: rgba(255, 235, 156, 0.78);
+  background: linear-gradient(180deg, rgba(33, 72, 132, 0.96), rgba(11, 31, 65, 0.98));
+  color: #fff7df;
+  box-shadow: 0 0.7rem 1.35rem rgba(0, 0, 0, 0.24), 0 0 1rem rgba(255, 220, 106, 0.14);
+}
+
 .rulesGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  margin-top: 1rem;
+}
+
+.focusedRule {
+  display: grid;
+  animation: ruleFadeIn 180ms ease-out both;
+
+  .ruleCard {
+    min-height: clamp(20rem, 34vw, 27rem);
+    align-items: start;
+  }
 }
 
 .ruleCard {
@@ -247,6 +347,40 @@
   text-transform: uppercase;
 }
 
+.guideActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
+
+  button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 235, 156, 0.72);
+    border-radius: 7px;
+    padding: 0.72rem 1rem;
+    background: linear-gradient(180deg, #ffe470, #d99313);
+    color: #07101d;
+    font: inherit;
+    font-size: 0.94rem;
+    font-weight: 950;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+  }
+
+  .secondaryAction {
+    color: #f5fbff;
+    background: rgba(8, 23, 48, 0.84);
+    border-color: rgba(126, 178, 255, 0.42);
+  }
+}
+
 .readyPanel {
   margin-top: 1rem;
   margin-bottom: clamp(2rem, 5vw, 4rem);
@@ -266,10 +400,37 @@
   }
 }
 
+@keyframes ruleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focusedRule {
+    animation: none;
+  }
+
+  .stepTab {
+    transition: none;
+  }
+}
+
 @media (max-width: 860px) {
   .quickPanel,
   .rulesGrid {
     grid-template-columns: 1fr;
+  }
+
+  .guideHeader {
+    align-items: start;
+    flex-direction: column;
   }
 
   .ruleCard {
@@ -283,9 +444,19 @@
   }
 
   .quickPanel,
+  .guidePanel,
   .rulesGrid,
   .readyPanel {
     width: min(100% - 1rem, 1120px);
+  }
+
+  .stepTabs {
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+  }
+
+  .guideActions button {
+    flex: 1 1 calc(50% - 0.7rem);
   }
 
   .ruleNumber {
