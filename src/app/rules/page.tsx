@@ -23,17 +23,22 @@ export default function RulesPage() {
         </div>
       </section>
 
-      <section className={styles.quickPanel} aria-labelledby="quick-rules-title">
-        <div>
-          <p className={styles.sectionLabel}>Quick Rules</p>
-          <h2 id="quick-rules-title">The game in one minute</h2>
+      <details className={styles.quickPanel}>
+        <summary className={styles.quickSummary}>
+          <span>
+            <span className={styles.sectionLabel}>Quick Rules</span>
+            <strong>The game in one minute</strong>
+          </span>
+          <span className={styles.quickChevron} aria-hidden="true" />
+        </summary>
+        <div className={styles.quickContent}>
+          <ol className={styles.quickList}>
+            {quickRules.map((rule) => (
+              <li key={rule}>{rule}</li>
+            ))}
+          </ol>
         </div>
-        <ol className={styles.quickList}>
-          {quickRules.map((rule) => (
-            <li key={rule}>{rule}</li>
-          ))}
-        </ol>
-      </section>
+      </details>
 
       <RulesGuide sections={ruleSections} />
 

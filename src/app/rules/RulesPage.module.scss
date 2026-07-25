@@ -106,26 +106,70 @@
 }
 
 .quickPanel {
-  display: grid;
-  grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 1.4fr);
-  gap: clamp(1rem, 3vw, 2rem);
-  align-items: start;
   margin-top: clamp(1rem, 3vw, 2rem);
-  padding: clamp(1.15rem, 3vw, 1.8rem);
   border: 1px solid rgba(255, 220, 126, 0.58);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(27, 59, 109, 0.84), rgba(7, 18, 37, 0.92)),
     radial-gradient(circle at 10% 0%, rgba(255, 222, 126, 0.22), transparent 16rem);
   box-shadow: 0 1.1rem 2.6rem rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(105, 155, 230, 0.22);
+  overflow: hidden;
 
-  h2 {
-    margin: 0.35rem 0 0;
+  &[open] .quickChevron {
+    color: #07101d;
+    background: linear-gradient(180deg, #ffe470, #d99313);
+
+    &::after {
+      content: 'Hide';
+    }
+  }
+}
+
+.quickSummary {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  strong {
+    display: block;
+    margin-top: 0.35rem;
     color: #fff3c8;
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: clamp(1.7rem, 4.5vw, 3rem);
+    font-size: clamp(1.45rem, 4vw, 2.65rem);
     line-height: 1;
   }
+}
+
+.quickChevron {
+  flex: 0 0 auto;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(255, 235, 156, 0.7);
+  border-radius: 7px;
+  color: #fff2bd;
+  background: rgba(8, 23, 48, 0.7);
+  font-size: 0.86rem;
+  font-weight: 950;
+
+  &::after {
+    content: 'Show';
+  }
+}
+
+.quickContent {
+  padding: 0 clamp(1rem, 3vw, 1.35rem) clamp(1rem, 3vw, 1.35rem);
 }
 
 .quickList {
@@ -423,7 +467,6 @@
 }
 
 @media (max-width: 860px) {
-  .quickPanel,
   .rulesGrid {
     grid-template-columns: 1fr;
   }
@@ -453,6 +496,15 @@
   .stepTabs {
     margin-inline: -0.25rem;
     padding-inline: 0.25rem;
+  }
+
+  .quickSummary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .quickChevron {
+    width: 100%;
   }
 
   .guideActions button {
