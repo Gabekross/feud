@@ -16,6 +16,7 @@ type Track = {
 };
 
 const THEME_SRC = '/sounds/family-feud-theme.mp3';
+const PITY_CROWD_SRC = '/sounds/pity-crowd.mp3';
 const INTRO_SECONDS = 33;
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 1;
@@ -248,6 +249,109 @@ function TrackMixer({ track }: { track: Track }) {
   );
 }
 
+function SoundEffects() {
+  const sessionId = useActiveSession();
+  const [effectVolume, setEffectVolume] = useState(0.85);
+  const [pityLoop, setPityLoop] = useState(false);
+  const [pityPlaying, setPityPlaying] = useState(false);
+
+  const playSharpBuzzer = () => {
+    void emitSoundEvent(sessionId, {
+      sound_type: 'effect',
+      command: 'play',
+      track_id: 'sharp-buzzer',
+      volume: effectVolume,
+    });
+  };
+
+  const playPityCrowd = () => {
+    void emitSoundEvent(sessionId, {
+      sound_type: pityLoop ? 'music' : 'effect',
+      command: 'play',
+      track_id: 'pity-crowd',
+      src: PITY_CROWD_SRC,
+      seek_time: 0,
+      volume: effectVolume,
+      playback_rate: 1,
+      loop: pityLoop,
+    });
+    setPityPlaying(pityLoop);
+  };
+
+  const stopPityCrowd = () => {
+    void emitSoundEvent(sessionId, {
+      sound_type: 'music',
+      command: 'stop',
+      track_id: 'pity-crowd',
+      src: PITY_CROWD_SRC,
+      seek_time: 0,
+      volume: effectVolume,
+      playback_rate: 1,
+      loop: false,
+    });
+    setPityPlaying(false);
+  };
+
+  const changeEffectVolume = (nextVolume: number) => {
+    setEffectVolume(nextVolume);
+    if (!pityPlaying) return;
+    void emitSoundEvent(sessionId, {
+      sound_type: 'music',
+      command: 'config',
+      track_id: 'pity-crowd',
+      src: PITY_CROWD_SRC,
+      volume: nextVolume,
+      playback_rate: 1,
+      loop: pityLoop,
+    });
+  };
+
+  const changePityLoop = (nextLoop: boolean) => {
+    setPityLoop(nextLoop);
+    if (!nextLoop && pityPlaying) {
+      stopPityCrowd();
+    }
+  };
+
+  return (
+    <div className={styles.effectsCard}>
+      <div className={styles.trackHeader}>
+        <strong>Sound Effects</strong>
+        <span>Manual</span>
+      </div>
+
+      <div className={styles.effectButtons}>
+        <button type="button" onClick={playSharpBuzzer}>Sharp Buzzer</button>
+        <button type="button" onClick={playPityCrowd}>Aww / Pity Crowd</button>
+        <button type="button" onClick={stopPityCrowd} disabled={!pityPlaying}>Stop Pity</button>
+      </div>
+
+      <label className={styles.loopToggle}>
+        <input
+          type="checkbox"
+          checked={pityLoop}
+          onChange={(e) => changePityLoop(e.target.checked)}
+        />
+        Continuous pity crowd
+      </label>
+
+      <label className={styles.sliderLabel}>
+        <span>Effects Volume</span>
+        <span>{Math.round(effectVolume * 100)}%</span>
+      </label>
+      <input
+        className={styles.slider}
+        type="range"
+        min={0}
+        max={1}
+        step={0.01}
+        value={effectVolume}
+        onChange={(e) => changeEffectVolume(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
 export default function MusicControls() {
   return (
     <section className={styles.musicPanel} aria-label="Music controls">
@@ -255,6 +359,8 @@ export default function MusicControls() {
         <span className={styles.kicker}>Music Mixer</span>
         <strong>Layer Tracks</strong>
       </div>
+
+      <SoundEffects />
 
       <div className={styles.trackList}>
         {TRACKS.map((track) => (

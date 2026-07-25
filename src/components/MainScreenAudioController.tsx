@@ -16,7 +16,13 @@ type SoundEvent = {
 
 const EFFECT_SOURCES: Record<string, string> = {
   buzzer: '/sounds/buzzer.mp3',
+  'sharp-buzzer': '/sounds/buzzer.mp3',
   correct: '/sounds/correct.mp3',
+  'pity-crowd': '/sounds/pity-crowd.mp3',
+};
+
+const EFFECT_LIMITS: Record<string, number> = {
+  'sharp-buzzer': 0.75,
 };
 
 const TRACK_LIMITS: Record<string, number> = {
@@ -68,6 +74,13 @@ export default function MainScreenAudioController({ sessionId }: { sessionId: st
         const audio = new Audio(effectSrc);
         audio.volume = typeof event.volume === 'number' ? event.volume : 0.85;
         await audio.play().catch((error) => console.error('Main screen effect playback failed:', error));
+        const limit = event.track_id ? EFFECT_LIMITS[event.track_id] : undefined;
+        if (limit) {
+          window.setTimeout(() => {
+            audio.pause();
+            audio.currentTime = 0;
+          }, limit * 1000);
+        }
         return;
       }
 

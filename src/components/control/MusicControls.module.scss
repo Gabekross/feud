@@ -53,6 +53,17 @@
   background: rgba(8, 18, 35, 0.68);
 }
 
+.effectsCard {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 210, 77, 0.5);
+  border-radius: var(--radius-sm, 6px);
+  background:
+    linear-gradient(180deg, rgba(255, 210, 77, 0.12), transparent 48%),
+    rgba(8, 18, 35, 0.82);
+}
+
 .trackHeader {
   strong {
     min-width: 0;
@@ -94,6 +105,34 @@
 
     &:hover {
       background: #22324d;
+    }
+  }
+}
+
+.effectButtons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+
+  button {
+    min-height: 38px;
+    margin: 0;
+    padding: 0.4rem 0.45rem;
+    border: 1px solid #57441b;
+    background: linear-gradient(180deg, #ffd95b, #d99a11);
+    color: #0b1220;
+    font-size: 0.8rem;
+    font-weight: 950;
+    line-height: 1.1;
+    text-align: center;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ffe98c, #e4aa1f);
+    }
+
+    &:disabled {
+      opacity: 0.44;
+      cursor: not-allowed;
     }
   }
 }
@@ -171,6 +210,14 @@
 
   .transport button {
     min-height: 42px;
+  }
+
+  .effectButtons {
+    grid-template-columns: 1fr;
+
+    button {
+      min-height: 42px;
+    }
   }
 
   .speedControls {
