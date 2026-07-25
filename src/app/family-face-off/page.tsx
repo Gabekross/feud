@@ -8,6 +8,7 @@ const AUDIO_PATH = '/control/audio';
 const SETUP_PATH = '/admin/setup';
 const QUESTIONS_PATH = '/admin/questions';
 const VIEW_PATH = '/cards/slideshow';
+const RULES_PATH = '/rules';
 
 export default function FamilyFaceOffHubPage() {
   return (
@@ -75,6 +76,15 @@ export default function FamilyFaceOffHubPage() {
             Review questions and answers for the current game session.
           </p>
           <span className={styles.cta}>View</span>
+        </Link>
+
+        <Link href={RULES_PATH} className={styles.card}>
+          <div className={styles.emoji}>RULES</div>
+          <h2>Player Rules</h2>
+          <p>
+            Share a mobile-friendly How to Play page with contestants and guests before the game.
+          </p>
+          <span className={styles.cta}>Open Rules</span>
         </Link>
       </section>
 
