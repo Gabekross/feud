@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { FULL_RULES_SLIDES, QUICK_RULES_SLIDES } from '@/lib/rulesPresentation';
 import styles from './RulesPage.module.scss';
 
@@ -15,9 +14,6 @@ export default function RulesPage() {
     <main className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <Link href="/family-face-off" className={styles.backLink}>
-            Control Hub
-          </Link>
           <p className={styles.kicker}>Family Friendlies</p>
           <h1>How to Play</h1>
           <p className={styles.lede}>
