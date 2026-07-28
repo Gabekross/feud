@@ -89,6 +89,17 @@
   font-size: 0.92rem;
 }
 
+.error {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 92, 92, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 92, 92, 0.12);
+  color: #ffb8b8;
+  font-size: 0.92rem;
+  white-space: pre-wrap;
+}
+
 /* Team name inputs */
 .teams {
   display: flex;
@@ -146,4 +157,10 @@
 
   &:hover { filter: brightness(1.08); }
   &:active { transform: translateY(1px); }
+
+  &:disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.35) brightness(0.75);
+    transform: none;
+  }
 }

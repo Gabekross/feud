@@ -10,6 +10,12 @@ import styles from './GameSetupPage.module.scss';
 
 type QuestionType = 'round1' | 'round2' | 'round3' | 'round4' | 'sudden_death' | 'fast_money';
 type Q = { id: string; question_text: string; type: QuestionType };
+type SupabaseErrorLike = {
+  message?: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+};
 
 const ROUND_TYPES: QuestionType[] = ['round1', 'round2', 'round3', 'round4', 'sudden_death'];
 const REQUIRED_SELECTIONS = ['round1','round2','round3','round4','sudden_death','fm1','fm2','fm3','fm4','fm5'];
@@ -24,6 +30,17 @@ const TYPE_LABELS: Record<QuestionType, string> = {
 };
 
 const formatType = (type: QuestionType) => TYPE_LABELS[type];
+
+const formatSupabaseError = (error?: SupabaseErrorLike | null) => {
+  if (!error) return 'Unknown database error.';
+
+  return [
+    error.message,
+    error.code ? `Code: ${error.code}` : '',
+    error.details ? `Details: ${error.details}` : '',
+    error.hint ? `Hint: ${error.hint}` : '',
+  ].filter(Boolean).join('\n');
+};
 
 function GameSetupContent() {
   const { user } = useAuthProfile();
@@ -44,6 +61,8 @@ function GameSetupContent() {
   const [showEventFooter, setShowEventFooter] = useState(true);
   const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
   const [createdTokens, setCreatedTokens] = useState<SessionAccessTokens | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -79,6 +98,8 @@ function GameSetupContent() {
   };
 
   const handleCreateSession = async () => {
+    if (isCreating) return;
+
     if (REQUIRED_SELECTIONS.some((k) => !selected[k])) {
       alert('Please select all rounds and all 5 Fast Money questions.');
       return;
@@ -89,69 +110,89 @@ function GameSetupContent() {
       return;
     }
 
-    const accessTokens = createSessionAccessTokens();
-    const { data: session, error: sessionError } = await supabase
-      .from('game_sessions')
-      .insert({
-        ...accessTokens,
-        owner_user_id: user?.id ?? null,
-        created_by: user?.id ?? null,
-        team1_name: team1,
-        team2_name: team2,
-        status: 'active',
-        team1_score: 0,
-        team2_score: 0,
-        active_team: 1,
-        strikes: 0,
-        round: 'round1',
-        screen_state: 'standby',
-        event_title: eventTitle.trim() || 'GABEKROSS FAMILY FEUD',
-        event_footer_text: eventFooterText.trim() || 'Powered by Gabekross',
-        show_event_footer: showEventFooter,
-      })
-      .select()
-      .single();
+    setIsCreating(true);
+    setCreateError(null);
+    setCreatedSessionId(null);
+    setCreatedTokens(null);
 
-    if (!session || sessionError) {
-      console.error(sessionError);
-      alert('Failed to create session.');
-      return;
-    }
+    try {
+      const accessTokens = createSessionAccessTokens();
+      const { data: session, error: sessionError } = await supabase
+        .from('game_sessions')
+        .insert({
+          ...accessTokens,
+          owner_user_id: user?.id ?? null,
+          created_by: user?.id ?? null,
+          team1_name: team1,
+          team2_name: team2,
+          status: 'active',
+          team1_score: 0,
+          team2_score: 0,
+          active_team: 1,
+          strikes: 0,
+          round: 'round1',
+          screen_state: 'standby',
+          event_title: eventTitle.trim() || 'GABEKROSS FAMILY FEUD',
+          event_footer_text: eventFooterText.trim() || 'Powered by Gabekross',
+          show_event_footer: showEventFooter,
+        })
+        .select()
+        .single();
 
-    const inserts = [
-      { round_number: 1, question_id: selected.round1, is_current: true },
-      { round_number: 2, question_id: selected.round2, is_current: false },
-      { round_number: 3, question_id: selected.round3, is_current: false },
-      { round_number: 4, question_id: selected.round4, is_current: false },
-      { round_number: 5, question_id: selected.sudden_death, is_current: false },
-      { round_number: 6, question_id: selected.fm1, is_current: false, fm_index: 1 },
-      { round_number: 6, question_id: selected.fm2, is_current: false, fm_index: 2 },
-      { round_number: 6, question_id: selected.fm3, is_current: false, fm_index: 3 },
-      { round_number: 6, question_id: selected.fm4, is_current: false, fm_index: 4 },
-      { round_number: 6, question_id: selected.fm5, is_current: false, fm_index: 5 },
-    ].map((row) => ({ session_id: session.id, ...row }));
-
-    const { error: sqError } = await supabase.from('session_questions').insert(inserts);
-    if (sqError) {
-      console.error(sqError);
-      alert('Failed to link questions.');
-    } else {
-      const questionIds = inserts.map((row) => row.question_id);
-      const { data: answerRows, error: answersError } = await supabase
-        .from('answers')
-        .select('id')
-        .in('question_id', questionIds);
-
-      if (answersError) {
-        console.error(answersError);
-        alert('Game created, but answer reveal state could not be prepared.');
-      } else {
-        await ensureSessionAnswerStates(session.id, (answerRows ?? []).map((answer) => answer.id));
+      if (!session || sessionError) {
+        const message = formatSupabaseError(sessionError);
+        console.error('Failed to create session', sessionError);
+        setCreateError(`Failed to create session.\n${message}`);
+        alert(`Failed to create session.\n\n${message}`);
+        return;
       }
 
-      setCreatedSessionId(session.id);
-      setCreatedTokens(accessTokens);
-      alert('Game session created.');
+      const inserts = [
+        { round_number: 1, question_id: selected.round1, is_current: true },
+        { round_number: 2, question_id: selected.round2, is_current: false },
+        { round_number: 3, question_id: selected.round3, is_current: false },
+        { round_number: 4, question_id: selected.round4, is_current: false },
+        { round_number: 5, question_id: selected.sudden_death, is_current: false },
+        { round_number: 6, question_id: selected.fm1, is_current: false, fm_index: 1 },
+        { round_number: 6, question_id: selected.fm2, is_current: false, fm_index: 2 },
+        { round_number: 6, question_id: selected.fm3, is_current: false, fm_index: 3 },
+        { round_number: 6, question_id: selected.fm4, is_current: false, fm_index: 4 },
+        { round_number: 6, question_id: selected.fm5, is_current: false, fm_index: 5 },
+      ].map((row) => ({ session_id: session.id, ...row }));
+
+      const { error: sqError } = await supabase.from('session_questions').insert(inserts);
+      if (sqError) {
+        const message = formatSupabaseError(sqError);
+        console.error('Failed to link questions', sqError);
+        setCreateError(`Game session was created, but questions could not be linked.\n${message}`);
+        alert(`Game session was created, but questions could not be linked.\n\n${message}`);
+      } else {
+        const questionIds = inserts.map((row) => row.question_id);
+        const { data: answerRows, error: answersError } = await supabase
+          .from('answers')
+          .select('id')
+          .in('question_id', questionIds);
+
+        if (answersError) {
+          const message = formatSupabaseError(answersError);
+          console.error('Failed to prepare answer reveal state', answersError);
+          setCreateError(`Game created, but answer reveal state could not be prepared.\n${message}`);
+          alert(`Game created, but answer reveal state could not be prepared.\n\n${message}`);
+        } else {
+          await ensureSessionAnswerStates(session.id, (answerRows ?? []).map((answer) => answer.id));
+        }
+
+        setCreatedSessionId(session.id);
+        setCreatedTokens(accessTokens);
+        alert('Game session created.');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unexpected client error.';
+      console.error('Unexpected setup error', error);
+      setCreateError(`Failed to create session.\n${message}`);
+      alert(`Failed to create session.\n\n${message}`);
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -181,6 +222,12 @@ function GameSetupContent() {
       {hasDuplicateSelections && (
         <div className={styles.warning}>
           The same question is selected more than once. Pick unique questions before creating the game.
+        </div>
+      )}
+
+      {createError && (
+        <div className={styles.error} role="alert">
+          {createError}
         </div>
       )}
 
@@ -229,8 +276,8 @@ function GameSetupContent() {
         ))}
       </div>
 
-      <button className={styles.createBtn} onClick={handleCreateSession}>
-        Create Game Session
+      <button className={styles.createBtn} onClick={handleCreateSession} disabled={isCreating}>
+        {isCreating ? 'Creating Game Session...' : 'Create Game Session'}
       </button>
     </div>
   );
