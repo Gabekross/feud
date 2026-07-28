@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import SessionAccessGate from '@/components/SessionAccessGate';
 import MusicControls from '@/components/control/MusicControls';
 import ScreenConnectionStatus from '@/components/control/ScreenConnectionStatus';
@@ -26,7 +27,7 @@ function AudioOperatorContent() {
   );
 }
 
-export default function AudioOperatorPage() {
+function AudioOperatorPageContent() {
   const searchParams = useSearchParams();
   const sessionId =
     searchParams.get('sessionId') ??
@@ -54,5 +55,21 @@ export default function AudioOperatorPage() {
     <SessionAccessGate surface="audio">
       <AudioOperatorContent />
     </SessionAccessGate>
+  );
+}
+
+export default function AudioOperatorPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className={styles.page}>
+          <section className={styles.shell}>
+            <p>Loading audio controls...</p>
+          </section>
+        </main>
+      }
+    >
+      <AudioOperatorPageContent />
+    </Suspense>
   );
 }
