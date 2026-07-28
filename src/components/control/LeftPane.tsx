@@ -250,15 +250,28 @@ export default function LeftPane() {
 
   const handleResetRound = async () => {
     if (!sessionId) return;
-    const { error: e1 } = await supabase.from('game_sessions').update({ strikes: 0 }).eq('id', sessionId);
-    if (!e1) setStrikes(0);
 
-    const { data: cur } = await supabase
+    const { data: cur, error: currentRoundError } = await supabase
       .from('session_questions')
-      .select('question_id')
+      .select('question_id, score_finalized')
       .eq('session_id', sessionId)
       .eq('is_current', true)
       .single();
+
+    if (currentRoundError) {
+      console.error('Load current round failed:', currentRoundError.message);
+      alert('Could not reset the current round.');
+      return;
+    }
+
+    if (cur?.score_finalized) {
+      alert('This round has already been scored and cannot be reset or awarded again.');
+      return;
+    }
+
+    const { error: e1 } = await supabase.from('game_sessions').update({ strikes: 0 }).eq('id', sessionId);
+    if (!e1) setStrikes(0);
+
     if (cur?.question_id) {
       const { data: answerRows, error: e3 } = await supabase
         .from('answers')
@@ -270,11 +283,6 @@ export default function LeftPane() {
         await setSessionAnswerRevealed(sessionId, (answerRows ?? []).map((answer) => answer.id), false);
       }
     }
-    await supabase
-      .from('session_questions')
-      .update({ score_finalized: false })
-      .eq('session_id', sessionId)
-      .eq('is_current', true);
     showNotice('Round has been reset.');
   };
 
@@ -321,15 +329,15 @@ export default function LeftPane() {
       .from('session_questions')
       .update({ is_current: true })
       .eq('id', targetRowId)
-      .select('question_id')
+      .select('question_id, score_finalized')
       .single();
     if (eSet) { console.error('Set new current round failed:', eSet.message); alert('❌ Failed to switch round (set).'); return; }
 
     if (targetRound !== 6) {
-      const resetPayload = resetOnSwitch
-        ? { reveal_question: false, score_finalized: false }
-        : { reveal_question: false };
-      await supabase.from('session_questions').update(resetPayload).eq('id', targetRowId);
+      await supabase
+        .from('session_questions')
+        .update({ reveal_question: false })
+        .eq('id', targetRowId);
     } else {
       // Fast Money: Q1 stays hidden by default (operator manually clicks
       // "Reveal Question" to start the round). Q2–Q5 are pre-revealed so
@@ -353,7 +361,7 @@ export default function LeftPane() {
     const roundLabel: Record<number, string> = { 1:'round1',2:'round2',3:'round3',4:'round4',5:'sudden_death',6:'fast_money' };
     await supabase.from('game_sessions').update({ round: roundLabel[targetRound] }).eq('id', sessionId);
 
-    if (resetOnSwitch && updated?.question_id) {
+    if (resetOnSwitch && updated?.question_id && !updated.score_finalized) {
       const { data: answerRows, error: eAns } = await supabase
         .from('answers')
         .select('id')
