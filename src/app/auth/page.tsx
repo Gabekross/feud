@@ -38,7 +38,7 @@ export default function AuthPage() {
 
     setStatus(mode === 'signup' ? 'Account created. Check your email if confirmation is enabled.' : 'Signed in.');
     setSaving(false);
-    router.push('/sessions');
+    router.push('/family-face-off');
   };
 
   return (
@@ -48,17 +48,17 @@ export default function AuthPage() {
         <h1>{mode === 'signin' ? 'Enter Game Suite' : 'Create Host Account'}</h1>
         <p>
           {mode === 'signin'
-            ? 'Sign in to open your Sessions Dashboard, create games, launch ready-made templates, and manage live show links.'
+            ? 'Sign in to enter the Gabekross Control Hub, then choose sessions, templates, admin tools, or live show links.'
             : 'Create an account to host games. The first account becomes Platform Admin; later accounts start as hosts.'}
         </p>
         <div className={styles.infoBox}>
           <strong>What happens after sign-in?</strong>
-          <span>You will go to My Game Sessions, where each game has its own Control, Main Screen, Audio, and Cards links.</span>
+          <span>You will enter the Gabekross Control Hub. From there, open My Game Sessions to use each game&apos;s Control, Main Screen, Audio, and Cards links.</span>
         </div>
 
         {!loading && user && (
           <div className={styles.status}>
-            You are already signed in. <Link href="/sessions">Open My Game Sessions</Link>.
+            You are already signed in. <Link href="/family-face-off">Open Gabekross Control Hub</Link>.
           </div>
         )}
 

@@ -36,7 +36,8 @@ export default function AuthGate({ children, adminOnly = false }: AuthGateProps)
           </p>
           <ol className={styles.steps}>
             <li>Sign in or create your host account.</li>
-            <li>Open your Sessions Dashboard.</li>
+            <li>Enter the Gabekross Control Hub.</li>
+            <li>Choose My Game Sessions, templates, admin tools, or live game screens.</li>
             <li>Use the generated Control, Main Screen, Audio, and Cards links for each game.</li>
           </ol>
           <div className={styles.actions}>

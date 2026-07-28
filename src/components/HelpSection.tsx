@@ -21,13 +21,13 @@ export default function HelpSection() {
           <div className={styles.sectionBody}>
             <ol>
               <li><strong>Sign in</strong> from the account page. Hosts can create and run games; Platform Admin can manage everything.</li>
-              <li><strong>Open My Game Sessions</strong> to create a custom game, launch a ready-made game, or resume an existing session.</li>
+              <li><strong>Enter the Gabekross Control Hub</strong>, then open My Game Sessions to create a custom game, launch a ready-made game, or resume an existing session.</li>
               <li><strong>Create or launch a game session</strong>. Each session now has its own private control, screen, audio, and card links.</li>
               <li><strong>Open the tokenized Main Screen link</strong> on the TV or projector and use fullscreen.</li>
               <li><strong>Open the tokenized Control link</strong> on the host/operator device and run the show.</li>
             </ol>
             <p className={styles.tip}>
-              <strong>Tip:</strong> Use the links from the Sessions Dashboard. They include the correct session id and access token, so each device opens the right game.
+              <strong>Tip:</strong> Start from the Control Hub, then use the links from My Game Sessions. They include the correct session id and access token, so each device opens the right game.
             </p>
           </div>
         </details>
