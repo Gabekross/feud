@@ -21,6 +21,21 @@ type FMResp = {
 
 type FMAnswer = { id: string; answer_text: string; points: number; order: number };
 type FMQuestion = { id: string; question_text: string; answers: FMAnswer[] };
+type SessionQuestionChange = {
+  round_number?: number;
+  is_current?: boolean;
+  fm_index?: number | null;
+  fm_reveal_question?: boolean | null;
+};
+type GameSessionChange = {
+  fm_timer_running?: boolean | null;
+  fm_timer_started_at?: string | null;
+  fm_timer_duration?: number | null;
+  fast_money_seconds?: number | null;
+  fm_show_clock?: boolean | null;
+  fm_player1_name?: string | null;
+  fm_player2_name?: string | null;
+};
 
 export default function FastMoneyPane() {
   const sessionId = useActiveSession();
@@ -203,10 +218,11 @@ export default function FastMoneyPane() {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
-        (payload: any) => {
-          if (payload.new?.round_number === 6 && payload.new?.is_current) {
-            setFmIndex(payload.new.fm_index ?? 1);
-            setRevealQuestion(!!payload.new.fm_reveal_question);
+        (payload) => {
+          const row = payload.new as SessionQuestionChange;
+          if (row.round_number === 6 && row.is_current) {
+            setFmIndex(row.fm_index ?? 1);
+            setRevealQuestion(!!row.fm_reveal_question);
             loadCurrentFM(); // refresh Q/A + resp
           }
         }
@@ -214,9 +230,10 @@ export default function FastMoneyPane() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'fast_money_responses', filter: `session_id=eq.${sessionId}` },
-        (payload: any) => {
+        (payload) => {
           if (payload.eventType === 'DELETE') return;
-          const row = payload.new as FMResp;
+          const row = payload.new as FMResp | undefined;
+          if (!row) return;
           if (row.player_number === player && row.question_index === fmIndex) {
             setResp(row);
             setTyping(row.answer_text ?? '');
@@ -226,14 +243,15 @@ export default function FastMoneyPane() {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-        (payload: any) => {
-          setRunning(!!payload.new.fm_timer_running);
-          setStartedAt(payload.new.fm_timer_started_at ?? null);
-          setDuration(payload.new.fm_timer_duration ?? (payload.new.fast_money_seconds ?? 20));
-          setDefaultSeconds(payload.new.fast_money_seconds ?? 20);
-          setShowClock(payload.new.fm_show_clock ?? true);
-          setPlayer1Name(payload.new.fm_player1_name ?? 'Player 1');
-          setPlayer2Name(payload.new.fm_player2_name ?? 'Player 2');
+        (payload) => {
+          const row = payload.new as GameSessionChange;
+          setRunning(!!row.fm_timer_running);
+          setStartedAt(row.fm_timer_started_at ?? null);
+          setDuration(row.fm_timer_duration ?? (row.fast_money_seconds ?? 20));
+          setDefaultSeconds(row.fast_money_seconds ?? 20);
+          setShowClock(row.fm_show_clock ?? true);
+          setPlayer1Name(row.fm_player1_name ?? 'Player 1');
+          setPlayer2Name(row.fm_player2_name ?? 'Player 2');
         }
       )
       .subscribe();

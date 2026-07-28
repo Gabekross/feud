@@ -5,8 +5,11 @@ import styles from './FamilyFaceOffHub.module.scss';
 const MAIN_PATH = '/main-screen';
 const CONTROL_PATH = '/control';
 const AUDIO_PATH = '/control/audio';
+const SESSIONS_PATH = '/sessions';
 const SETUP_PATH = '/admin/setup';
 const QUESTIONS_PATH = '/admin/questions';
+const TEMPLATES_PATH = '/admin/templates';
+const USERS_PATH = '/admin/users';
 const VIEW_PATH = '/cards/slideshow';
 const RULES_PATH = '/rules';
 
@@ -24,6 +27,15 @@ export default function FamilyFaceOffHubPage() {
       </header>
 
       <section className={styles.grid}>
+        <Link href={SESSIONS_PATH} className={styles.card}>
+          <div className={styles.emoji}>HOME</div>
+          <h2>My Game Sessions</h2>
+          <p>
+            Open your saved games, launch session-specific screens, or create a new game.
+          </p>
+          <span className={styles.cta}>Open Dashboard</span>
+        </Link>
+
         <Link href={MAIN_PATH} className={styles.card}>
           <div className={styles.emoji}>TV</div>
           <h2>Main Screen</h2>
@@ -65,6 +77,24 @@ export default function FamilyFaceOffHubPage() {
           <h2>Question Admin</h2>
           <p>
             Add questions, answer rows, points, and round types to the Supabase question pool.
+          </p>
+          <span className={styles.cta}>Manage</span>
+        </Link>
+
+        <Link href={TEMPLATES_PATH} className={styles.card}>
+          <div className={styles.emoji}>TPL</div>
+          <h2>Template Manager</h2>
+          <p>
+            Manage ready-made games, publishable templates, and custom assigned game packages.
+          </p>
+          <span className={styles.cta}>Manage</span>
+        </Link>
+
+        <Link href={USERS_PATH} className={styles.card}>
+          <div className={styles.emoji}>USR</div>
+          <h2>User Manager</h2>
+          <p>
+            Review host accounts, promote admins, and monitor game activity by user.
           </p>
           <span className={styles.cta}>Manage</span>
         </Link>

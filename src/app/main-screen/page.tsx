@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
+import SessionAccessGate from '@/components/SessionAccessGate';
 import QuestionDisplay from '@/components/QuestionDisplay';
 import AnswerBoxes from '@/components/AnswerBoxes';
 import TeamScore from '@/components/TeamScore';
@@ -16,11 +17,45 @@ import MainScreenAudioController from '@/components/MainScreenAudioController';
 import MainScreenPresenceBeacon from '@/components/MainScreenPresenceBeacon';
 import RulesPresentation from '@/components/RulesPresentation';
 import { clampRulesStep, type RulesMode } from '@/lib/rulesPresentation';
+import { loadSessionAnswerStateMap } from '@/lib/sessionAnswerStates';
 import styles from './MainScreen.module.scss';
 
 type ScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board' | 'rules';
 
-export default function MainScreenPage() {
+type GameSessionRow = {
+  team1_name?: string | null;
+  team2_name?: string | null;
+  fm_player1_name?: string | null;
+  fm_player2_name?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  active_team?: number | null;
+  round?: string | null;
+  screen_state?: string | null;
+  event_title?: string | null;
+  event_footer_text?: string | null;
+  show_event_footer?: boolean | null;
+  rules_mode?: string | null;
+  rules_step?: number | null;
+  strikes?: number | null;
+  strike_limit?: number | null;
+  fm_timer_running?: boolean | null;
+  fm_timer_started_at?: string | null;
+  fm_timer_duration?: number | null;
+  fast_money_seconds?: number | null;
+  fm_show_clock?: boolean | null;
+};
+
+type SessionQuestionPayload = {
+  new?: {
+    is_current?: boolean;
+    reveal_question?: boolean;
+    score_finalized?: boolean;
+    question_id?: string;
+  };
+};
+
+function MainScreenContent() {
   const sessionId = useActiveSession();
 
   const [team1Name, setTeam1Name] = useState('Team 1');
@@ -97,16 +132,25 @@ export default function MainScreenPage() {
 
     const { data: a } = await supabase
       .from('answers')
-      .select('answer_text, points, revealed, "order"')
+      .select('id, answer_text, points, "order"')
       .eq('question_id', qid)
       .order('order', { ascending: true });
 
+    const answerRows = a ?? [];
+    const stateMap = sessionId
+      ? await loadSessionAnswerStateMap(sessionId, answerRows.map((x) => x.id))
+      : new Map<string, boolean>();
+
     setAnswers(
-      (a ?? []).map((x) => ({ text: x.answer_text, points: x.points, revealed: x.revealed }))
+      answerRows.map((x) => ({
+        text: x.answer_text,
+        points: x.points,
+        revealed: stateMap.get(x.id) ?? false,
+      }))
     );
   };
 
-  const applySession = (session: any) => {
+  const applySession = (session: GameSessionRow) => {
     setTeam1Name(session.team1_name ?? 'Team 1');
     setTeam2Name(session.team2_name ?? 'Team 2');
     setFmPlayer1Name(session.fm_player1_name ?? 'Player 1');
@@ -214,20 +258,15 @@ export default function MainScreenPage() {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-        (payload: any) => {
+        (payload: { new: GameSessionRow }) => {
           applySession(payload.new);
         }
       )
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'answers' },
-        (payload: any) => {
-          const updated = payload.new;
-          setAnswers((prev) =>
-            prev.map((a) =>
-              a.text === updated.answer_text ? { ...a, revealed: updated.revealed, points: updated.points ?? a.points } : a
-            )
-          );
+        { event: '*', schema: 'public', table: 'session_answer_states', filter: `session_id=eq.${sessionId}` },
+        () => {
+          void loadInitial();
         }
       )
       .subscribe();
@@ -244,7 +283,7 @@ export default function MainScreenPage() {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
-        async (payload: any) => {
+        async (payload: SessionQuestionPayload) => {
           if (payload.new?.is_current) {
             setRevealQ(!!payload.new.reveal_question);
             setScoreFinalized(!!payload.new.score_finalized);
@@ -391,5 +430,13 @@ export default function MainScreenPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MainScreenPage() {
+  return (
+    <SessionAccessGate surface="screen">
+      <MainScreenContent />
+    </SessionAccessGate>
   );
 }

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { clampRulesStep, getRulesSlides, type RulesMode } from '@/lib/rulesPresentation';
+import useActiveSession from '@/hooks/useActiveSession';
+import { setSessionAnswerRevealed } from '@/lib/sessionAnswerStates';
 import styles from './LeftPane.module.scss';
 
 type RestorableScreenState = 'standby' | 'team_intro' | 'fast_money_intro' | 'winner' | 'board';
@@ -18,6 +20,7 @@ const numberToRound: Record<number, RoundState> = {
 };
 
 export default function LeftPane() {
+  const activeSessionId = useActiveSession();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [round, setRound] = useState<RoundState>('round1');
   const [fmIndex, setFmIndex] = useState<number>(1);
@@ -36,12 +39,16 @@ export default function LeftPane() {
 
   useEffect(() => {
     const loadSession = async () => {
+      if (!activeSessionId) {
+        setSessionId(null);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('game_sessions')
         .select('id, strikes, strike_limit, screen_state, event_title, event_footer_text, show_event_footer, rules_mode, rules_step, rules_return_screen_state')
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle();
+        .eq('id', activeSessionId)
+        .single();
       if (error) { console.error('Failed to load active session:', error.message); return; }
       if (data) {
         setSessionId(data.id);
@@ -58,7 +65,7 @@ export default function LeftPane() {
       }
     };
     loadSession();
-  }, []);
+  }, [activeSessionId]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -253,8 +260,15 @@ export default function LeftPane() {
       .eq('is_current', true)
       .single();
     if (cur?.question_id) {
-      const { error: e3 } = await supabase.from('answers').update({ revealed: false }).eq('question_id', cur.question_id);
-      if (e3) console.error('Reset answers failed:', e3.message);
+      const { data: answerRows, error: e3 } = await supabase
+        .from('answers')
+        .select('id')
+        .eq('question_id', cur.question_id);
+      if (e3) {
+        console.error('Reset answers failed:', e3.message);
+      } else {
+        await setSessionAnswerRevealed(sessionId, (answerRows ?? []).map((answer) => answer.id), false);
+      }
     }
     await supabase
       .from('session_questions')
@@ -340,8 +354,15 @@ export default function LeftPane() {
     await supabase.from('game_sessions').update({ round: roundLabel[targetRound] }).eq('id', sessionId);
 
     if (resetOnSwitch && updated?.question_id) {
-      const { error: eAns } = await supabase.from('answers').update({ revealed: false }).eq('question_id', updated.question_id);
-      if (eAns) console.error('Reset answers on switch failed:', eAns.message);
+      const { data: answerRows, error: eAns } = await supabase
+        .from('answers')
+        .select('id')
+        .eq('question_id', updated.question_id);
+      if (eAns) {
+        console.error('Reset answers on switch failed:', eAns.message);
+      } else {
+        await setSessionAnswerRevealed(sessionId, (answerRows ?? []).map((answer) => answer.id), false);
+      }
       const { error: eStr } = await supabase.from('game_sessions').update({ strikes: 0 }).eq('id', sessionId);
       if (!eStr) setStrikes(0);
     }
@@ -370,7 +391,10 @@ export default function LeftPane() {
       fm_show_clock: true
     }).eq('id', sessionId);
 
-    await supabase.from('answers').update({ revealed: false });
+    const { data: answerRows } = await supabase
+      .from('answers')
+      .select('id');
+    await setSessionAnswerRevealed(sessionId, (answerRows ?? []).map((answer) => answer.id), false);
 
     await supabase.from('fast_money_responses').update({
       answer_text: '',
@@ -428,7 +452,10 @@ export default function LeftPane() {
       return;
     }
 
-    await supabase.from('answers').update({ revealed: false });
+    const { data: answerRows } = await supabase
+      .from('answers')
+      .select('id');
+    await setSessionAnswerRevealed(sessionId, (answerRows ?? []).map((answer) => answer.id), false);
 
     await supabase.from('fast_money_responses').update({
       answer_text: '',

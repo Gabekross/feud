@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import AuthGate from '@/components/AuthGate';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './QuestionAdmin.module.scss';
 
@@ -158,7 +159,7 @@ const groupCsvRows = (rows: ParsedCsvRow[]): CsvGroup[] => {
   }));
 };
 
-export default function QuestionAdminPage() {
+function QuestionAdminContent() {
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
   const [answerCounts, setAnswerCounts] = useState<Record<string, number>>({});
   const [questionText, setQuestionText] = useState('');
@@ -650,5 +651,13 @@ export default function QuestionAdminPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function QuestionAdminPage() {
+  return (
+    <AuthGate adminOnly>
+      <QuestionAdminContent />
+    </AuthGate>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import useActiveSession from '@/hooks/useActiveSession';
+import SessionAccessGate from '@/components/SessionAccessGate';
 import styles from './Cards.module.scss';
 
 type SQ = {
@@ -33,6 +35,8 @@ type CardData = {
   answers: Answer[];
 };
 
+type CardSize = 'fit' | '3x5' | '4x6';
+
 const ROUND_LABEL: Record<number, string> = {
   1: 'Round 1',
   2: 'Round 2',
@@ -42,23 +46,11 @@ const ROUND_LABEL: Record<number, string> = {
   6: 'Fast Money',
 };
 
-export default function CardsPage() {
-  const [sessionId, setSessionId] = useState<string | null>(null);
+function CardsContent() {
+  const sessionId = useActiveSession();
   const [cards, setCards] = useState<CardData[]>([]);
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [cardSize, setCardSize] = useState<'fit' | '3x5' | '4x6'>('fit');
-
-  // load active session id
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from('game_sessions')
-        .select('id')
-        .eq('status', 'active')
-        .single();
-      if (data?.id) setSessionId(data.id);
-    })();
-  }, []);
+  const [cardSize, setCardSize] = useState<CardSize>('fit');
 
   // load session questions + Q/A
   useEffect(() => {
@@ -146,7 +138,7 @@ export default function CardsPage() {
             Card size:{' '}
             <select
               value={cardSize}
-              onChange={(e) => setCardSize(e.target.value as any)}
+              onChange={(e) => setCardSize(e.target.value as CardSize)}
             >
               <option value="fit">Fit to page</option>
               <option value="3x5">3×5 in</option>
@@ -206,5 +198,13 @@ export default function CardsPage() {
         );
       })}
     </div>
+  );
+}
+
+export default function CardsPage() {
+  return (
+    <SessionAccessGate surface="cards">
+      <CardsContent />
+    </SessionAccessGate>
   );
 }

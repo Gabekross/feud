@@ -6,6 +6,17 @@ export default function useActiveSession() {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const explicitSessionId =
+      searchParams.get('sessionId') ??
+      searchParams.get('session') ??
+      searchParams.get('sid');
+
+    if (explicitSessionId) {
+      setSessionId(explicitSessionId);
+      return;
+    }
+
     const getSession = async () => {
       const { data } = await supabase
         .from('game_sessions')

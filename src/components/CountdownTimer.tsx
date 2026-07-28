@@ -29,6 +29,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
 
+type TimerSessionPayload = {
+  new: {
+    fm_timer_running?: boolean | null;
+    fm_timer_started_at?: string | null;
+    fm_timer_duration?: number | null;
+    fast_money_seconds?: number | null;
+  };
+};
+
 export default function CountdownTimer() {
   const sessionId = useActiveSession();
 
@@ -67,7 +76,7 @@ export default function CountdownTimer() {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-        (payload: any) => {
+        (payload: TimerSessionPayload) => {
           setRunning(!!payload.new.fm_timer_running);
           setStartedAt(payload.new.fm_timer_started_at ?? null);
           setDuration(payload.new.fm_timer_duration ?? payload.new.fast_money_seconds ?? 20);
@@ -85,10 +94,12 @@ export default function CountdownTimer() {
     // use a lightweight interval; requestAnimationFrame fallback
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => setNow(Date.now()), 200);
+    const interval = intervalRef.current;
+    const raf = rafRef.current;
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (interval) clearInterval(interval);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 

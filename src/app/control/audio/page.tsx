@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import SessionAccessGate from '@/components/SessionAccessGate';
 import MusicControls from '@/components/control/MusicControls';
 import ScreenConnectionStatus from '@/components/control/ScreenConnectionStatus';
 import styles from './AudioOperator.module.scss';
 
-export default function AudioOperatorPage() {
+function AudioOperatorContent() {
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
@@ -19,5 +20,13 @@ export default function AudioOperatorPage() {
         <MusicControls />
       </section>
     </main>
+  );
+}
+
+export default function AudioOperatorPage() {
+  return (
+    <SessionAccessGate surface="audio">
+      <AudioOperatorContent />
+    </SessionAccessGate>
   );
 }

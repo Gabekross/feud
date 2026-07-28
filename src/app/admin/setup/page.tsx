@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import AuthGate from '@/components/AuthGate';
+import useAuthProfile from '@/hooks/useAuthProfile';
 import { supabase } from '@/lib/supabaseClient';
+import { buildSessionLink, createSessionAccessTokens, type SessionAccessTokens } from '@/lib/sessionAccess';
+import { ensureSessionAnswerStates } from '@/lib/sessionAnswerStates';
 import styles from './GameSetupPage.module.scss';
 
 type QuestionType = 'round1' | 'round2' | 'round3' | 'round4' | 'sudden_death' | 'fast_money';
@@ -21,7 +25,8 @@ const TYPE_LABELS: Record<QuestionType, string> = {
 
 const formatType = (type: QuestionType) => TYPE_LABELS[type];
 
-export default function GameSetupPage() {
+function GameSetupContent() {
+  const { user } = useAuthProfile();
   const [pools, setPools] = useState<Record<QuestionType, Q[]>>({
     round1: [], round2: [], round3: [], round4: [],
     sudden_death: [], fast_money: [],
@@ -37,6 +42,8 @@ export default function GameSetupPage() {
   const [eventTitle, setEventTitle] = useState('GABEKROSS FAMILY FEUD');
   const [eventFooterText, setEventFooterText] = useState('Powered by Gabekross');
   const [showEventFooter, setShowEventFooter] = useState(true);
+  const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
+  const [createdTokens, setCreatedTokens] = useState<SessionAccessTokens | null>(null);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -82,16 +89,13 @@ export default function GameSetupPage() {
       return;
     }
 
-    const confirmReplace = window.confirm(
-      'Create a new active game session? This will remove any unfinished sessions.'
-    );
-    if (!confirmReplace) return;
-
-    await supabase.from('game_sessions').delete().neq('status', 'completed');
-
+    const accessTokens = createSessionAccessTokens();
     const { data: session, error: sessionError } = await supabase
       .from('game_sessions')
       .insert({
+        ...accessTokens,
+        owner_user_id: user?.id ?? null,
+        created_by: user?.id ?? null,
         team1_name: team1,
         team2_name: team2,
         status: 'active',
@@ -132,6 +136,21 @@ export default function GameSetupPage() {
       console.error(sqError);
       alert('Failed to link questions.');
     } else {
+      const questionIds = inserts.map((row) => row.question_id);
+      const { data: answerRows, error: answersError } = await supabase
+        .from('answers')
+        .select('id')
+        .in('question_id', questionIds);
+
+      if (answersError) {
+        console.error(answersError);
+        alert('Game created, but answer reveal state could not be prepared.');
+      } else {
+        await ensureSessionAnswerStates(session.id, (answerRows ?? []).map((answer) => answer.id));
+      }
+
+      setCreatedSessionId(session.id);
+      setCreatedTokens(accessTokens);
       alert('Game session created.');
     }
   };
@@ -162,6 +181,21 @@ export default function GameSetupPage() {
       {hasDuplicateSelections && (
         <div className={styles.warning}>
           The same question is selected more than once. Pick unique questions before creating the game.
+        </div>
+      )}
+
+      {createdSessionId && (
+        <div className={styles.warning}>
+          Session created. Open now:{' '}
+          <a href={buildSessionLink('/control', createdSessionId, 'operator', createdTokens?.operator_token)}>Control Panel</a>
+          {' | '}
+          <a href={buildSessionLink('/main-screen', createdSessionId, 'screen', createdTokens?.screen_token)}>Main Screen</a>
+          {' | '}
+          <a href={buildSessionLink('/control/audio', createdSessionId, 'audio', createdTokens?.audio_token)}>Audio</a>
+          {' | '}
+          <a href={buildSessionLink('/cards', createdSessionId, 'cards', createdTokens?.cards_token)}>Question Cards</a>
+          {' | '}
+          <a href="/sessions">Back to Dashboard</a>
         </div>
       )}
 
@@ -199,5 +233,13 @@ export default function GameSetupPage() {
         Create Game Session
       </button>
     </div>
+  );
+}
+
+export default function GameSetupPage() {
+  return (
+    <AuthGate>
+      <GameSetupContent />
+    </AuthGate>
   );
 }

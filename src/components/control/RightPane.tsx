@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import useActiveSession from '@/hooks/useActiveSession';
 import MusicControls from './MusicControls';
 import ScreenConnectionStatus from './ScreenConnectionStatus';
 import styles from './RightPane.module.scss';
@@ -9,6 +10,7 @@ import styles from './RightPane.module.scss';
 let debounceTimer: ReturnType<typeof setTimeout>;
 
 export default function RightPane() {
+  const activeSessionId = useActiveSession();
   const [team1Name, setTeam1Name] = useState('Team 1');
   const [team2Name, setTeam2Name] = useState('Team 2');
   const [team1Score, setTeam1Score] = useState(0);
@@ -20,12 +22,16 @@ export default function RightPane() {
 
   useEffect(() => {
     const fetchSession = async () => {
+      if (!activeSessionId) {
+        setSessionId(null);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('game_sessions')
         .select('id, active_team, team1_score, team2_score, team1_name, team2_name')
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle();
+        .eq('id', activeSessionId)
+        .single();
 
       if (error) {
         console.error('Load session failed:', error.message);
@@ -43,7 +49,7 @@ export default function RightPane() {
     };
 
     fetchSession();
-  }, []);
+  }, [activeSessionId]);
 
   useEffect(() => {
     if (!sessionId) return;

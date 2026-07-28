@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
+import SessionAccessGate from '@/components/SessionAccessGate';
 import LeftPane from '@/components/control/LeftPane';
 import MiddlePane from '@/components/control/MiddlePane';
 import RightPane from '@/components/control/RightPane';
 import FastMoneyPane from '@/components/control/FastMoneyPane';
 import styles from './ControlPanel.module.scss';
 
-export default function ControlPanelPage() {
+function ControlPanelContent() {
   const sessionId = useActiveSession();
   const [isFastMoney, setIsFastMoney] = useState(false);
 
@@ -69,5 +70,13 @@ export default function ControlPanelPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ControlPanelPage() {
+  return (
+    <SessionAccessGate surface="operator">
+      <ControlPanelContent />
+    </SessionAccessGate>
   );
 }

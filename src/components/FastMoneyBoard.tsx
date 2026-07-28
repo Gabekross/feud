@@ -18,6 +18,20 @@ type Resp = {
 
 type FMRow = Resp | null;
 
+type SessionQuestionChange = {
+  round_number?: number;
+  is_current?: boolean;
+  fm_index?: number | null;
+  fm_reveal_question?: boolean | null;
+  question_id?: string | null;
+};
+
+type GameSessionChange = {
+  fm_hide_p1?: boolean | null;
+  fm_player1_name?: string | null;
+  fm_player2_name?: string | null;
+};
+
 type Props = {
   timerRemain?: number;
   timerDuration?: number;
@@ -148,17 +162,18 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
-        async (payload: any) => {
-          if (payload.new?.round_number === 6 && payload.new?.is_current) {
-            const idx = payload.new.fm_index ?? 1;
+        async (payload) => {
+          const changed = payload.new as SessionQuestionChange;
+          if (changed.round_number === 6 && changed.is_current) {
+            const idx = changed.fm_index ?? 1;
             setFmIndex(idx);
-            setShowQuestion(!!payload.new.fm_reveal_question);
+            setShowQuestion(!!changed.fm_reveal_question);
 
-            if (payload.new.question_id) {
+            if (changed.question_id) {
               const { data: q } = await supabase
                 .from('questions')
                 .select('question_text')
-                .eq('id', payload.new.question_id)
+                .eq('id', changed.question_id)
                 .single();
               setQText(q?.question_text ?? '');
             } else {
@@ -171,7 +186,7 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'fast_money_responses', filter: `session_id=eq.${sessionId}` },
-        (payload: any) => {
+        (payload) => {
           if (payload.eventType === 'DELETE') return;
           const row = payload.new as Resp | undefined;
           if (!row || row.question_index < 1 || row.question_index > 5) return;
@@ -195,10 +210,11 @@ export default function FastMoneyBoard({ timerRemain = 20, timerDuration = 20, t
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-        (payload: any) => {
-          if ('fm_hide_p1' in payload.new) setHideP1(!!payload.new.fm_hide_p1);
-          setPlayer1Name(payload.new.fm_player1_name ?? 'Player 1');
-          setPlayer2Name(payload.new.fm_player2_name ?? 'Player 2');
+        (payload) => {
+          const changed = payload.new as GameSessionChange;
+          if ('fm_hide_p1' in changed) setHideP1(!!changed.fm_hide_p1);
+          setPlayer1Name(changed.fm_player1_name ?? 'Player 1');
+          setPlayer2Name(changed.fm_player2_name ?? 'Player 2');
         }
       )
       .subscribe();

@@ -1,8 +1,7 @@
 // src/components/HelpSection.tsx
 //
-// Help / How-to-play section for the landing page.
-// Server component — uses native <details> elements for accessible,
-// JS-free expand/collapse. Each subsection is independently expandable.
+// Help / how-to section for the control hub. Uses native <details> elements
+// so it stays accessible and does not need client-side state.
 
 import styles from './HelpSection.module.scss';
 
@@ -10,205 +9,189 @@ export default function HelpSection() {
   return (
     <details className={styles.outer}>
       <summary className={styles.outerSummary}>
-        <span className={styles.outerIcon}>📖</span>
+        <span className={styles.outerIcon}>GUIDE</span>
         <span className={styles.outerTitle}>Help &amp; How to Play</span>
-        <span className={styles.outerHint}>Setup • Operator Panel • Game Flow</span>
-        <span className={styles.outerChevron} aria-hidden>▾</span>
+        <span className={styles.outerHint}>Accounts | Sessions | Templates | Live Game Flow</span>
+        <span className={styles.outerChevron} aria-hidden>v</span>
       </summary>
 
       <div className={styles.body}>
-        {/* ── Quick Start ─────────────────────────────────────────── */}
         <details className={styles.section} open>
-          <summary className={styles.sectionSummary}>🚀 Quick Start (5 minutes)</summary>
+          <summary className={styles.sectionSummary}>Getting Started</summary>
           <div className={styles.sectionBody}>
             <ol>
-              <li><strong>Add questions</strong> to the database (see <em>Adding Questions</em> below).</li>
-              <li><strong>Create a Game Session</strong> — pick questions for each round and Fast Money, set team names.</li>
-              <li><strong>Open the Main Screen</strong> on the TV / projector and press <kbd>F11</kbd> for fullscreen.</li>
-              <li><strong>Open the Operator Panel</strong> on a separate laptop or tablet to run the show.</li>
-              <li><strong>Switch rounds, reveal answers, track strikes</strong>, and finish with Fast Money.</li>
+              <li><strong>Sign in</strong> from the account page. Hosts can create and run games; Platform Admin can manage everything.</li>
+              <li><strong>Open My Game Sessions</strong> to create a custom game, launch a ready-made game, or resume an existing session.</li>
+              <li><strong>Create or launch a game session</strong>. Each session now has its own private control, screen, audio, and card links.</li>
+              <li><strong>Open the tokenized Main Screen link</strong> on the TV or projector and use fullscreen.</li>
+              <li><strong>Open the tokenized Control link</strong> on the host/operator device and run the show.</li>
             </ol>
             <p className={styles.tip}>
-              💡 <strong>Tip:</strong> Use two devices — one for the audience Main Screen and one for the
-              operator. Both stay in sync automatically over the live game session.
+              <strong>Tip:</strong> Use the links from the Sessions Dashboard. They include the correct session id and access token, so each device opens the right game.
             </p>
           </div>
         </details>
 
-        {/* ── Adding Questions ────────────────────────────────────── */}
         <details className={styles.section}>
-          <summary className={styles.sectionSummary}>🗂️ Adding Questions to the Database</summary>
+          <summary className={styles.sectionSummary}>Accounts and Roles</summary>
           <div className={styles.sectionBody}>
+            <p>The app now supports signed-in users and role-based workflows.</p>
+            <ul>
+              <li><strong>Host:</strong> can create custom game sessions, launch ready-made games, duplicate/archive their sessions, and run their own games.</li>
+              <li><strong>Platform Admin:</strong> can manage users, master questions, ready-made templates, assigned custom games, and all sessions.</li>
+            </ul>
             <p>
-              Questions live in your Supabase database. Each question has a <code>question_text</code>,
-              a <code>type</code> (which round it&apos;s for), and a list of answers with point values.
+              The first account created becomes Platform Admin. After that, new accounts are hosts unless an admin promotes them in <em>User Manager</em>.
             </p>
-            <p><strong>Question types you must have:</strong></p>
+          </div>
+        </details>
+
+        <details className={styles.section}>
+          <summary className={styles.sectionSummary}>Dashboard and Session Links</summary>
+          <div className={styles.sectionBody}>
+            <p>Use <strong>My Game Sessions</strong> as the home base for live games.</p>
             <ul>
-              <li><code>round1</code>, <code>round2</code>, <code>round3</code>, <code>round4</code> — regular rounds</li>
-              <li><code>sudden_death</code> — tiebreaker question</li>
-              <li><code>fast_money</code> — Fast Money pool (you&apos;ll pick 5 from this)</li>
+              <li><strong>Create Game:</strong> build a custom game using approved questions from the question bank.</li>
+              <li><strong>Ready-Made Games:</strong> launch a private copy of a Platform Admin template.</li>
+              <li><strong>Control:</strong> opens the operator panel for that exact session.</li>
+              <li><strong>Main Screen:</strong> opens the audience display for that exact session.</li>
+              <li><strong>Audio:</strong> opens a dedicated sound/operator view for that exact session.</li>
+              <li><strong>Cards:</strong> opens printable/review cards for that exact session.</li>
+              <li><strong>Duplicate:</strong> creates a fresh private copy with the same selected questions and settings.</li>
+              <li><strong>Archive:</strong> removes a completed game from the main working list.</li>
             </ul>
-            <p><strong>Each question needs answers</strong> with: <code>answer_text</code>, <code>points</code>, and an <code>order</code> (1, 2, 3…).</p>
+            <p className={styles.warn}>
+              <strong>Important:</strong> Do not copy generic links from the browser address bar unless they include <code>sessionId</code> and <code>token</code>. The dashboard links are the safest way to share screens with operators.
+            </p>
+          </div>
+        </details>
+
+        <details className={styles.section}>
+          <summary className={styles.sectionSummary}>Creating a Custom Game</summary>
+          <div className={styles.sectionBody}>
+            <p>Hosts can create custom sessions from the approved question bank.</p>
+            <ol>
+              <li>Go to <strong>My Game Sessions</strong>, then choose <strong>Create Game</strong>.</li>
+              <li>Set the event title, footer text, and team names.</li>
+              <li>Select one question for Round 1, Round 2, Round 3, Round 4, and Tie Breaker.</li>
+              <li>Select five unique Fast Money questions.</li>
+              <li>Create the session, then use the generated links for Control, Main Screen, Audio, and Cards.</li>
+            </ol>
+            <p className={styles.tip}>
+              <strong>Good news:</strong> multiple sessions can now exist at the same time. Creating a new game no longer deletes unfinished games.
+            </p>
+          </div>
+        </details>
+
+        <details className={styles.section}>
+          <summary className={styles.sectionSummary}>Ready-Made and Assigned Games</summary>
+          <div className={styles.sectionBody}>
+            <p>Platform Admin can publish sessions as reusable templates. Hosts launch private copies from those templates.</p>
+            <ul>
+              <li><strong>Public template:</strong> visible to all signed-in hosts.</li>
+              <li><strong>Private template:</strong> visible only to Platform Admin.</li>
+              <li><strong>Assigned template:</strong> shared with a specific signed-up user, useful for custom game-session gigs.</li>
+            </ul>
             <p>
-              You can add questions through the Supabase dashboard table editor, or via the
-              <em> Current Game Session Questions</em> page on the landing page (preview
-              what&apos;s loaded for the active session).
+              When a host clicks <strong>Use This Game</strong>, the app creates a new private game session. Scores, strikes, timers, answer reveals, and Fast Money responses do not affect any other user.
             </p>
+          </div>
+        </details>
+
+        <details className={styles.section}>
+          <summary className={styles.sectionSummary}>Admin Tools</summary>
+          <div className={styles.sectionBody}>
+            <p>Platform Admin has extra management pages:</p>
+            <ul>
+              <li><strong>Question Bank:</strong> add, edit, import, or delete master questions and answers.</li>
+              <li><strong>Template Manager:</strong> edit template title/description, change visibility, archive/delete templates, assign templates to users, and preview included questions.</li>
+              <li><strong>User Manager:</strong> review signed-up users, promote/demote roles, and see session/template activity counts.</li>
+            </ul>
             <p className={styles.warn}>
-              ⚠ Make sure each question you intend to use has at least <strong>one answer</strong>
-              attached, otherwise the answer board will appear empty on the Main Screen.
+              <strong>Question editing is admin-only.</strong> Hosts can choose approved questions for games, but they cannot add or change the master question bank.
             </p>
           </div>
         </details>
 
-        {/* ── Creating a Session ──────────────────────────────────── */}
         <details className={styles.section}>
-          <summary className={styles.sectionSummary}>🛠️ Creating a Game Session</summary>
+          <summary className={styles.sectionSummary}>Setting Up the Main Screen</summary>
           <div className={styles.sectionBody}>
-            <p>From the <strong>Create Game Session</strong> card on the landing page:</p>
+            <p>The Main Screen is the audience display for one specific game session.</p>
             <ol>
-              <li>Enter the two team names (e.g. <em>Lions</em> and <em>Eagles</em>).</li>
-              <li>Pick one question for each: Round 1, Round 2, Round 3, Round 4, Tie Breaker.</li>
-              <li>Pick <strong>5 different questions</strong> for Fast Money (FM1 through FM5).</li>
-              <li>Click <strong>🎮 Create Game Session</strong>.</li>
+              <li>Open the <strong>Main Screen</strong> link from the Sessions Dashboard on the projector or TV device.</li>
+              <li>Use the fullscreen button or press <kbd>F11</kbd>.</li>
+              <li>Keep that browser tab on the tokenized session link for the whole game.</li>
             </ol>
-            <p className={styles.warn}>
-              ⚠ Only <strong>one active session</strong> can exist at a time. Creating a new session
-              replaces any previous one — start scores, strikes, and reveals all reset.
-            </p>
-            <p className={styles.tip}>
-              💡 <strong>Tip:</strong> You can preview every question and answer for the new session
-              from the <em>Current Game Session Questions</em> page before going live.
-            </p>
+            <p><strong>The Main Screen shows:</strong></p>
+            <ul>
+              <li>Intro, team matchup, rules, board, winner, and Fast Money screens</li>
+              <li>Team names, scores, active team, strikes, and answer reveals</li>
+              <li>Fast Money two-player board and timer</li>
+            </ul>
           </div>
         </details>
 
-        {/* ── Main Screen Setup ───────────────────────────────────── */}
         <details className={styles.section}>
-          <summary className={styles.sectionSummary}>📺 Setting Up the Main Screen</summary>
+          <summary className={styles.sectionSummary}>Using the Operator Panel</summary>
           <div className={styles.sectionBody}>
-            <p>The Main Screen is the audience display — it&apos;s what your church/audience sees on the TV or projector.</p>
-            <ol>
-              <li>Open the Main Screen URL on the device connected to the projector or TV.</li>
-              <li>Press <kbd>F11</kbd> (or use the fullscreen toggle in the corner) to go fullscreen.</li>
-              <li>That&apos;s it — the screen auto-detects the active game session and updates live.</li>
-            </ol>
-            <p><strong>What the Main Screen shows:</strong></p>
-            <ul>
-              <li><strong>Top:</strong> Team scoreboard with the active team highlighted in gold</li>
-              <li><strong>Middle:</strong> Question + answer board (8 blue plates that flip to reveal)</li>
-              <li><strong>Bottom:</strong> Strike indicators (❌)</li>
-              <li>During Fast Money: switches to a two-column board (Player 1 | Player 2) with a countdown timer in the corner</li>
-            </ul>
-            <p className={styles.tip}>
-              💡 <strong>Tip:</strong> Designed for 16:9 displays. Test the projector first — overscan-safe
-              padding is built in for older TVs.
-            </p>
-          </div>
-        </details>
+            <p>The Operator Panel controls the live game session.</p>
 
-        {/* ── Operator Panel ──────────────────────────────────────── */}
-        <details className={styles.section}>
-          <summary className={styles.sectionSummary}>🎛️ Using the Operator Panel</summary>
-          <div className={styles.sectionBody}>
-            <p>The Operator Panel is split into three panes (plus a Fast Money pane that appears in round 6):</p>
-
-            <h4>🎮 Left Pane — Game Controls</h4>
+            <h4>Game Controls</h4>
             <ul>
-              <li><strong>Round selector</strong> + <em>🔀 Switch to Selected Round</em> button — moves the game forward</li>
-              <li><strong>👁️ Reveal Question / 🙈 Hide Question</strong> — controls whether the audience sees the question text</li>
-              <li><strong>Strike controls</strong> — ➕ / ➖ buttons (a red ❌ flashes on the Main Screen on each new strike)</li>
-              <li><strong>Team scores</strong> — quick ±5 adjustments</li>
-              <li><strong>🔁 Reset Round</strong> — clears strikes &amp; answer reveals for the current question</li>
-              <li><strong>🔄 Reset Game Session</strong> — full reset (scores, strikes, all reveals)</li>
+              <li>Switch between regular rounds, Tie Breaker, and Fast Money.</li>
+              <li>Show standby, team intro, board, rules, Fast Money intro, and winner screens.</li>
+              <li>Reset a round or reset/end the entire session.</li>
+              <li>Manage strikes and strike limit.</li>
             </ul>
 
-            <h4>🃏 Middle Pane — Answer Reveals (regular rounds)</h4>
+            <h4>Question and Answer Control</h4>
             <ul>
-              <li>Click any answer in the list to reveal it on the Main Screen (with a flip animation + ding)</li>
-              <li>Each answer&apos;s point value is added to the active team&apos;s score on reveal</li>
-              <li>Use the strike controls here too if it&apos;s easier than the left pane</li>
+              <li>Reveal or hide the question on the Main Screen.</li>
+              <li>Reveal/hide individual answers or reveal all answers.</li>
+              <li>Answer reveal state is session-specific, so another game using the same question is not affected.</li>
             </ul>
 
-            <h4>🏆 Right Pane — Team Scores &amp; Active Team</h4>
+            <h4>Scores and Teams</h4>
             <ul>
-              <li>Manual ± buttons for each team&apos;s score</li>
-              <li>Toggle which team has control — the active team is shown with a gold highlight on the Main Screen</li>
+              <li>Set team names, active team, and manual score adjustments.</li>
+              <li>Use score controls if you need to correct or override automatic scoring.</li>
             </ul>
 
-            <h4>⚡ Fast Money Pane (Round 6)</h4>
+            <h4>Audio</h4>
             <ul>
-              <li><strong>Player 1 / Player 2</strong> toggle — switching to Player 2 automatically hides Player 1&apos;s answers on the Main Screen</li>
-              <li><strong>Q1–Q5 navigation</strong>: ⬅ Prev / Next ➡ / <strong>↩ Q1</strong> jump (handy when starting Player 2&apos;s turn)</li>
-              <li><strong>Reveal Question</strong> — shows the FM question text on the Main Screen</li>
-              <li><strong>Type the player&apos;s answer</strong> — or click any item in the Answer Bank to fill it instantly</li>
-              <li><strong>Reveal Answer</strong> → <strong>Reveal Points</strong> — appears on the Main Screen with a sound</li>
-              <li><strong>No Correct (0)</strong> — for wrong/skipped answers, plays a buzzer</li>
-              <li><strong>Timer</strong> — Start / Pause / Reset; appears top-right of the Main Screen</li>
+              <li>Use the built-in audio controls in the panel, or open the separate <strong>Audio</strong> link for a second operator.</li>
+              <li>Browsers may block sound until the operator clicks somewhere on the page.</li>
             </ul>
           </div>
         </details>
 
-        {/* ── Game Flow ───────────────────────────────────────────── */}
         <details className={styles.section}>
-          <summary className={styles.sectionSummary}>🎯 Standard Game Flow</summary>
+          <summary className={styles.sectionSummary}>Fast Money Flow</summary>
           <div className={styles.sectionBody}>
             <ol>
-              <li>
-                <strong>Rounds 1–4:</strong> Reveal the question → ask audience → click answers as the
-                team gets them → 3 strikes flips control to the other team for a steal.
-              </li>
-              <li>
-                <strong>Tie Breaker (Round 5):</strong> Used as a tiebreaker if needed — one
-                question, fastest correct answer wins.
-              </li>
-              <li>
-                <strong>Fast Money (Round 6):</strong>
-                <ul>
-                  <li>Player 1 answers all 5 questions (timed).</li>
-                  <li>Operator switches to Player 2 — Player 1&apos;s answers auto-hide on the Main Screen.</li>
-                  <li>Player 2 answers the same 5 questions.</li>
-                  <li>Combined point total decides the winner.</li>
-                </ul>
-              </li>
+              <li>Switch to <strong>Fast Money</strong> in the Operator Panel.</li>
+              <li>Select Player 1 and start at question 1.</li>
+              <li>Reveal each question, type or select the answer, then reveal answer/points when ready.</li>
+              <li>Switch to Player 2 and jump back to question 1.</li>
+              <li>Player 1 answers can be hidden while Player 2 plays.</li>
+              <li>Reveal Player 2 answers and points to finish the round.</li>
             </ol>
             <p className={styles.tip}>
-              💡 <strong>Tip:</strong> Use the <em>↩ Q1</em> jump button at the start of Player 2&apos;s
-              turn — much faster than clicking Prev four times.
+              <strong>Tip:</strong> Fast Money responses are stored per session, so duplicated or template-launched games start clean.
             </p>
           </div>
         </details>
 
-        {/* ── Troubleshooting ─────────────────────────────────────── */}
         <details className={styles.section}>
-          <summary className={styles.sectionSummary}>🛟 Tips &amp; Troubleshooting</summary>
+          <summary className={styles.sectionSummary}>Troubleshooting</summary>
           <div className={styles.sectionBody}>
             <ul>
-              <li>
-                <strong>Main Screen seems stuck or missing updates?</strong> Hard-refresh both
-                tabs with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> (Mac: <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>).
-              </li>
-              <li>
-                <strong>Wrong round showing?</strong> In the Operator&apos;s Left Pane, pick the correct
-                round and click <em>🔀 Switch to Selected Round</em>.
-              </li>
-              <li>
-                <strong>Strikes / reveals from a previous game?</strong> Use <em>🔁 Reset Round</em>
-                (current question only) or <em>🔄 Reset Game Session</em> (full reset).
-              </li>
-              <li>
-                <strong>No sound effects?</strong> Most browsers block audio until you click
-                something — press any button on the Operator Panel first.
-              </li>
-              <li>
-                <strong>Use two devices.</strong> The Main Screen on the projector / TV, and the
-                Operator Panel on a laptop or tablet you keep with you.
-              </li>
-              <li>
-                <strong>Internet hiccup?</strong> All state is in Supabase — refresh either tab and
-                it picks up exactly where you left off.
-              </li>
+              <li><strong>Access denied:</strong> open the link from the Sessions Dashboard. The link may be missing the right token.</li>
+              <li><strong>Wrong game showing:</strong> confirm the URL has the intended <code>sessionId</code>.</li>
+              <li><strong>Main Screen is not updating:</strong> refresh the Main Screen and Operator Panel tabs.</li>
+              <li><strong>No sound:</strong> click the page once, then try the sound control again.</li>
+              <li><strong>Old game is cluttering the dashboard:</strong> archive it, then use <em>Show archived</em> only when you need it.</li>
+              <li><strong>Need another similar game:</strong> duplicate a session or launch a ready-made template.</li>
             </ul>
           </div>
         </details>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import useActiveSession from '@/hooks/useActiveSession';
 import { emitSoundEvent } from '@/lib/soundEvents';
+import { loadSessionAnswerStateMap, setSessionAnswerRevealed } from '@/lib/sessionAnswerStates';
 import styles from './MiddlePane.module.scss';
 
 type AnswerRow = {
@@ -54,11 +55,19 @@ export default function MiddlePane() {
     // All answers (operator sees all)
     const { data: a } = await supabase
       .from('answers')
-      .select('id, answer_text, points, revealed, "order", question_id')
+      .select('id, answer_text, points, "order", question_id')
       .eq('question_id', qid)
       .order('order', { ascending: true });
 
-    setAnswers((a ?? []) as AnswerRow[]);
+    const answerRows = (a ?? []) as Omit<AnswerRow, 'revealed'>[];
+    const stateMap = await loadSessionAnswerStateMap(sessionId, answerRows.map((answer) => answer.id));
+
+    setAnswers(
+      answerRows.map((answer) => ({
+        ...answer,
+        revealed: stateMap.get(answer.id) ?? false,
+      }))
+    );
   };
 
   // Initial load
@@ -96,11 +105,11 @@ export default function MiddlePane() {
       .channel(`middle_pane_answers_${sessionId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'answers' },
+        { event: '*', schema: 'public', table: 'session_answer_states', filter: `session_id=eq.${sessionId}` },
         (payload) => {
-          const updated = payload.new as AnswerRow;
+          const updated = payload.new as { answer_id?: string; revealed?: boolean };
           setAnswers((prev) =>
-            prev.map((a) => (a.id === updated.id ? { ...a, ...updated } : a))
+            prev.map((a) => (a.id === updated.answer_id ? { ...a, revealed: !!updated.revealed } : a))
           );
         }
       )
@@ -140,15 +149,16 @@ export default function MiddlePane() {
 
   // Toggle reveal for one answer. Main Screen owns the audience reveal sound.
   const toggleReveal = async (id: string, next: boolean) => {
+    if (!sessionId) return;
     setAnswers(prev => prev.map(a => (a.id === id ? { ...a, revealed: next } : a)));
-    await supabase.from('answers').update({ revealed: next }).eq('id', id);
+    await setSessionAnswerRevealed(sessionId, [id], next);
   };
 
   // Reveal/Hide all for this question
   const setAllRevealed = async (next: boolean) => {
+    if (!sessionId) return;
     if (answers.length === 0) return;
-    const qid = answers[0].question_id;
-    await supabase.from('answers').update({ revealed: next }).eq('question_id', qid);
+    await setSessionAnswerRevealed(sessionId, answers.map((answer) => answer.id), next);
     setAnswers((prev) => prev.map((a) => ({ ...a, revealed: next })));
   };
 
