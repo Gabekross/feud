@@ -4,7 +4,6 @@ import styles from './FamilyFaceOffHub.module.scss';
 
 const MAIN_PATH = '/main-screen';
 const CONTROL_PATH = '/control';
-const AUDIO_PATH = '/control/audio';
 const SESSIONS_PATH = '/sessions';
 const SETUP_PATH = '/admin/setup';
 const QUESTIONS_PATH = '/admin/questions';
@@ -63,13 +62,13 @@ export default function FamilyFaceOffHubPage() {
           <span className={styles.cta}>Launch</span>
         </Link>
 
-        <Link href={AUDIO_PATH} className={styles.card}>
+        <Link href={SESSIONS_PATH} className={styles.card}>
           <div className={styles.emoji}>AUD</div>
           <h2>Audio Operator</h2>
           <p>
-            Dedicated music and crowd controls for a second operator browser.
+            Choose a game session, then open its dedicated music and crowd controls.
           </p>
-          <span className={styles.cta}>Open Mixer</span>
+          <span className={styles.cta}>Choose Session</span>
         </Link>
 
         <Link href={QUESTIONS_PATH} className={styles.card}>

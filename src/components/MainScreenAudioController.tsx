@@ -31,11 +31,33 @@ const TRACK_LIMITS: Record<string, number> = {
 
 export default function MainScreenAudioController({ sessionId }: { sessionId: string | null }) {
   const tracksRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+  const audioUnlockedRef = useRef(false);
 
   useEffect(() => {
     return () => {
       tracksRef.current.forEach((audio) => audio.pause());
       tracksRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (audioUnlockedRef.current) return;
+
+      const primer = new Audio('/sounds/correct.mp3');
+      primer.muted = true;
+      void primer.play().then(() => {
+        primer.pause();
+        primer.currentTime = 0;
+        audioUnlockedRef.current = true;
+      }).catch(() => {});
+    };
+
+    window.addEventListener('pointerdown', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
     };
   }, []);
 
@@ -110,7 +132,11 @@ export default function MainScreenAudioController({ sessionId }: { sessionId: st
           void handleEvent(payload.new as SoundEvent);
         }
       )
-      .subscribe();
+      .subscribe((status, error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Main screen audio realtime unavailable.', error);
+        }
+      });
 
     return () => {
       void supabase.removeChannel(channel);

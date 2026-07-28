@@ -12,3 +12,4 @@ begin
 end $$;
 
 drop index if exists public.one_active_game_session_only;
+drop index if exists public.uniq_one_active_session;

@@ -14,8 +14,8 @@ export type SoundEventPayload = {
   loop?: boolean;
 };
 
-export const emitSoundEvent = async (sessionId: string | null, payload: SoundEventPayload) => {
-  if (!sessionId) return;
+export const emitSoundEvent = async (sessionId: string | null, payload: SoundEventPayload): Promise<boolean> => {
+  if (!sessionId) return false;
 
   const { error } = await supabase.from('sound_events').insert({
     session_id: sessionId,
@@ -24,5 +24,8 @@ export const emitSoundEvent = async (sessionId: string | null, payload: SoundEve
 
   if (error) {
     console.error('Sound event failed:', error.message);
+    return false;
   }
+
+  return true;
 };

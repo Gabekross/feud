@@ -93,6 +93,7 @@ function MainScreenContent() {
   const rafRef = useRef<number | null>(null);
   const prevStrikesRef = useRef(0);
   const wasFastMoneyRef = useRef(false);
+  const loadInitialRef = useRef<() => Promise<void>>(async () => {});
 
   const getTimerColor = () => {
     const ratio = fmRemain / Math.max(1, fmDuration);
@@ -218,9 +219,10 @@ function MainScreenContent() {
     }
   };
 
+  loadInitialRef.current = loadInitial;
+
   useEffect(() => {
-    loadInitial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void loadInitialRef.current();
   }, [sessionId]);
 
   useEffect(() => {
@@ -253,6 +255,21 @@ function MainScreenContent() {
   useEffect(() => {
     if (!sessionId) return;
 
+    let fallbackTimer: number | null = null;
+    const startFallbackRefresh = () => {
+      if (fallbackTimer !== null) return;
+      void loadInitialRef.current();
+      fallbackTimer = window.setInterval(() => {
+        void loadInitialRef.current();
+      }, 2000);
+    };
+
+    const stopFallbackRefresh = () => {
+      if (fallbackTimer === null) return;
+      window.clearInterval(fallbackTimer);
+      fallbackTimer = null;
+    };
+
     const sub = supabase
       .channel(`main_screen_live_${sessionId}`)
       .on(
@@ -266,20 +283,9 @@ function MainScreenContent() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'session_answer_states', filter: `session_id=eq.${sessionId}` },
         () => {
-          void loadInitial();
+          void loadInitialRef.current();
         }
       )
-      .subscribe();
-
-    return () => { void supabase.removeChannel(sub); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const channel = supabase
-      .channel(`main_screen_current_round_${sessionId}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'session_questions', filter: `session_id=eq.${sessionId}` },
@@ -291,9 +297,23 @@ function MainScreenContent() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status, error) => {
+        if (status === 'SUBSCRIBED') {
+          stopFallbackRefresh();
+          return;
+        }
 
-    return () => { void supabase.removeChannel(channel); };
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          console.warn('Main screen realtime unavailable; using refresh fallback.', error);
+          startFallbackRefresh();
+        }
+      });
+
+    return () => {
+      stopFallbackRefresh();
+      void supabase.removeChannel(sub);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   useEffect(() => {

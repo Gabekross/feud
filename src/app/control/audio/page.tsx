@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import SessionAccessGate from '@/components/SessionAccessGate';
 import MusicControls from '@/components/control/MusicControls';
 import ScreenConnectionStatus from '@/components/control/ScreenConnectionStatus';
@@ -24,6 +27,29 @@ function AudioOperatorContent() {
 }
 
 export default function AudioOperatorPage() {
+  const searchParams = useSearchParams();
+  const sessionId =
+    searchParams.get('sessionId') ??
+    searchParams.get('session') ??
+    searchParams.get('sid');
+
+  if (!sessionId) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.shell}>
+          <header className={styles.header}>
+            <div>
+              <Link href="/family-face-off" className={styles.backLink}>Control Hub</Link>
+              <h1>Choose a Game Session</h1>
+              <p>Open the Audio link from the game session you want to control.</p>
+            </div>
+          </header>
+          <Link href="/sessions" className={styles.backLink}>Open My Game Sessions</Link>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <SessionAccessGate surface="audio">
       <AudioOperatorContent />
