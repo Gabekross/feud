@@ -21,6 +21,15 @@
   font-size: 28px;
 }
 
+.eyebrow {
+  margin: 0 0 8px;
+  color: #284f9f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
 .panel p {
   margin: 0 0 20px;
   color: #5b6475;
@@ -29,6 +38,24 @@
 .form {
   display: grid;
   gap: 14px;
+}
+
+.infoBox {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 18px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #eef2f7;
+  color: #39445a;
+}
+
+.infoBox strong {
+  color: #172033;
+}
+
+.infoBox span {
+  line-height: 1.45;
 }
 
 .form label {

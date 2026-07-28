@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import useAuthProfile from '@/hooks/useAuthProfile';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './AuthPage.module.scss';
 
 export default function AuthPage() {
   const router = useRouter();
+  const { user, loading } = useAuthProfile();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,12 +44,23 @@ export default function AuthPage() {
   return (
     <main className={styles.page}>
       <section className={styles.panel}>
-        <h1>{mode === 'signin' ? 'Sign In' : 'Create Account'}</h1>
+        <p className={styles.eyebrow}>Jemigah Family Games</p>
+        <h1>{mode === 'signin' ? 'Enter Game Suite' : 'Create Host Account'}</h1>
         <p>
           {mode === 'signin'
-            ? 'Open your games, create sessions, and manage live events.'
-            : 'The first account created becomes Platform Admin; later accounts become hosts.'}
+            ? 'Sign in to open your Sessions Dashboard, create games, launch ready-made templates, and manage live show links.'
+            : 'Create an account to host games. The first account becomes Platform Admin; later accounts start as hosts.'}
         </p>
+        <div className={styles.infoBox}>
+          <strong>What happens after sign-in?</strong>
+          <span>You will go to My Game Sessions, where each game has its own Control, Main Screen, Audio, and Cards links.</span>
+        </div>
+
+        {!loading && user && (
+          <div className={styles.status}>
+            You are already signed in. <Link href="/sessions">Open My Game Sessions</Link>.
+          </div>
+        )}
 
         <form className={styles.form} onSubmit={submit}>
           <label>
@@ -91,7 +104,7 @@ export default function AuthPage() {
         </form>
 
         {status && <div className={styles.status}>{status}</div>}
-        <Link className={styles.backLink} href="/family-face-off">Back to hub</Link>
+        <Link className={styles.backLink} href="/">Back to public site</Link>
       </section>
     </main>
   );

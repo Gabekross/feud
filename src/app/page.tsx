@@ -7,7 +7,7 @@ const games = [
     eyebrow: 'Live now',
     status: 'Ready to play',
     description: 'A premium family feud-style show board with regular rounds, a tie breaker, and Fast Money.',
-    primaryHref: '/family-face-off',
+    primaryHref: '/auth',
     primaryLabel: 'Enter Game Suite',
   },
   {
