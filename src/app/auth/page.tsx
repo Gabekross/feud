@@ -1,11 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useAuthProfile from '@/hooks/useAuthProfile';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './AuthPage.module.scss';
+
+const DEFAULT_NEXT_PATH = '/family-face-off';
+
+const getSafeNextPath = () => {
+  if (typeof window === 'undefined') return DEFAULT_NEXT_PATH;
+
+  const requestedPath = new URLSearchParams(window.location.search).get('next');
+  return requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
+    ? requestedPath
+    : DEFAULT_NEXT_PATH;
+};
 
 export default function AuthPage() {
   const router = useRouter();
@@ -15,6 +26,14 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
+  const [nextPath, setNextPath] = useState(DEFAULT_NEXT_PATH);
+
+  useEffect(() => {
+    setNextPath(getSafeNextPath());
+  }, []);
+
+  const isClearTheBoardEntry = nextPath.startsWith('/clear-the-board');
+  const suiteName = isClearTheBoardEntry ? 'Clear the Board' : 'Gabekross Control Hub';
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -26,7 +45,7 @@ export default function AuthPage() {
       password,
     };
 
-    const { error } = mode === 'signin'
+    const { data, error } = mode === 'signin'
       ? await supabase.auth.signInWithPassword(credentials)
       : await supabase.auth.signUp(credentials);
 
@@ -36,29 +55,44 @@ export default function AuthPage() {
       return;
     }
 
-    setStatus(mode === 'signup' ? 'Account created. Check your email if confirmation is enabled.' : 'Signed in.');
+    if (mode === 'signup' && !data.session) {
+      setStatus('Account created. Check your email to confirm your account, then sign in.');
+      setSaving(false);
+      return;
+    }
+
+    setStatus(mode === 'signup' ? 'Account created and signed in.' : 'Signed in.');
     setSaving(false);
-    router.push('/family-face-off');
+    router.replace(nextPath);
+    router.refresh();
   };
 
   return (
     <main className={styles.page}>
       <section className={styles.panel}>
         <p className={styles.eyebrow}>Jemigah Family Games</p>
-        <h1>{mode === 'signin' ? 'Enter Game Suite' : 'Create Host Account'}</h1>
+        <h1>
+          {mode === 'signin'
+            ? isClearTheBoardEntry ? 'Enter Clear the Board' : 'Enter Game Suite'
+            : 'Create Host Account'}
+        </h1>
         <p>
           {mode === 'signin'
-            ? 'Sign in to enter the Gabekross Control Hub, then choose sessions, templates, admin tools, or live show links.'
+            ? `Sign in to enter ${suiteName} and access its controller, display, content, and help pages.`
             : 'Create an account to host games. The first account becomes Platform Admin; later accounts start as hosts.'}
         </p>
         <div className={styles.infoBox}>
           <strong>What happens after sign-in?</strong>
-          <span>You will enter the Gabekross Control Hub. From there, open My Game Sessions to use each game&apos;s Control, Main Screen, Audio, and Cards links.</span>
+          <span>
+            {isClearTheBoardEntry
+              ? 'You will enter Clear the Board. From there, open the controller on the operator device and the display on the audience screen.'
+              : 'You will enter the Gabekross Control Hub. From there, open My Game Sessions to use each game\'s Control, Main Screen, Audio, and Cards links.'}
+          </span>
         </div>
 
         {!loading && user && (
           <div className={styles.status}>
-            You are already signed in. <Link href="/family-face-off">Open Gabekross Control Hub</Link>.
+            You are already signed in. <Link href={nextPath}>Open {suiteName}</Link>.
           </div>
         )}
 

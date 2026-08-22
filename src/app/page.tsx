@@ -15,8 +15,8 @@ const games = [
     eyebrow: 'Live now',
     status: 'Ready to play',
     description: 'A fast-answer board-clearing challenge for teams, parties, and live audience play.',
-    primaryHref: '/clear-the-board/',
-    primaryLabel: 'Enter Game',
+    primaryHref: '/auth?next=/clear-the-board/',
+    primaryLabel: 'Enter Game Suite',
   },
   {
     name: 'Speed Survey',
