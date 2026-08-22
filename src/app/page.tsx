@@ -12,11 +12,11 @@ const games = [
   },
   {
     name: 'Clear the Board',
-    eyebrow: 'Coming next',
-    status: 'In planning',
+    eyebrow: 'Live now',
+    status: 'Ready to play',
     description: 'A fast-answer board-clearing challenge for teams, parties, and live audience play.',
-    primaryHref: null,
-    primaryLabel: 'Coming Soon',
+    primaryHref: '/clear-the-board/',
+    primaryLabel: 'Enter Game',
   },
   {
     name: 'Speed Survey',
